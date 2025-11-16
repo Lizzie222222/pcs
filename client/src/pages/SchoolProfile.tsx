@@ -576,85 +576,246 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
   teachers: SchoolTeacher[];
   isLoading: boolean;
 }) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState('');
+  const [role, setRole] = useState<'head_teacher' | 'teacher'>('teacher');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Fetch users for assignment
+  const { data: usersWithSchools = [], isLoading: usersLoading } = useQuery<any[]>({
+    queryKey: ['/api/admin/users'],
+    enabled: assignDialogOpen,
+  });
+
+  // Assign teacher mutation
+  const assignTeacherMutation = useMutation({
+    mutationFn: async ({ userEmail, role }: { userEmail: string; role: string }) => {
+      await apiRequest('POST', `/api/admin/schools/${schoolId}/assign-teacher`, {
+        userEmail,
+        role,
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Teacher Assigned",
+        description: "Teacher has been successfully assigned to the school.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools', schoolId, 'teachers'] });
+      setAssignDialogOpen(false);
+      setSelectedUserId('');
+      setRole('teacher');
+      setSearchQuery('');
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Assignment Failed",
+        description: error.message || "Failed to assign teacher. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAssignSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const selectedUser = usersWithSchools.find(u => u && u.user && u.user.id === selectedUserId);
+    
+    if (!selectedUserId || !selectedUser?.user?.email) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a user.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    assignTeacherMutation.mutate({ userEmail: selectedUser.user.email, role });
+  };
+
+  const filteredUsers = usersWithSchools
+    .filter(item => item && item.user)
+    .filter(item => {
+      const fullName = `${item.user.firstName || ''} ${item.user.lastName || ''}`.toLowerCase();
+      const email = item.user.email?.toLowerCase() || '';
+      return fullName.includes(searchQuery.toLowerCase()) || email.includes(searchQuery.toLowerCase());
+    });
+
   if (isLoading) {
     return <LoadingSpinner message="Loading teachers..." />;
   }
 
-  if (teachers.length === 0) {
-    return (
-      <EmptyState
-        icon={Users}
-        title="No Teachers"
-        description="No teachers have been added to this school yet."
-      />
-    );
-  }
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-pcs_blue" />
-            Teachers ({teachers.length})
-          </span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-gray-50">
-                <th className="text-left p-3 font-semibold text-navy">Name</th>
-                <th className="text-left p-3 font-semibold text-navy">Email</th>
-                <th className="text-left p-3 font-semibold text-navy">Role</th>
-                <th className="text-left p-3 font-semibold text-navy">Status</th>
-                <th className="text-left p-3 font-semibold text-navy">Legacy Evidence</th>
-                <th className="text-left p-3 font-semibold text-navy">Joined</th>
-              </tr>
-            </thead>
-            <tbody>
-              {teachers.map((teacher) => (
-                <tr key={teacher.userId} className="border-b hover:bg-gray-50">
-                  <td className="p-3" data-testid={`text-teacher-name-${teacher.userId}`}>
-                    {teacher.firstName && teacher.lastName
-                      ? `${teacher.firstName} ${teacher.lastName}`
-                      : 'Unknown'}
-                  </td>
-                  <td className="p-3" data-testid={`text-teacher-email-${teacher.userId}`}>
-                    {teacher.email}
-                  </td>
-                  <td className="p-3">
-                    <Badge variant="outline" className="capitalize">
-                      {teacher.role}
-                    </Badge>
-                  </td>
-                  <td className="p-3">
-                    {teacher.isVerified ? (
-                      <Badge className="bg-green-600">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        Verified
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="text-yellow-600">
-                        <Clock className="h-3 w-3 mr-1" />
-                        Pending
-                      </Badge>
-                    )}
-                  </td>
-                  <td className="p-3 text-gray-600" data-testid={`text-legacy-evidence-${teacher.userId}`}>
-                    {teacher.legacyEvidenceCount ? `${teacher.legacyEvidenceCount} submissions` : '0 submissions'}
-                  </td>
-                  <td className="p-3 text-gray-600">
-                    {new Date(teacher.createdAt).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </CardContent>
-    </Card>
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-pcs_blue" />
+              Teachers ({teachers.length})
+            </CardTitle>
+            <Button
+              onClick={() => setAssignDialogOpen(true)}
+              className="bg-pcs_blue hover:bg-navy"
+              size="sm"
+              data-testid="button-assign-teacher"
+            >
+              <Users className="h-4 w-4 mr-2" />
+              Assign Teacher
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {teachers.length === 0 ? (
+            <EmptyState
+              icon={Users}
+              title="No Teachers"
+              description="No teachers have been added to this school yet."
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-gray-50">
+                    <th className="text-left p-3 font-semibold text-navy">Name</th>
+                    <th className="text-left p-3 font-semibold text-navy">Email</th>
+                    <th className="text-left p-3 font-semibold text-navy">Role</th>
+                    <th className="text-left p-3 font-semibold text-navy">Status</th>
+                    <th className="text-left p-3 font-semibold text-navy">Legacy Evidence</th>
+                    <th className="text-left p-3 font-semibold text-navy">Joined</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {teachers.map((teacher) => (
+                    <tr key={teacher.userId} className="border-b hover:bg-gray-50">
+                      <td className="p-3" data-testid={`text-teacher-name-${teacher.userId}`}>
+                        {teacher.firstName && teacher.lastName
+                          ? `${teacher.firstName} ${teacher.lastName}`
+                          : 'Unknown'}
+                      </td>
+                      <td className="p-3" data-testid={`text-teacher-email-${teacher.userId}`}>
+                        {teacher.email}
+                      </td>
+                      <td className="p-3">
+                        <Badge variant="outline" className="capitalize">
+                          {teacher.role}
+                        </Badge>
+                      </td>
+                      <td className="p-3">
+                        {teacher.isVerified ? (
+                          <Badge className="bg-green-600">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Verified
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-yellow-600">
+                            <Clock className="h-3 w-3 mr-1" />
+                            Pending
+                          </Badge>
+                        )}
+                      </td>
+                      <td className="p-3 text-gray-600" data-testid={`text-legacy-evidence-${teacher.userId}`}>
+                        {teacher.legacyEvidenceCount ? `${teacher.legacyEvidenceCount} submissions` : '0 submissions'}
+                      </td>
+                      <td className="p-3 text-gray-600">
+                        {new Date(teacher.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Assign Teacher Dialog */}
+      <AlertDialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Assign Teacher to School</AlertDialogTitle>
+            <AlertDialogDescription>
+              Select a user and role to assign to this school.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <form onSubmit={handleAssignSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                User *
+              </label>
+              <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                <SelectTrigger data-testid="select-user">
+                  <SelectValue placeholder="Select user" />
+                </SelectTrigger>
+                <SelectContent>
+                  <div className="px-2 pb-2">
+                    <Input
+                      placeholder="Search users..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="h-8"
+                      data-testid="input-search-users"
+                    />
+                  </div>
+                  {usersLoading ? (
+                    <div className="px-2 py-4 text-sm text-gray-500 text-center">Loading users...</div>
+                  ) : filteredUsers.length === 0 ? (
+                    <div className="px-2 py-4 text-sm text-gray-500 text-center">No users found</div>
+                  ) : (
+                    filteredUsers.map((item) => (
+                      <SelectItem key={item.user.id} value={item.user.id}>
+                        {item.user.firstName || ''} {item.user.lastName || ''} ({item.user.email})
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Role *
+              </label>
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    value="head_teacher"
+                    checked={role === 'head_teacher'}
+                    onChange={(e) => setRole(e.target.value as 'head_teacher' | 'teacher')}
+                    className="text-pcs_blue"
+                    data-testid="radio-head-teacher"
+                  />
+                  <span className="text-sm">Head Teacher</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    value="teacher"
+                    checked={role === 'teacher'}
+                    onChange={(e) => setRole(e.target.value as 'head_teacher' | 'teacher')}
+                    className="text-pcs_blue"
+                    data-testid="radio-teacher"
+                  />
+                  <span className="text-sm">Teacher</span>
+                </label>
+              </div>
+            </div>
+
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <Button
+                type="submit"
+                disabled={assignTeacherMutation.isPending || !selectedUserId}
+                className="bg-pcs_blue hover:bg-blue-600"
+              >
+                {assignTeacherMutation.isPending ? 'Assigning...' : 'Assign Teacher'}
+              </Button>
+            </AlertDialogFooter>
+          </form>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
