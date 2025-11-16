@@ -344,8 +344,11 @@ schoolsRouter.post('/api/schools/:schoolId/invite-teacher', isAuthenticated, isS
     const { schoolId } = req.params;
     const inviterId = req.user.id;
 
+    console.log('[Invite Teacher] Request body:', JSON.stringify(req.body, null, 2));
+    
     const validationResult = insertTeacherInvitationSchema.safeParse(req.body);
     if (!validationResult.success) {
+      console.log('[Invite Teacher] Validation failed:', JSON.stringify(validationResult.error.flatten(), null, 2));
       return res.status(400).json({ 
         message: "Invalid invitation data", 
         errors: validationResult.error.flatten() 
