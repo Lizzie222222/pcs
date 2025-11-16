@@ -9010,6 +9010,90 @@ Return JSON with:
     }
   });
 
+  // POST /api/admin/schools/:schoolId/invite-teacher - Admin invites a teacher to join a school via email
+  app.post('/api/admin/schools/:schoolId/invite-teacher', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { schoolId } = req.params;
+      const userId = req.user.id;
+      
+      // Validate request body
+      const inviteSchema = z.object({
+        email: z.string().email("Valid email is required"),
+      });
+      const { email } = inviteSchema.parse(req.body);
+      
+      console.log(`[Admin Teacher Invitation] Admin ${userId} inviting ${email} to school ${schoolId}`);
+      
+      // Check if school exists
+      const school = await storage.getSchool(schoolId);
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+      
+      // Check if the invited email already belongs to a teacher on this school's team
+      const invitedUser = await storage.findUserByEmail(email);
+      if (invitedUser) {
+        const existingSchoolUser = await storage.getSchoolUser(schoolId, invitedUser.id);
+        if (existingSchoolUser) {
+          console.log(`[Admin Teacher Invitation] Teacher ${email} is already a member of school ${schoolId}`);
+          return res.status(400).json({ 
+            message: "This teacher is already a member of this school" 
+          });
+        }
+      }
+      
+      // Generate invitation token
+      const token = randomBytes(32).toString('hex');
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
+      
+      // Create invitation
+      const invitation = await storage.createTeacherInvitation({
+        schoolId,
+        invitedBy: userId,
+        email,
+        token,
+        expiresAt,
+      });
+      
+      console.log(`[Admin Teacher Invitation] Created invitation ${invitation.id} for ${email}`);
+      
+      // Get admin details for email
+      const inviter = await storage.getUser(userId);
+      
+      // Send invitation email
+      if (inviter) {
+        const inviterName = `${inviter.firstName || ''} ${inviter.lastName || ''}`.trim() || 'Platform Admin';
+        const expiresInDays = 7;
+        
+        await sendTeacherInvitationEmail(
+          email,
+          school.name,
+          inviterName,
+          token,
+          expiresInDays,
+          inviter.preferredLanguage || 'en'
+        );
+        console.log(`[Admin Teacher Invitation] Sent invitation email to ${email}`);
+      }
+      
+      res.status(201).json({ 
+        message: "Invitation sent successfully",
+        invitation: {
+          id: invitation.id,
+          email: invitation.email,
+          expiresAt: invitation.expiresAt,
+        }
+      });
+    } catch (error) {
+      console.error("[Admin Teacher Invitation] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid invitation data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to send invitation" });
+    }
+  });
+
   // DELETE /api/admin/schools/:schoolId/teachers/:userId - Admin removes a teacher from a school
   app.delete('/api/admin/schools/:schoolId/teachers/:userId', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {

@@ -655,7 +655,7 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
   // Invite teacher mutation
   const inviteTeacherMutation = useMutation({
     mutationFn: async (email: string) => {
-      await apiRequest('POST', `/api/schools/${schoolId}/invite-teacher`, { email });
+      await apiRequest('POST', `/api/admin/schools/${schoolId}/invite-teacher`, { email });
     },
     onSuccess: () => {
       toast({
