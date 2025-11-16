@@ -52,8 +52,22 @@ export async function backfillOverrideEvidence() {
         continue;
       }
 
-      // Use transaction to ensure atomicity
+      // Use transaction with row-level locking for concurrency safety
       await db.transaction(async (tx) => {
+        // Lock the override row and re-check if it still needs processing
+        // This prevents race conditions when multiple server instances run simultaneously
+        const [lockedOverride] = await tx
+          .select()
+          .from(adminEvidenceOverrides)
+          .where(eq(adminEvidenceOverrides.id, override.id))
+          .for('update');
+        
+        // Skip if another instance already processed this override
+        if (lockedOverride.evidenceId !== null) {
+          console.log(`[Migration] ⏭ Skipping override ${override.id} - already processed by another instance`);
+          return;
+        }
+
         // Create evidence record that looks like school-submitted evidence
         const [evidenceRecord] = await tx
           .insert(evidence)
