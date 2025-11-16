@@ -551,6 +551,12 @@ schoolsRouter.get('/api/schools/:schoolId/team', isAuthenticated, isSchoolMember
     }));
 
     console.log(`[Team API - schools/routes.ts] Transformed data:`, JSON.stringify(team[0], null, 2));
+    
+    // Disable caching to ensure fresh data after bug fixes
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
     res.json(team);
   } catch (error) {
     console.error("Error fetching team members:", error);
