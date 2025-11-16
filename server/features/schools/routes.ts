@@ -530,18 +530,27 @@ schoolsRouter.get('/api/schools/:schoolId/team', isAuthenticated, isSchoolMember
     const { schoolId } = req.params;
     const teamMembers = await schoolStorage.getSchoolUsersWithDetails(schoolId);
     
-    // Transform to expected format
+    console.log(`[Team API - schools/routes.ts] schoolId: ${schoolId}, members found: ${teamMembers.length}`);
+    console.log(`[Team API - schools/routes.ts] Raw data from storage:`, JSON.stringify(teamMembers[0], null, 2));
+    
+    // Return the full data structure including the nested user object
+    // The frontend expects: { ..., user: { firstName, lastName, email, ... } }
     const team = teamMembers.map(member => ({
+      id: member.id,
+      schoolId: member.schoolId,
       userId: member.userId,
-      firstName: member.user?.firstName || '',
-      lastName: member.user?.lastName || '',
-      email: member.user?.email || '',
       role: member.role,
       teacherRole: member.teacherRole,
       isVerified: member.isVerified,
-      joinedAt: member.createdAt,
+      invitedBy: member.invitedBy,
+      invitedAt: member.invitedAt,
+      verifiedAt: member.verifiedAt,
+      createdAt: member.createdAt,
+      updatedAt: member.updatedAt,
+      user: member.user, // Keep the full user object nested
     }));
 
+    console.log(`[Team API - schools/routes.ts] Transformed data:`, JSON.stringify(team[0], null, 2));
     res.json(team);
   } catch (error) {
     console.error("Error fetching team members:", error);

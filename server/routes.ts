@@ -2478,118 +2478,14 @@ Return JSON with:
   
   // TEAM MANAGEMENT ROUTES
   
-  // GET /api/schools/:schoolId/team - Get school team members
-  app.get('/api/schools/:schoolId/team', isAuthenticated, async (req: any, res) => {
-    try {
-      const { schoolId } = req.params;
-      const userId = req.user.id;
-      const { limit, offset } = req.query;
-      
-      console.log(`[School Team] User ${userId} fetching team for school ${schoolId}`);
-      
-      // Check if user is a member of this school
-      const schoolUser = await storage.getSchoolUser(schoolId, userId);
-      if (!schoolUser) {
-        console.log(`[School Team] Access denied - user is not a school member`);
-        return res.status(403).json({ message: "You must be a school member to view the team" });
-      }
-      
-      // Get team members with pagination
-      const teamMembers = await storage.getSchoolUsersWithDetails(schoolId, {
-        limit: limit ? parseInt(limit as string) : 50,
-        offset: offset ? parseInt(offset as string) : 0,
-      });
-      
-      console.log(`[School Team] Found ${teamMembers.length} team members`);
-      console.log(`[School Team] First member data:`, JSON.stringify(teamMembers[0], null, 2));
-      
-      res.json(teamMembers);
-    } catch (error) {
-      console.error("[School Team] Error:", error);
-      res.status(500).json({ message: "Failed to fetch team members" });
-    }
-  });
+  // NOTE: Team management routes have been moved to server/features/schools/routes.ts
+  // The schoolsRouter is mounted earlier in this file, so these routes are unreachable
+  // See: server/features/schools/routes.ts for the actual implementation
   
-  // DELETE /api/schools/:schoolId/teachers/:userId - Remove a teacher from school
-  app.delete('/api/schools/:schoolId/teachers/:userId', isAuthenticated, async (req: any, res) => {
-    try {
-      const { schoolId, userId: teacherUserId } = req.params;
-      const userId = req.user.id;
-      
-      console.log(`[Remove Teacher] User ${userId} removing teacher ${teacherUserId} from school ${schoolId}`);
-      
-      // Check if user is head teacher of this school
-      const schoolUser = await storage.getSchoolUser(schoolId, userId);
-      if (!schoolUser || schoolUser.role !== 'head_teacher') {
-        console.log(`[Remove Teacher] Access denied - user is not head teacher`);
-        return res.status(403).json({ message: "Only head teachers can remove teachers" });
-      }
-      
-      // Cannot remove yourself
-      if (userId === teacherUserId) {
-        return res.status(400).json({ message: "You cannot remove yourself from the school" });
-      }
-      
-      // Remove the teacher
-      const removed = await storage.removeUserFromSchool(schoolId, teacherUserId);
-      
-      if (!removed) {
-        return res.status(404).json({ message: "Teacher not found in this school" });
-      }
-      
-      console.log(`[Remove Teacher] Teacher ${teacherUserId} removed from school ${schoolId}`);
-      
-      res.json({ message: "Teacher removed successfully" });
-    } catch (error) {
-      console.error("[Remove Teacher] Error:", error);
-      res.status(500).json({ message: "Failed to remove teacher" });
-    }
-  });
-  
-  // PUT /api/schools/:schoolId/teachers/:userId/role - Update a teacher's role
-  app.put('/api/schools/:schoolId/teachers/:userId/role', isAuthenticated, async (req: any, res) => {
-    try {
-      const { schoolId, userId: teacherUserId } = req.params;
-      const userId = req.user.id;
-      
-      // Validate request body
-      const roleSchema = z.object({
-        role: z.enum(['head_teacher', 'teacher'], {
-          errorMap: () => ({ message: "Role must be 'head_teacher' or 'teacher'" })
-        }),
-      });
-      const { role } = roleSchema.parse(req.body);
-      
-      console.log(`[Update Role] User ${userId} updating role for teacher ${teacherUserId} in school ${schoolId} to ${role}`);
-      
-      // Check if user is head teacher of this school
-      const schoolUser = await storage.getSchoolUser(schoolId, userId);
-      if (!schoolUser || schoolUser.role !== 'head_teacher') {
-        console.log(`[Update Role] Access denied - user is not head teacher`);
-        return res.status(403).json({ message: "Only head teachers can update roles" });
-      }
-      
-      // Update the role
-      const updated = await storage.updateSchoolUserRole(schoolId, teacherUserId, role);
-      
-      if (!updated) {
-        return res.status(404).json({ message: "Teacher not found in this school" });
-      }
-      
-      console.log(`[Update Role] Teacher ${teacherUserId} role updated to ${role}`);
-      
-      res.json({ 
-        message: "Role updated successfully",
-        schoolUser: updated
-      });
-    } catch (error) {
-      console.error("[Update Role] Error:", error);
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid data", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to update role" });
-    }
-  });
+  // REMOVED DUPLICATE ROUTES (now in server/features/schools/routes.ts):
+  // - GET /api/schools/:schoolId/team
+  // - DELETE /api/schools/:schoolId/teachers/:userId
+  // - PUT /api/schools/:schoolId/teachers/:userId/role
 
   // Get user's school dashboard data
   app.get('/api/dashboard', isAuthenticated, async (req: any, res) => {
