@@ -582,6 +582,9 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
   const [selectedUserId, setSelectedUserId] = useState('');
   const [role, setRole] = useState<'head_teacher' | 'teacher'>('teacher');
   const [searchQuery, setSearchQuery] = useState('');
+  const [emailUpdateDialogOpen, setEmailUpdateDialogOpen] = useState(false);
+  const [selectedTeacher, setSelectedTeacher] = useState<SchoolTeacher | null>(null);
+  const [newEmail, setNewEmail] = useState('');
 
   // Fetch users for assignment
   const { data: usersWithSchools = [], isLoading: usersLoading } = useQuery<any[]>({
@@ -617,6 +620,30 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
     },
   });
 
+  // Update teacher email mutation
+  const updateEmailMutation = useMutation({
+    mutationFn: async ({ userId, email }: { userId: string; email: string }) => {
+      await apiRequest('PUT', `/api/admin/users/${userId}/email`, { email });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Email Updated",
+        description: "Teacher's email has been successfully updated.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools', schoolId, 'teachers'] });
+      setEmailUpdateDialogOpen(false);
+      setSelectedTeacher(null);
+      setNewEmail('');
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update email. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleAssignSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const selectedUser = usersWithSchools.find(u => u && u.user && u.user.id === selectedUserId);
@@ -631,6 +658,27 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
     }
 
     assignTeacherMutation.mutate({ userEmail: selectedUser.user.email, role });
+  };
+
+  const handleOpenEmailUpdate = (teacher: SchoolTeacher) => {
+    setSelectedTeacher(teacher);
+    setNewEmail(teacher.email);
+    setEmailUpdateDialogOpen(true);
+  };
+
+  const handleEmailUpdateSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedTeacher || !newEmail) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    updateEmailMutation.mutate({ userId: selectedTeacher.userId, email: newEmail });
   };
 
   const filteredUsers = usersWithSchools
@@ -683,6 +731,7 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
                     <th className="text-left p-3 font-semibold text-navy">Status</th>
                     <th className="text-left p-3 font-semibold text-navy">Legacy Evidence</th>
                     <th className="text-left p-3 font-semibold text-navy">Joined</th>
+                    <th className="text-left p-3 font-semibold text-navy">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -719,6 +768,17 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
                       </td>
                       <td className="p-3 text-gray-600">
                         {new Date(teacher.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="p-3">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleOpenEmailUpdate(teacher)}
+                          data-testid={`button-edit-email-${teacher.userId}`}
+                          className="text-pcs_blue hover:text-navy"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
                       </td>
                     </tr>
                   ))}
@@ -810,6 +870,62 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
                 className="bg-pcs_blue hover:bg-blue-600"
               >
                 {assignTeacherMutation.isPending ? 'Assigning...' : 'Assign Teacher'}
+              </Button>
+            </AlertDialogFooter>
+          </form>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Update Email Dialog */}
+      <AlertDialog open={emailUpdateDialogOpen} onOpenChange={setEmailUpdateDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Update Teacher Email</AlertDialogTitle>
+            <AlertDialogDescription>
+              Update the email address for {selectedTeacher?.firstName} {selectedTeacher?.lastName}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <form onSubmit={handleEmailUpdateSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Current Email
+              </label>
+              <Input
+                type="text"
+                value={selectedTeacher?.email || ''}
+                disabled
+                className="bg-gray-100"
+                data-testid="input-current-email"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                New Email *
+              </label>
+              <Input
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                placeholder="Enter new email address"
+                required
+                data-testid="input-new-email"
+              />
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => {
+                setEmailUpdateDialogOpen(false);
+                setSelectedTeacher(null);
+                setNewEmail('');
+              }}>
+                Cancel
+              </AlertDialogCancel>
+              <Button
+                type="submit"
+                disabled={updateEmailMutation.isPending || !newEmail}
+                className="bg-pcs_blue hover:bg-blue-600"
+                data-testid="button-confirm-update-email"
+              >
+                {updateEmailMutation.isPending ? 'Updating...' : 'Update Email'}
               </Button>
             </AlertDialogFooter>
           </form>
