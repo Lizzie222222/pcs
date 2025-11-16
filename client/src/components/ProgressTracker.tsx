@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +19,7 @@ import type { AuditResponse, Evidence } from "@shared/schema";
 
 interface EvidenceCounts {
   inspire?: { total: number; approved: number };
-  investigate?: { total: number; approved: number; hasQuiz: boolean };
+  investigate?: { total: number; approved: number; hasQuiz: boolean; hasActionPlan?: boolean };
   act?: { total: number; approved: number };
 }
 
@@ -142,9 +142,27 @@ export default function ProgressTracker({
     queryKey: ['/api/resources'],
   });
 
-  // Fetch audit status
-  const { data: auditResponse } = useQuery<AuditResponse>({
-    queryKey: [`/api/audits/school/${schoolId}`],
+  // Fetch audit status for selected round
+  const { data: auditResponses = [] } = useQuery<AuditResponse[]>({
+    queryKey: [`/api/audits/school/${schoolId}`, selectedRound],
+    queryFn: async () => {
+      const res = await fetch(`/api/audits/school/${schoolId}`);
+      if (!res.ok) throw new Error('Failed to fetch audits');
+      const data = await res.json();
+      // Filter by selected round client-side
+      return Array.isArray(data) ? data.filter((a: AuditResponse) => a.roundNumber === selectedRound) : [];
+    },
+    enabled: !!schoolId,
+  });
+
+  // Fetch action plans (reduction promises) for selected round
+  const { data: actionPlans = [] } = useQuery<any[]>({
+    queryKey: [`/api/reduction-promises`, schoolId, selectedRound],
+    queryFn: async () => {
+      const res = await fetch(`/api/reduction-promises?schoolId=${schoolId}&roundNumber=${selectedRound}`);
+      if (!res.ok) return [];
+      return res.json();
+    },
     enabled: !!schoolId,
   });
 
@@ -154,11 +172,80 @@ export default function ProgressTracker({
     enabled: !!schoolId,
   });
 
-  // Fetch admin overrides for this school (already filtered by current round on backend)
-  const { data: adminOverrides = [] } = useQuery<AdminOverride[]>({
+  // Fetch admin overrides for this school and filter by selected round
+  const { data: allAdminOverrides = [] } = useQuery<AdminOverride[]>({
     queryKey: ['/api/schools/me/evidence-overrides'],
     enabled: !!schoolId,
   });
+
+  // Filter admin overrides by selected round
+  const adminOverrides = useMemo(() => {
+    return allAdminOverrides.filter(ov => ov.roundNumber === selectedRound);
+  }, [allAdminOverrides, selectedRound]);
+
+  // Calculate evidence counts for selected round (client-side)
+  // Returns null for current round to use API counts, calculated counts for previous rounds
+  const calculatedEvidenceCounts = useMemo(() => {
+    // For current round, return null to use API-provided evidenceCounts
+    if (selectedRound === currentRound) {
+      return null;
+    }
+
+    // For previous rounds, calculate counts client-side
+    // This mirrors the backend logic in getSchoolEvidenceCounts
+    const getApprovedRequirementsCount = (stage: string) => {
+      // Filter evidence for this stage
+      const stageEvidence = allEvidence.filter(e => e.stage === stage);
+      const approvedEvidence = stageEvidence.filter(e => e.status === 'approved');
+      
+      // Count unique requirement IDs from approved evidence
+      const uniqueRequirementIds = new Set(
+        approvedEvidence
+          .filter(e => e.evidenceRequirementId !== null)
+          .map(e => e.evidenceRequirementId)
+      );
+      
+      // Count homeless evidence (not assigned to requirement, not bonus)
+      const homelessCount = approvedEvidence.filter(e => 
+        e.evidenceRequirementId === null && !e.isBonus
+      ).length;
+      
+      // Add admin overrides for this stage
+      const stageOverrides = adminOverrides.filter(o => o.stage === stage);
+      stageOverrides.forEach(override => {
+        uniqueRequirementIds.add(override.evidenceRequirementId);
+      });
+      
+      return uniqueRequirementIds.size + homelessCount;
+    };
+
+    // Check for approved audit quiz
+    const hasQuiz = auditResponses.some(a => a.status === 'approved');
+    
+    // Check for action plan
+    const hasActionPlan = actionPlans.length > 0;
+
+    const inspireEvidence = allEvidence.filter(e => e.stage === 'inspire');
+    const investigateEvidence = allEvidence.filter(e => e.stage === 'investigate');
+    const actEvidence = allEvidence.filter(e => e.stage === 'act');
+
+    return {
+      inspire: {
+        total: inspireEvidence.length,
+        approved: getApprovedRequirementsCount('inspire')
+      },
+      investigate: {
+        total: investigateEvidence.length,
+        approved: getApprovedRequirementsCount('investigate'),
+        hasQuiz,
+        hasActionPlan
+      },
+      act: {
+        total: actEvidence.length,
+        approved: getApprovedRequirementsCount('act')
+      }
+    };
+  }, [selectedRound, currentRound, allEvidence, adminOverrides, auditResponses, actionPlans]);
 
   const stages = [
     {
@@ -187,8 +274,38 @@ export default function ProgressTracker({
     },
   ];
 
+  // Check if a stage is completed for the selected round
+  const isStageCompleted = (stage: any) => {
+    const stageId = stage.id as keyof EvidenceCounts;
+    
+    // For current round, use the stage.completed flag from props
+    if (selectedRound === currentRound) {
+      return stage.completed;
+    }
+    
+    // For previous rounds, check if all requirements are satisfied
+    if (!calculatedEvidenceCounts) return false;
+    
+    const counts = calculatedEvidenceCounts[stageId];
+    if (!counts) return false;
+    
+    const required = getStageRequirements(stageId).length;
+    
+    // Use fallback requirements if no requirements defined
+    const fallbackRequired = stageId === 'inspire' ? 3 : stageId === 'investigate' ? 2 : 3;
+    const totalRequired = required > 0 ? required : fallbackRequired;
+    
+    // For investigate stage, include audit quiz and action plan in completion check
+    if (stageId === 'investigate' && 'hasQuiz' in counts && 'hasActionPlan' in counts) {
+      const approvedItems = counts.approved + (counts.hasQuiz ? 1 : 0) + (counts.hasActionPlan ? 1 : 0);
+      return approvedItems >= totalRequired;
+    }
+    
+    return counts.approved >= totalRequired;
+  };
+
   const getStageStatus = (stage: any) => {
-    if (stage.completed) return 'completed';
+    if (isStageCompleted(stage)) return 'completed';
     return 'accessible';
   };
 
@@ -200,10 +317,37 @@ export default function ProgressTracker({
   };
 
   const getProgressPercentage = (stage: any) => {
-    if (stage.completed) return 100;
-    
     const stageId = stage.id as keyof EvidenceCounts;
-    const counts = evidenceCounts?.[stageId];
+    
+    // For current round: use stage.completed flags and API evidenceCounts
+    if (selectedRound === currentRound) {
+      if (stage.completed) return 100;
+      
+      const counts = evidenceCounts?.[stageId];
+      if (!counts || typeof counts.approved !== 'number') return 0;
+      
+      // Get required count dynamically from fetched requirements
+      const required = getStageRequirements(stageId).length;
+      
+      // Backward compatibility: fallback to old counts if no requirements defined
+      if (required === 0) {
+        const fallbackRequired = stageId === 'inspire' ? 3 : stageId === 'investigate' ? 2 : 3;
+        return Math.round((counts.approved / fallbackRequired) * 100);
+      }
+      
+      // Special handling for investigate stage: count approved audit separately
+      if (stageId === 'investigate' && 'hasQuiz' in counts) {
+        const approvedItems = counts.approved + (counts.hasQuiz ? 1 : 0);
+        return Math.round((approvedItems / required) * 100);
+      }
+      
+      return Math.round((counts.approved / required) * 100);
+    }
+    
+    // For previous rounds: use calculated counts
+    if (!calculatedEvidenceCounts) return 0;
+    
+    const counts = calculatedEvidenceCounts[stageId];
     if (!counts || typeof counts.approved !== 'number') return 0;
     
     // Get required count dynamically from fetched requirements
@@ -215,9 +359,9 @@ export default function ProgressTracker({
       return Math.round((counts.approved / fallbackRequired) * 100);
     }
     
-    // Special handling for investigate stage: count approved audit separately
-    if (stageId === 'investigate' && 'hasQuiz' in counts) {
-      const approvedItems = counts.approved + (counts.hasQuiz ? 1 : 0);
+    // Special handling for investigate stage: count approved audit and action plan
+    if (stageId === 'investigate' && 'hasQuiz' in counts && 'hasActionPlan' in counts) {
+      const approvedItems = counts.approved + (counts.hasQuiz ? 1 : 0) + (counts.hasActionPlan ? 1 : 0);
       return Math.round((approvedItems / required) * 100);
     }
     
@@ -298,9 +442,10 @@ export default function ProgressTracker({
 
   // Get audit status for display
   const getAuditStatus = () => {
-    if (!auditResponse) return 'not_started';
-    if (auditResponse.status === 'draft') return 'not_started';
-    return auditResponse.status;
+    if (!auditResponses || auditResponses.length === 0) return 'not_started';
+    const audit = auditResponses[0];
+    if (audit.status === 'draft') return 'not_started';
+    return audit.status;
   };
 
   // Handle opening audit modal

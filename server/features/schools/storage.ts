@@ -994,10 +994,10 @@ export class SchoolStorage {
     }
     
     const completedRounds = updates.roundsCompleted ?? school.roundsCompleted ?? 0;
-    const progressPercentage = (completedRounds * 100) + currentRoundProgress;
+    const progressPercentage = currentRoundProgress;
     
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[Progress] School ${schoolId}: Current round progress: ${currentRoundProgress}%, Completed rounds: ${completedRounds}, Total progress: ${progressPercentage}%`);
+      console.log(`[Progress] School ${schoolId}: Current round progress: ${currentRoundProgress}%, Completed rounds: ${completedRounds}, Progress: ${progressPercentage}%`);
       console.log(`[Progress] School ${schoolId}: Old progress: ${school.progressPercentage}%, New progress: ${progressPercentage}%, Has changes: ${progressPercentage !== school.progressPercentage}`);
     }
     
