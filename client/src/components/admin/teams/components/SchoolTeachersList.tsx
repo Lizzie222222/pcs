@@ -74,7 +74,8 @@ export default function SchoolTeachersList() {
 
   const updateEmailMutation = useMutation({
     mutationFn: async ({ userId, email, sendPasswordReset }: { userId: string; email: string; sendPasswordReset: boolean }) => {
-      return await apiRequest('PUT', `/api/admin/users/${userId}/email`, { email, sendPasswordReset });
+      const res = await apiRequest('PUT', `/api/admin/users/${userId}/email`, { email, sendPasswordReset });
+      return await res.json();
     },
     onSuccess: (data: any) => {
       const passwordResetSent = data?.passwordResetSent;
