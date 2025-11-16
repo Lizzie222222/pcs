@@ -147,17 +147,26 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
   const { toast } = useToast();
   const hasLoadedInitialData = useRef(false);
 
-  // Fetch existing audit if any
-  const { data: existingAudit } = useQuery<AuditResponse>({
+  // Fetch existing audits if any
+  const { data: existingAudits } = useQuery<AuditResponse[]>({
     queryKey: [`/api/audits/school/${schoolId}`],
     enabled: !!schoolId,
   });
 
   // Fetch school data for pre-population
-  const { data: schoolData } = useQuery<{ id: string; name: string; studentCount: number | null }>({
+  const { data: schoolData } = useQuery<{ id: string; name: string; studentCount: number | null; currentRound?: number }>({
     queryKey: [`/api/schools/${schoolId}`],
     enabled: !!schoolId,
   });
+
+  // Filter for current round audit - use smart fallback to find latest audit
+  const currentRound = schoolData?.currentRound || 
+    (existingAudits && existingAudits.length > 0 
+      ? Math.max(...existingAudits.map(a => a.roundNumber ?? 1))
+      : 1);
+  const existingAudit = existingAudits?.find(
+    audit => audit.roundNumber === currentRound
+  );
 
   // Forms for each part
   const form1 = useForm<Part1Data>({

@@ -350,12 +350,21 @@ export default function Home() {
     return eventCreated > lastViewed;
   }).length;
 
-  // Fetch school audit for promise notification check
-  const { data: schoolAudit } = useQuery<AuditResponse>({
-    queryKey: ['/api/audits/school', dashboardData?.school?.id],
+  // Fetch school audits for promise notification check
+  const { data: schoolAudits } = useQuery<AuditResponse[]>({
+    queryKey: [`/api/audits/school/${dashboardData?.school?.id}`],
     enabled: !!dashboardData?.school?.id,
     retry: false,
   });
+
+  // Filter for current round audit - use smart fallback to find latest audit
+  const currentRound = dashboardData?.school?.currentRound || 
+    (schoolAudits && schoolAudits.length > 0 
+      ? Math.max(...schoolAudits.map(a => a.roundNumber || 1))
+      : 1);
+  const schoolAudit = schoolAudits?.find(
+    audit => audit.roundNumber === currentRound
+  );
 
   // Fetch promises for audit (to check if missing)
   const { data: auditPromises } = useQuery<ReductionPromise[]>({

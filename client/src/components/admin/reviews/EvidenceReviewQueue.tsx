@@ -61,17 +61,26 @@ import {
   Calendar,
   X,
   ChevronDown,
+  FileText,
+  Globe,
+  Users,
+  MapPin,
+  Award,
+  TrendingUp,
+  Check,
 } from "lucide-react";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
 import { EvidenceAssignment } from "./EvidenceAssignment";
+import { EmptyState } from "@/components/ui/states";
+import { PDFThumbnail } from "@/components/PDFThumbnail";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation, Trans } from 'react-i18next';
 import { useCountries } from "@/hooks/useCountries";
 import { useDebounce } from "@/hooks/useDebounce";
 import type { PendingEvidence } from "@/components/admin/shared/types";
-import type { User } from "@shared/schema";
+import type { User, EvidenceWithSchool } from "@shared/schema";
 
 interface EvidenceReviewQueueProps {
   activeTab: string;
@@ -181,6 +190,11 @@ export default function EvidenceReviewQueue({
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
   const [previewEvidence, setPreviewEvidence] = useState<PendingEvidence | null>(null);
   
+  // School History Dialog state
+  const [schoolHistoryDialogOpen, setSchoolHistoryDialogOpen] = useState(false);
+  const [selectedSchool, setSelectedSchool] = useState<PendingEvidence['school'] | null>(null);
+  const [schoolHistoryFilter, setSchoolHistoryFilter] = useState<'all' | 'approved' | 'pending' | 'rejected' | 'inspire' | 'investigate' | 'act'>('all');
+  
   // Debounce search query
   const debouncedSearchQuery = useDebounce(evidenceSearchQuery, 300);
 
@@ -203,6 +217,21 @@ export default function EvidenceReviewQueue({
   });
 
   const { data: countries } = useCountries();
+
+  // Fetch school history when selected
+  const { data: schoolHistory = [], isLoading: schoolHistoryLoading, error: schoolHistoryError } = useQuery<EvidenceWithSchool[]>({
+    queryKey: ['/api/admin/evidence', { schoolId: selectedSchool?.id }],
+    queryFn: async () => {
+      if (!selectedSchool?.id) return [];
+      const params = new URLSearchParams({ schoolId: selectedSchool.id });
+      const response = await fetch(`/api/admin/evidence?${params}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch school history');
+      return response.json();
+    },
+    enabled: !!selectedSchool?.id && schoolHistoryDialogOpen,
+  });
 
   // Helper functions
   const toggleEvidenceSelection = (evidenceId: string) => {
@@ -254,6 +283,74 @@ export default function EvidenceReviewQueue({
       default: return 'bg-gray-500 text-white';
     }
   };
+
+  // School History Dialog Helper Functions
+  const handleSchoolClick = (school: PendingEvidence['school']) => {
+    setSelectedSchool(school);
+    setSchoolHistoryDialogOpen(true);
+  };
+
+  const getStatusBadgeColor = (status: string) => {
+    switch (status) {
+      case 'approved': return 'bg-green-100 text-green-800';
+      case 'rejected': return 'bg-red-100 text-red-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStageBadgeColor = (stage: string) => {
+    switch (stage) {
+      case 'inspire': return 'bg-purple-100 text-purple-800';
+      case 'investigate': return 'bg-blue-100 text-blue-800';
+      case 'act': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getFileForThumbnail = (evidence: EvidenceWithSchool) => {
+    const files = evidence.files as any[] || [];
+    
+    // First try to find an image
+    const imageFile = files.find((f: any) => 
+      f.mimeType?.startsWith('image/') || f.type?.startsWith('image/')
+    );
+    if (imageFile) return { type: 'image', url: imageFile.url };
+    
+    // Then try PDF
+    const pdfFile = files.find((f: any) => 
+      f.mimeType?.includes('pdf') || f.type?.includes('pdf')
+    );
+    if (pdfFile) return { type: 'pdf', url: pdfFile.url };
+    
+    return null;
+  };
+
+  const getEvidenceStats = (evidenceList: EvidenceWithSchool[]) => {
+    return {
+      total: evidenceList.length,
+      approved: evidenceList.filter(e => e.status === 'approved').length,
+      pending: evidenceList.filter(e => e.status === 'pending').length,
+      rejected: evidenceList.filter(e => e.status === 'rejected').length,
+      inspire: evidenceList.filter(e => e.stage === 'inspire').length,
+      investigate: evidenceList.filter(e => e.stage === 'investigate').length,
+      act: evidenceList.filter(e => e.stage === 'act').length,
+    };
+  };
+
+  // Filter school history based on selected filter
+  const filteredSchoolHistory = schoolHistory.filter(evidence => {
+    if (schoolHistoryFilter === 'all') return true;
+    if (['approved', 'pending', 'rejected'].includes(schoolHistoryFilter)) {
+      return evidence.status === schoolHistoryFilter;
+    }
+    if (['inspire', 'investigate', 'act'].includes(schoolHistoryFilter)) {
+      return evidence.stage === schoolHistoryFilter;
+    }
+    return true;
+  });
+
+  const schoolStats = getEvidenceStats(schoolHistory);
 
   // Count active filters
   const activeFiltersCount = useMemo(() => {
@@ -367,10 +464,14 @@ export default function EvidenceReviewQueue({
                 </button>
               </TableCell>
               <TableCell className="font-medium">
-                <div className="flex items-center gap-1">
-                  <Building className="h-3 w-3 text-gray-400" />
-                  <span className="text-sm">{item.school?.name || 'Unknown'}</span>
-                </div>
+                <button
+                  onClick={() => handleSchoolClick(item.school)}
+                  className="flex items-center gap-1 text-left hover:text-pcs_blue transition-colors group"
+                  data-testid={`button-school-history-${item.id}`}
+                >
+                  <Building className="h-3 w-3 text-gray-400 group-hover:text-pcs_blue transition-colors" />
+                  <span className="text-sm underline decoration-transparent group-hover:decoration-pcs_blue transition-all">{item.school?.name || 'Unknown'}</span>
+                </button>
               </TableCell>
               <TableCell>
                 <Badge className={getStageColor(item.stage)} data-testid={`badge-stage-${item.id}`}>
@@ -984,10 +1085,14 @@ export default function EvidenceReviewQueue({
                       <EvidenceVideoLinks videoLinks={evidence.videoLinks} />
                       <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
                         {evidence.school?.name && (
-                          <span className="font-medium text-gray-700">
-                            <Building className="h-3 w-3 inline mr-1" />
-                            {evidence.school.name}
-                          </span>
+                          <button
+                            onClick={() => handleSchoolClick(evidence.school)}
+                            className="font-medium text-gray-700 hover:text-pcs_blue transition-colors group flex items-center gap-1"
+                            data-testid={`button-school-history-${evidence.id}`}
+                          >
+                            <Building className="h-3 w-3 group-hover:text-pcs_blue transition-colors" />
+                            <span className="underline decoration-transparent group-hover:decoration-pcs_blue transition-all">{evidence.school.name}</span>
+                          </button>
                         )}
                         <span>{t('reviews.evidence.labels.schoolId', { id: evidence.schoolId })}</span>
                         <span>{t('reviews.evidence.labels.submitted', { date: new Date(evidence.submittedAt).toLocaleDateString() })}</span>
@@ -1327,6 +1432,283 @@ export default function EvidenceReviewQueue({
                   files={previewEvidence.files}
                   className="mt-4"
                 />
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* School History Dialog */}
+      <Dialog open={schoolHistoryDialogOpen} onOpenChange={(open) => {
+        setSchoolHistoryDialogOpen(open);
+        if (!open) setSchoolHistoryFilter('all');
+      }}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto" data-testid="dialog-school-history">
+          <DialogHeader>
+            <DialogTitle className="text-2xl flex items-center gap-2">
+              <Building className="h-6 w-6 text-pcs_blue" />
+              {selectedSchool?.name || 'School Overview'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {schoolHistoryLoading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin h-8 w-8 border-4 border-pcs_blue border-t-transparent rounded-full" />
+            </div>
+          ) : schoolHistoryError ? (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-red-800">Failed to load school history. Please try again.</p>
+            </div>
+          ) : (
+            <div className="space-y-6" data-testid="school-history-content">
+              {/* School Information */}
+              <Card className="bg-gradient-to-br from-pcs_blue/5 to-pcs_green/5 border-pcs_blue/20" data-testid="card-school-details">
+                <CardContent className="pt-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Building className="h-5 w-5" />
+                    School Information
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="flex items-start gap-2">
+                      <Globe className="h-4 w-4 mt-1 text-gray-500" />
+                      <div>
+                        <p className="text-xs text-gray-500">Country</p>
+                        <p className="font-medium">{selectedSchool?.country || 'N/A'}</p>
+                      </div>
+                    </div>
+                    {(selectedSchool as any)?.type && (
+                      <div className="flex items-start gap-2">
+                        <Building className="h-4 w-4 mt-1 text-gray-500" />
+                        <div>
+                          <p className="text-xs text-gray-500">School Type</p>
+                          <p className="font-medium capitalize">{(selectedSchool as any).type}</p>
+                        </div>
+                      </div>
+                    )}
+                    {(selectedSchool as any)?.studentCount && (
+                      <div className="flex items-start gap-2">
+                        <Users className="h-4 w-4 mt-1 text-gray-500" />
+                        <div>
+                          <p className="text-xs text-gray-500">Student Count</p>
+                          <p className="font-medium">{(selectedSchool as any).studentCount.toLocaleString()}</p>
+                        </div>
+                      </div>
+                    )}
+                    {(selectedSchool as any)?.address && (
+                      <div className="flex items-start gap-2">
+                        <MapPin className="h-4 w-4 mt-1 text-gray-500" />
+                        <div>
+                          <p className="text-xs text-gray-500">Address</p>
+                          <p className="font-medium text-sm">{(selectedSchool as any).address}</p>
+                        </div>
+                      </div>
+                    )}
+                    {(selectedSchool as any)?.currentRound && (
+                      <div className="flex items-start gap-2">
+                        <Award className="h-4 w-4 mt-1 text-gray-500" />
+                        <div>
+                          <p className="text-xs text-gray-500">Current Round</p>
+                          <p className="font-medium">Round {(selectedSchool as any).currentRound}</p>
+                        </div>
+                      </div>
+                    )}
+                    {(selectedSchool as any)?.primaryContact && ((selectedSchool as any).primaryContact.firstName || (selectedSchool as any).primaryContact.email) && (
+                      <div className="flex items-start gap-2">
+                        <Users className="h-4 w-4 mt-1 text-gray-500" />
+                        <div>
+                          <p className="text-xs text-gray-500">Primary Contact</p>
+                          <p className="font-medium">
+                            {(selectedSchool as any).primaryContact.firstName && (selectedSchool as any).primaryContact.lastName
+                              ? `${(selectedSchool as any).primaryContact.firstName} ${(selectedSchool as any).primaryContact.lastName}`
+                              : (selectedSchool as any).primaryContact.email || 'N/A'}
+                          </p>
+                          {(selectedSchool as any).primaryContact.firstName && (selectedSchool as any).primaryContact.email && (
+                            <p className="text-xs text-gray-500">{(selectedSchool as any).primaryContact.email}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Progress Metrics */}
+              {((selectedSchool as any)?.currentStage || (selectedSchool as any)?.progressPercentage !== null) && (
+                <Card className="border-pcs_green/20">
+                  <CardContent className="pt-6">
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5" />
+                      Progress
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-gray-500">Current Stage</p>
+                          <p className="font-medium capitalize">{(selectedSchool as any)?.currentStage || 'N/A'}</p>
+                        </div>
+                        {(selectedSchool as any)?.progressPercentage !== null && (
+                          <div className="text-right">
+                            <p className="text-xs text-gray-500">Overall Progress</p>
+                            <p className="font-bold text-2xl text-pcs_blue">{(selectedSchool as any)?.progressPercentage}%</p>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Badge variant={(selectedSchool as any)?.inspireCompleted ? "default" : "outline"} className={(selectedSchool as any)?.inspireCompleted ? "bg-purple-500" : ""}>
+                          {(selectedSchool as any)?.inspireCompleted ? <Check className="h-3 w-3 mr-1" /> : null}
+                          Inspire {(selectedSchool as any)?.inspireCompleted ? 'Complete' : 'In Progress'}
+                        </Badge>
+                        <Badge variant={(selectedSchool as any)?.investigateCompleted ? "default" : "outline"} className={(selectedSchool as any)?.investigateCompleted ? "bg-blue-500" : ""}>
+                          {(selectedSchool as any)?.investigateCompleted ? <Check className="h-3 w-3 mr-1" /> : null}
+                          Investigate {(selectedSchool as any)?.investigateCompleted ? 'Complete' : 'In Progress'}
+                        </Badge>
+                        <Badge variant={(selectedSchool as any)?.actCompleted ? "default" : "outline"} className={(selectedSchool as any)?.actCompleted ? "bg-green-500" : ""}>
+                          {(selectedSchool as any)?.actCompleted ? <Check className="h-3 w-3 mr-1" /> : null}
+                          Act {(selectedSchool as any)?.actCompleted ? 'Complete' : 'In Progress'}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Evidence Statistics */}
+              <Card className="border-pcs_orange/20">
+                <CardContent className="pt-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Evidence Summary ({schoolStats.total} total)
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+                    <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+                      <p className="text-2xl font-bold text-green-700">{schoolStats.approved}</p>
+                      <p className="text-xs text-green-600">Approved</p>
+                    </div>
+                    <div className="text-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                      <p className="text-2xl font-bold text-yellow-700">{schoolStats.pending}</p>
+                      <p className="text-xs text-yellow-600">Pending</p>
+                    </div>
+                    <div className="text-center p-3 bg-red-50 rounded-lg border border-red-200">
+                      <p className="text-2xl font-bold text-red-700">{schoolStats.rejected}</p>
+                      <p className="text-xs text-red-600">Rejected</p>
+                    </div>
+                    <div className="text-center p-3 bg-purple-50 rounded-lg border border-purple-200">
+                      <p className="text-2xl font-bold text-purple-700">{schoolStats.inspire}</p>
+                      <p className="text-xs text-purple-600">Inspire</p>
+                    </div>
+                    <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <p className="text-2xl font-bold text-blue-700">{schoolStats.investigate}</p>
+                      <p className="text-xs text-blue-600">Investigate</p>
+                    </div>
+                    <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+                      <p className="text-2xl font-bold text-green-700">{schoolStats.act}</p>
+                      <p className="text-xs text-green-600">Act</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Filter Evidence */}
+              {schoolHistory.length > 0 && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Filter className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm font-medium text-gray-700">Filter Evidence:</span>
+                  <div className="flex gap-2 flex-wrap">
+                    <Button 
+                      size="sm" 
+                      variant={schoolHistoryFilter === 'all' ? 'default' : 'outline'}
+                      onClick={() => setSchoolHistoryFilter('all')}
+                      data-testid="filter-all"
+                    >
+                      All ({schoolStats.total})
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant={schoolHistoryFilter === 'approved' ? 'default' : 'outline'}
+                      onClick={() => setSchoolHistoryFilter('approved')}
+                      className={schoolHistoryFilter === 'approved' ? 'bg-green-600 hover:bg-green-700' : ''}
+                      data-testid="filter-approved"
+                    >
+                      Approved ({schoolStats.approved})
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant={schoolHistoryFilter === 'pending' ? 'default' : 'outline'}
+                      onClick={() => setSchoolHistoryFilter('pending')}
+                      className={schoolHistoryFilter === 'pending' ? 'bg-yellow-600 hover:bg-yellow-700' : ''}
+                      data-testid="filter-pending"
+                    >
+                      Pending ({schoolStats.pending})
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant={schoolHistoryFilter === 'rejected' ? 'default' : 'outline'}
+                      onClick={() => setSchoolHistoryFilter('rejected')}
+                      className={schoolHistoryFilter === 'rejected' ? 'bg-red-600 hover:bg-red-700' : ''}
+                      data-testid="filter-rejected"
+                    >
+                      Rejected ({schoolStats.rejected})
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Evidence Grid */}
+              {filteredSchoolHistory.length === 0 ? (
+                <EmptyState 
+                  icon={FileText}
+                  title={schoolHistory.length === 0 ? 'No evidence submitted yet' : 'No evidence matches this filter'}
+                  description={schoolHistory.length === 0 ? 'This school has not submitted any evidence yet.' : 'Try selecting a different filter to see more evidence.'}
+                />
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredSchoolHistory.map((evidence: any) => (
+                    <Card 
+                      key={evidence.id} 
+                      className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" 
+                      data-testid={`card-school-evidence-${evidence.id}`}
+                      onClick={() => setPreviewEvidence(evidence)}
+                    >
+                      <div className="h-32 bg-gray-100 flex items-center justify-center overflow-hidden">
+                        {(() => {
+                          const file = getFileForThumbnail(evidence);
+                          if (file?.type === 'image') {
+                            return (
+                              <img 
+                                src={file.url} 
+                                alt={evidence.title}
+                                className="w-full h-full object-cover"
+                              />
+                            );
+                          } else if (file?.type === 'pdf') {
+                            return (
+                              <PDFThumbnail 
+                                url={file.url}
+                                className="w-full h-full"
+                              />
+                            );
+                          } else {
+                            return <FileText className="h-16 w-16 text-gray-400" />;
+                          }
+                        })()}
+                      </div>
+                      <CardContent className="pt-3">
+                        <h4 className="font-medium text-sm line-clamp-2">{evidence.title}</h4>
+                        <div className="flex gap-1 mt-2">
+                          <Badge className={getStageBadgeColor(evidence.stage)} variant="outline">
+                            {evidence.stage}
+                          </Badge>
+                          <Badge className={getStatusBadgeColor(evidence.status)}>
+                            {evidence.status}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">
+                          {new Date(evidence.submittedAt).toLocaleDateString()}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               )}
             </div>
           )}

@@ -5596,28 +5596,25 @@ Return JSON with:
     }
   });
 
-  // Get school audit
+  // Get all school audits (for all rounds)
   app.get('/api/audits/school/:schoolId', isAuthenticated, async (req: any, res) => {
     try {
       const { schoolId } = req.params;
       
-      // Get school to determine current round
+      // Verify school exists
       const school = await storage.getSchool(schoolId);
       if (!school) {
         return res.status(404).json({ message: "School not found" });
       }
       
-      // Fetch audit for the school's current round
-      const audit = await storage.getSchoolAudit(schoolId, school.currentRound || 1);
+      // Fetch all audits for this school (across all rounds)
+      const audits = await storage.getSchoolAudits(schoolId);
       
-      if (!audit) {
-        return res.status(404).json({ message: "No audit found for this school" });
-      }
-
-      res.json(audit);
+      // Return array of audits (empty array if none found)
+      res.json(audits);
     } catch (error) {
-      console.error("Error fetching school audit:", error);
-      res.status(500).json({ message: "Failed to fetch audit" });
+      console.error("Error fetching school audits:", error);
+      res.status(500).json({ message: "Failed to fetch audits" });
     }
   });
 

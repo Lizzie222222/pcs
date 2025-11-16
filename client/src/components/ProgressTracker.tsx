@@ -1019,6 +1019,7 @@ export default function ProgressTracker({
           <ActionPlan 
             schoolId={schoolId}
             evidenceRequirementId={actionPlanRequirementId}
+            currentRound={selectedRound}
             onClose={() => setShowActionPlanModal(false)}
           />
         </DialogContent>

@@ -19,6 +19,7 @@ import type { TFunction } from "i18next";
 interface ActionPlanProps {
   schoolId: string;
   evidenceRequirementId: string;
+  currentRound?: number;
   onClose?: () => void;
 }
 
@@ -37,7 +38,7 @@ const createActionPlanSchema = (t: TFunction) => z.object({
   promises: z.array(createPromiseSchema(t)).min(2, t('actionPlan.validation.minimumPromises')),
 });
 
-export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionPlanProps) {
+export function ActionPlan({ schoolId, evidenceRequirementId, currentRound, onClose }: ActionPlanProps) {
   const { t } = useTranslation('audit');
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,10 +48,19 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
   type ActionPlanData = z.infer<typeof actionPlanSchema>;
 
   // Fetch existing audit data to get plastic items
-  const { data: auditResponse } = useQuery<AuditResponse>({
+  const { data: auditResponses } = useQuery<AuditResponse[]>({
     queryKey: [`/api/audits/school/${schoolId}`],
     enabled: !!schoolId,
   });
+
+  // Use smart fallback to find latest audit if currentRound is not available
+  const effectiveRound = currentRound ?? 
+    (auditResponses?.length > 0 
+      ? Math.max(...auditResponses.map(a => a.roundNumber ?? 1))
+      : 1);
+  const auditResponse = auditResponses?.find(
+    audit => audit.roundNumber === effectiveRound
+  );
 
   // Fetch existing action plan evidence
   const { data: existingEvidence } = useQuery({
