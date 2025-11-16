@@ -15,16 +15,21 @@ import { eq, isNull } from 'drizzle-orm';
 async function backfillOverrideEvidence() {
   console.log('[Migration] Starting backfill of override evidence records...');
   
-  // Find all overrides without linked evidence
+  // Check total overrides for context
+  const allOverrides = await db.select().from(adminEvidenceOverrides);
+  console.log(`[Migration] Total overrides in database: ${allOverrides.length}`);
+  
+  // Find all overrides without linked evidence (idempotent check)
   const overridesWithoutEvidence = await db
     .select()
     .from(adminEvidenceOverrides)
     .where(isNull(adminEvidenceOverrides.evidenceId));
 
   console.log(`[Migration] Found ${overridesWithoutEvidence.length} overrides without evidence`);
+  console.log(`[Migration] Already processed: ${allOverrides.length - overridesWithoutEvidence.length} overrides`);
 
   if (overridesWithoutEvidence.length === 0) {
-    console.log('[Migration] No overrides to backfill. Exiting.');
+    console.log('[Migration] ✓ All overrides already have evidence. Migration is idempotent - safe to rerun.');
     return;
   }
 
