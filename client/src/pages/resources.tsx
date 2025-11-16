@@ -110,7 +110,7 @@ export default function Resources() {
     resourceType: '',
     theme: '',
     stage: '',
-    tags: '',
+    tags: [] as string[],
   });
   const [selectedLanguageTab, setSelectedLanguageTab] = useState<string>('');
   const [page, setPage] = useState(0);
@@ -131,17 +131,22 @@ export default function Resources() {
   const { data: resources, isLoading } = useQuery<Resource[]>({
     queryKey: ['/api/resources', filters, page],
     queryFn: async () => {
-      const params = new URLSearchParams({
-        ...filters,
-        limit: limit.toString(),
-        offset: (page * limit).toString(),
-      });
-      // Remove empty values
-      Object.keys(filters).forEach(key => {
-        if (!filters[key as keyof typeof filters]) {
-          params.delete(key);
+      const params = new URLSearchParams();
+      
+      // Add string filters
+      Object.entries(filters).forEach(([key, value]) => {
+        if (key === 'tags') {
+          // Handle tags array separately
+          if (Array.isArray(value) && value.length > 0) {
+            params.set('tags', value.join(','));
+          }
+        } else if (value) {
+          params.set(key, value as string);
         }
       });
+      
+      params.set('limit', limit.toString());
+      params.set('offset', (page * limit).toString());
       
       const response = await fetch(`/api/resources?${params}`);
       if (!response.ok) throw new Error('Failed to fetch resources');
@@ -184,6 +189,18 @@ export default function Resources() {
     // Convert "all" values to empty strings to show all results
     const actualValue = value === 'all' ? '' : value;
     setFilters(prev => ({ ...prev, [key]: actualValue }));
+    setPage(0); // Reset to first page when filters change
+    setPackPage(0);
+  };
+
+  const handleTagToggle = (tag: string) => {
+    setFilters(prev => {
+      const currentTags = prev.tags;
+      const newTags = currentTags.includes(tag)
+        ? currentTags.filter(t => t !== tag)
+        : [...currentTags, tag];
+      return { ...prev, tags: newTags };
+    });
     setPage(0); // Reset to first page when filters change
     setPackPage(0);
   };
@@ -933,25 +950,71 @@ export default function Resources() {
                   <SelectItem value="student_action">Student Action</SelectItem>
                 </SelectContent>
               </Select>
-
-              {activeTab === 'resources' && (
-                <Select value={filters.tags} onValueChange={(value) => handleFilterChange('tags', value)}>
-                  <SelectTrigger data-testid="select-tags">
-                    <SelectValue placeholder="All Tags" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Tags</SelectItem>
-                    <SelectItem value="all_stages">All Stages</SelectItem>
-                    <SelectItem value="beginner">Beginner</SelectItem>
-                    <SelectItem value="advanced">Advanced</SelectItem>
-                    <SelectItem value="featured">Featured</SelectItem>
-                    <SelectItem value="events">Events</SelectItem>
-                    <SelectItem value="teacher_toolkits">Teacher Toolkits</SelectItem>
-                    <SelectItem value="student_workbooks">Student Workbooks</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
             </div>
+            
+            {activeTab === 'resources' && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Tags</label>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant={filters.tags.includes('all_stages') ? 'default' : 'outline'}
+                    onClick={() => handleTagToggle('all_stages')}
+                    size="sm"
+                    data-testid="tag-all-stages"
+                  >
+                    All Stages
+                  </Button>
+                  <Button
+                    variant={filters.tags.includes('beginner') ? 'default' : 'outline'}
+                    onClick={() => handleTagToggle('beginner')}
+                    size="sm"
+                    data-testid="tag-beginner"
+                  >
+                    Beginner
+                  </Button>
+                  <Button
+                    variant={filters.tags.includes('advanced') ? 'default' : 'outline'}
+                    onClick={() => handleTagToggle('advanced')}
+                    size="sm"
+                    data-testid="tag-advanced"
+                  >
+                    Advanced
+                  </Button>
+                  <Button
+                    variant={filters.tags.includes('featured') ? 'default' : 'outline'}
+                    onClick={() => handleTagToggle('featured')}
+                    size="sm"
+                    data-testid="tag-featured"
+                  >
+                    Featured
+                  </Button>
+                  <Button
+                    variant={filters.tags.includes('events') ? 'default' : 'outline'}
+                    onClick={() => handleTagToggle('events')}
+                    size="sm"
+                    data-testid="tag-events"
+                  >
+                    Events
+                  </Button>
+                  <Button
+                    variant={filters.tags.includes('teacher_toolkits') ? 'default' : 'outline'}
+                    onClick={() => handleTagToggle('teacher_toolkits')}
+                    size="sm"
+                    data-testid="tag-teacher-toolkits"
+                  >
+                    Teacher Toolkits
+                  </Button>
+                  <Button
+                    variant={filters.tags.includes('student_workbooks') ? 'default' : 'outline'}
+                    onClick={() => handleTagToggle('student_workbooks')}
+                    size="sm"
+                    data-testid="tag-student-workbooks"
+                  >
+                    Student Workbooks
+                  </Button>
+                </div>
+              </div>
+            )}
             
             <div className="flex flex-wrap gap-2">
               <Button
@@ -1083,7 +1146,7 @@ export default function Resources() {
                           resourceType: '',
                           theme: '',
                           stage: '',
-                          tags: '',
+                          tags: [],
                         });
                         setSelectedLanguageTab('');
                         setPage(0);
@@ -1176,7 +1239,7 @@ export default function Resources() {
                           resourceType: '',
                           theme: '',
                           stage: '',
-                          tags: '',
+                          tags: [],
                         });
                         setPackPage(0);
                       },

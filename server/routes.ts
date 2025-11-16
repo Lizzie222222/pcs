@@ -389,6 +389,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if user is authenticated
       const isAuthenticated = req.isAuthenticated && req.isAuthenticated();
       
+      // Parse tags - can be comma-separated string or array
+      let tagsArray: string[] | undefined;
+      if (tags) {
+        if (typeof tags === 'string') {
+          tagsArray = tags.split(',').map(t => t.trim()).filter(t => t);
+        } else if (Array.isArray(tags)) {
+          tagsArray = tags;
+        }
+      }
+      
       // Show public resources to everyone, and private resources only to authenticated users
       // If authenticated, don't filter by visibility (show all resources)
       // If not authenticated, only show public resources
@@ -401,7 +411,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ageRange: ageRange as string,
         resourceType: resourceType as string,
         theme: theme as string,
-        tags: tags as string,
+        tags: tagsArray,
         search: search as string,
         visibility: isAuthenticated ? undefined : 'public',
         includeHidden: includeHidden === 'true' || !!search,

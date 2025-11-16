@@ -1919,7 +1919,7 @@ export class DatabaseStorage implements IStorage {
     ageRange?: string;
     resourceType?: string;
     theme?: string;
-    tags?: string;
+    tags?: string[];
     search?: string;
     visibility?: 'public' | 'private';
     includeHidden?: boolean;
@@ -1978,9 +1978,16 @@ export class DatabaseStorage implements IStorage {
         conditions.push(themeCondition);
       }
     }
-    if (filters.tags) {
-      // Filter by tags array
-      conditions.push(sql`${filters.tags} = ANY(${resources.tags})`);
+    if (filters.tags && filters.tags.length > 0) {
+      // Filter by tags array using OR logic - show resources that have ANY of the selected tags
+      const tagConditions = filters.tags.map(tag => 
+        sql`${tag} = ANY(${resources.tags})`
+      );
+      // Handle single tag case (or requires at least 2 operands)
+      const combinedTagCondition = tagConditions.length === 1 
+        ? tagConditions[0] 
+        : or(...tagConditions);
+      conditions.push(combinedTagCondition);
     }
     if (filters.visibility) {
       conditions.push(eq(resources.visibility, filters.visibility as any));
