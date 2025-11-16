@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,7 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Users, School, CheckCircle, XCircle, Trash2 } from "lucide-react";
+import { Users, School, CheckCircle, XCircle, Trash2, Edit } from "lucide-react";
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
 
 interface SchoolTeacher {
@@ -39,6 +40,9 @@ export default function SchoolTeachersList() {
   const queryClient = useQueryClient();
   const [expandedSchoolId, setExpandedSchoolId] = useState<string | null>(null);
   const [removingTeacher, setRemovingTeacher] = useState<{ schoolId: string; userId: string; userName: string } | null>(null);
+  const [emailUpdateDialogOpen, setEmailUpdateDialogOpen] = useState(false);
+  const [selectedTeacher, setSelectedTeacher] = useState<SchoolTeacher | null>(null);
+  const [newEmail, setNewEmail] = useState('');
 
   const { data: schoolsWithTeachers = [], isLoading } = useQuery<SchoolWithTeachers[]>({
     queryKey: ['/api/admin/school-teachers'],
@@ -65,6 +69,51 @@ export default function SchoolTeachersList() {
       });
     },
   });
+
+  const updateEmailMutation = useMutation({
+    mutationFn: async ({ userId, email }: { userId: string; email: string }) => {
+      await apiRequest('PUT', `/api/admin/users/${userId}/email`, { email });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Email Updated",
+        description: "Teacher's email has been successfully updated.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/school-teachers'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
+      setEmailUpdateDialogOpen(false);
+      setSelectedTeacher(null);
+      setNewEmail('');
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update email. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleOpenEmailUpdate = (teacher: SchoolTeacher) => {
+    setSelectedTeacher(teacher);
+    setNewEmail(teacher.email);
+    setEmailUpdateDialogOpen(true);
+  };
+
+  const handleEmailUpdateSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedTeacher || !newEmail) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    updateEmailMutation.mutate({ userId: selectedTeacher.userId, email: newEmail });
+  };
 
   if (isLoading) {
     return <LoadingSpinner message="Loading teachers..." />;
@@ -152,19 +201,31 @@ export default function SchoolTeachersList() {
                           {new Date(teacher.joinedAt).toLocaleDateString()}
                         </td>
                         <td className="p-2">
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => setRemovingTeacher({ 
-                              schoolId: school.id, 
-                              userId: teacher.userId, 
-                              userName: teacher.name 
-                            })}
-                            data-testid={`button-remove-teacher-${teacher.userId}`}
-                          >
-                            <Trash2 className="h-3 w-3 mr-1" />
-                            Remove
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleOpenEmailUpdate(teacher)}
+                              data-testid={`button-edit-email-${teacher.userId}`}
+                              className="text-pcs_blue hover:text-navy"
+                            >
+                              <Edit className="h-3 w-3 mr-1" />
+                              Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => setRemovingTeacher({ 
+                                schoolId: school.id, 
+                                userId: teacher.userId, 
+                                userName: teacher.name 
+                              })}
+                              data-testid={`button-remove-teacher-${teacher.userId}`}
+                            >
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Remove
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -201,6 +262,62 @@ export default function SchoolTeachersList() {
               Remove Teacher
             </AlertDialogAction>
           </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Update Email Dialog */}
+      <AlertDialog open={emailUpdateDialogOpen} onOpenChange={setEmailUpdateDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Update Teacher Email</AlertDialogTitle>
+            <AlertDialogDescription>
+              Update the email address for {selectedTeacher?.name}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <form onSubmit={handleEmailUpdateSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Current Email
+              </label>
+              <Input
+                type="text"
+                value={selectedTeacher?.email || ''}
+                disabled
+                className="bg-gray-100"
+                data-testid="input-current-email"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                New Email *
+              </label>
+              <Input
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                placeholder="Enter new email address"
+                required
+                data-testid="input-new-email"
+              />
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => {
+                setEmailUpdateDialogOpen(false);
+                setSelectedTeacher(null);
+                setNewEmail('');
+              }}>
+                Cancel
+              </AlertDialogCancel>
+              <Button
+                type="submit"
+                disabled={updateEmailMutation.isPending || !newEmail}
+                className="bg-pcs_blue hover:bg-blue-600"
+                data-testid="button-confirm-update-email"
+              >
+                {updateEmailMutation.isPending ? 'Updating...' : 'Update Email'}
+              </Button>
+            </AlertDialogFooter>
+          </form>
         </AlertDialogContent>
       </AlertDialog>
     </div>
