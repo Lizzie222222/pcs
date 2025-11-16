@@ -9,12 +9,10 @@ import { eq, isNull } from 'drizzle-orm';
  * have linked evidence. The evidence appears identical to school-submitted evidence
  * to maintain consistency and cover data migration issues.
  * 
- * Can be run:
- * 1. Manually: npm run migrate:backfill-override-evidence
- * 2. Automatically: Called from server startup in production
+ * Usage: npm run migrate:backfill-override-evidence
  */
 
-export async function backfillOverrideEvidence() {
+async function backfillOverrideEvidence() {
   console.log('[Migration] Starting backfill of override evidence records...');
   
   // Check total overrides for context
@@ -37,35 +35,9 @@ export async function backfillOverrideEvidence() {
 
   let successCount = 0;
   let errorCount = 0;
-  
-  // Process in smaller batches with longer delays to reduce lock contention
-  // This prevents overwhelming production database during migration
-  const BATCH_SIZE = 20; // Smaller batches reduce concurrent lock duration
-  const BATCH_DELAY_MS = 500; // Longer delay between batches reduces DB load
-  
-  for (let i = 0; i < overridesWithoutEvidence.length; i++) {
-    const override = overridesWithoutEvidence[i];
-    
-    // Add delay between batches to reduce database lock contention
-    if (i > 0 && i % BATCH_SIZE === 0) {
-      const progress = Math.round((i / overridesWithoutEvidence.length) * 100);
-      console.log(`[Migration] Processed ${i}/${overridesWithoutEvidence.length} overrides (${progress}%), pausing to reduce DB load...`);
-      await new Promise(resolve => setTimeout(resolve, BATCH_DELAY_MS));
-    }
+
+  for (const override of overridesWithoutEvidence) {
     try {
-      // Validate: Skip overrides with missing required data
-      if (!override.markedBy) {
-        console.warn(`[Migration] ⚠️ Skipping override ${override.id} - missing markedBy field`);
-        errorCount++;
-        continue;
-      }
-
-      if (!override.schoolId) {
-        console.warn(`[Migration] ⚠️ Skipping override ${override.id} - missing schoolId field`);
-        errorCount++;
-        continue;
-      }
-
       // Get requirement details
       const [requirement] = await db
         .select()
@@ -73,53 +45,13 @@ export async function backfillOverrideEvidence() {
         .where(eq(evidenceRequirements.id, override.evidenceRequirementId));
 
       if (!requirement) {
-        console.warn(`[Migration] ⚠️ Skipping override ${override.id} - requirement ${override.evidenceRequirementId} not found`);
+        console.error(`[Migration] ERROR: Requirement ${override.evidenceRequirementId} not found for override ${override.id}`);
         errorCount++;
         continue;
       }
 
-      // Validate requirement has required fields
-      if (!requirement.title) {
-        console.warn(`[Migration] ⚠️ Skipping override ${override.id} - requirement ${requirement.id} missing title`);
-        errorCount++;
-        continue;
-      }
-
-      if (!requirement.description) {
-        console.warn(`[Migration] ⚠️ Skipping override ${override.id} - requirement ${requirement.id} missing description`);
-        errorCount++;
-        continue;
-      }
-
-      // Handle null stage and validate against allowed enum values
-      // Valid program stages: 'inspire', 'investigate', 'act'
-      const validStages = ['inspire', 'investigate', 'act'] as const;
-      let stage: typeof validStages[number] = 'inspire'; // Default fallback
-      
-      // Try override.stage first, then requirement.stage, validate both
-      const candidateStage = override.stage || requirement.stage;
-      if (candidateStage && validStages.includes(candidateStage as any)) {
-        stage = candidateStage as typeof validStages[number];
-      } else if (candidateStage) {
-        console.warn(`[Migration] ⚠️ Invalid stage value "${candidateStage}" for override ${override.id}, using default 'inspire'`);
-      }
-
-      // Use transaction with row-level locking for concurrency safety
+      // Use transaction to ensure atomicity
       await db.transaction(async (tx) => {
-        // Lock the override row and re-check if it still needs processing
-        // This prevents race conditions when multiple server instances run simultaneously
-        const [lockedOverride] = await tx
-          .select()
-          .from(adminEvidenceOverrides)
-          .where(eq(adminEvidenceOverrides.id, override.id))
-          .for('update');
-        
-        // Skip if another instance already processed this override
-        if (lockedOverride.evidenceId !== null) {
-          console.log(`[Migration] ⏭ Skipping override ${override.id} - already processed by another instance`);
-          return;
-        }
-
         // Create evidence record that looks like school-submitted evidence
         const [evidenceRecord] = await tx
           .insert(evidence)
@@ -129,9 +61,9 @@ export async function backfillOverrideEvidence() {
             evidenceRequirementId: override.evidenceRequirementId,
             title: requirement.title,
             description: requirement.description,
-            stage: stage, // Use validated stage with fallback
-            status: 'approved' as const,
-            visibility: 'registered' as const,
+            stage: override.stage,
+            status: 'approved',
+            visibility: 'registered',
             reviewedBy: override.markedBy,
             reviewedAt: override.createdAt, // Use override creation date as review date
             roundNumber: override.roundNumber,
@@ -152,32 +84,27 @@ export async function backfillOverrideEvidence() {
         successCount++;
       });
     } catch (error) {
-      console.error(`[Migration] ❌ ERROR processing override ${override.id}:`, error);
+      console.error(`[Migration] ERROR processing override ${override.id}:`, error);
       errorCount++;
     }
   }
 
   console.log('[Migration] Backfill complete!');
-  console.log(`[Migration] Summary: ${successCount} successful, ${errorCount} skipped/failed`);
+  console.log(`[Migration] Success: ${successCount}, Errors: ${errorCount}`);
   
   if (errorCount > 0) {
-    console.warn(`[Migration] ⚠️ Note: ${errorCount} override(s) were skipped due to missing data (markedBy, schoolId, or requirement). These overrides will not have evidence records. Check warnings above for details.`);
-  } else {
-    console.log('[Migration] ✓ All overrides processed successfully!');
+    console.error('[Migration] WARNING: Some overrides failed to backfill. Check errors above.');
+    process.exit(1);
   }
-  
-  return { successCount, errorCount };
 }
 
-// Run migration when executed directly (not imported)
-if (require.main === module) {
-  backfillOverrideEvidence()
-    .then(() => {
-      console.log('[Migration] Migration finished successfully');
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error('[Migration] FATAL ERROR:', error);
-      process.exit(1);
-    });
-}
+// Run migration
+backfillOverrideEvidence()
+  .then(() => {
+    console.log('[Migration] Migration finished successfully');
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error('[Migration] FATAL ERROR:', error);
+    process.exit(1);
+  });

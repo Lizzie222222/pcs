@@ -158,15 +158,6 @@ app.use((req, res, next) => {
       console.error('[Migration] Error during school migration:', error);
     }
     
-    // Run production-only migration to backfill evidence for admin overrides
-    // This ensures historical overrides appear as evidence on dashboards
-    if (process.env.NODE_ENV === 'production') {
-      const { backfillOverrideEvidence } = await import('./scripts/backfill-override-evidence');
-      backfillOverrideEvidence().catch((error) => {
-        console.error('[Migration] Error during override evidence backfill:', error);
-      });
-    }
-    
     // Initialize automated weekly digest scheduler
     initScheduler();
     
