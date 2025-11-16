@@ -83,6 +83,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import type { PendingEvidence } from "@/components/admin/shared/types";
 import type { User, EvidenceWithSchool } from "@shared/schema";
 import { format } from "date-fns";
+import { normalizeObjectStorageUrl } from "@/lib/urlNormalization";
 
 interface EvidenceReviewQueueProps {
   activeTab: string;
@@ -384,7 +385,7 @@ export default function EvidenceReviewQueue({
                     if (firstImage?.url) {
                       return (
                         <img
-                          src={firstImage.url}
+                          src={normalizeObjectStorageUrl(firstImage.url)}
                           alt="Evidence preview"
                           className="h-12 w-12 object-cover rounded border border-gray-200 group-hover:border-pcs_blue transition-colors"
                         />
