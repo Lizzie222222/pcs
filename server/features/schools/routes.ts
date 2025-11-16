@@ -355,17 +355,25 @@ schoolsRouter.post('/api/schools/:schoolId/invite-teacher', isAuthenticated, isS
       });
     }
 
+    // Check if invitation already exists
+    const existing = await schoolStorage.getInvitationByEmail(schoolId, validationResult.data.email);
+    if (existing && existing.status === 'pending') {
+      return res.status(400).json({ message: "An invitation has already been sent to this email" });
+    }
+
+    // Generate invitation token and expiry
+    const token = nanoid(32);
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
+
     const invitationData = {
       ...validationResult.data,
       schoolId,
       invitedBy: inviterId,
+      token,
+      status: 'pending' as const,
+      expiresAt,
     };
-
-    // Check if invitation already exists
-    const existing = await schoolStorage.getInvitationByEmail(schoolId, invitationData.email);
-    if (existing && existing.status === 'pending') {
-      return res.status(400).json({ message: "An invitation has already been sent to this email" });
-    }
 
     const invitation = await schoolStorage.createInvitation(invitationData);
 
