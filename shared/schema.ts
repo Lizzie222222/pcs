@@ -1699,6 +1699,11 @@ export const insertCertificateSchema = createInsertSchema(certificates).omit({
 
 export const insertTeacherInvitationSchema = createInsertSchema(teacherInvitations).omit({
   id: true,
+  schoolId: true,
+  invitedBy: true,
+  token: true,
+  status: true,
+  expiresAt: true,
   createdAt: true,
   acceptedAt: true,
 });
