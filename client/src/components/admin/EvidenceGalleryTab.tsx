@@ -71,7 +71,7 @@ export default function EvidenceGalleryTab() {
   });
 
   // Fetch school history when selected
-  const { data: schoolHistory = [], isLoading: schoolHistoryLoading } = useQuery<EvidenceWithSchool[]>({
+  const { data: schoolHistory = [], isLoading: schoolHistoryLoading, error: schoolHistoryError } = useQuery<EvidenceWithSchool[]>({
     queryKey: ['/api/admin/evidence', { schoolId: selectedSchool?.id }],
     queryFn: async () => {
       if (!selectedSchool?.id) return [];
@@ -82,7 +82,7 @@ export default function EvidenceGalleryTab() {
       if (!response.ok) throw new Error('Failed to fetch school history');
       return response.json();
     },
-    enabled: !!selectedSchool?.id,
+    enabled: !!selectedSchool?.id && schoolHistoryDialogOpen,
   });
 
   // Fetch countries for filter
@@ -592,10 +592,14 @@ export default function EvidenceGalleryTab() {
             <div className="flex justify-center py-8">
               <div className="animate-spin h-8 w-8 border-4 border-pcs_blue border-t-transparent rounded-full" />
             </div>
+          ) : schoolHistoryError ? (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-red-800">Failed to load school history. Please try again.</p>
+            </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-6" data-testid="school-history-content">
               {/* School Information */}
-              <Card className="bg-gradient-to-br from-pcs_blue/5 to-pcs_green/5 border-pcs_blue/20">
+              <Card className="bg-gradient-to-br from-pcs_blue/5 to-pcs_green/5 border-pcs_blue/20" data-testid="card-school-details">
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Building className="h-5 w-5" />
