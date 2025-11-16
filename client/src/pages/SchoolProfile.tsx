@@ -585,6 +585,7 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
   const [emailUpdateDialogOpen, setEmailUpdateDialogOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<SchoolTeacher | null>(null);
   const [newEmail, setNewEmail] = useState('');
+  const [sendPasswordReset, setSendPasswordReset] = useState(true);
 
   // Fetch users for assignment
   const { data: usersWithSchools = [], isLoading: usersLoading } = useQuery<any[]>({
@@ -622,18 +623,22 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
 
   // Update teacher email mutation
   const updateEmailMutation = useMutation({
-    mutationFn: async ({ userId, email }: { userId: string; email: string }) => {
-      await apiRequest('PUT', `/api/admin/users/${userId}/email`, { email });
+    mutationFn: async ({ userId, email, sendPasswordReset }: { userId: string; email: string; sendPasswordReset: boolean }) => {
+      return await apiRequest('PUT', `/api/admin/users/${userId}/email`, { email, sendPasswordReset });
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
+      const passwordResetSent = data?.passwordResetSent;
       toast({
         title: "Email Updated",
-        description: "Teacher's email has been successfully updated.",
+        description: passwordResetSent 
+          ? "Email updated successfully. Password reset sent to new email."
+          : "Email updated successfully.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/schools', schoolId, 'teachers'] });
       setEmailUpdateDialogOpen(false);
       setSelectedTeacher(null);
       setNewEmail('');
+      setSendPasswordReset(true);
     },
     onError: (error: any) => {
       toast({
@@ -663,6 +668,7 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
   const handleOpenEmailUpdate = (teacher: SchoolTeacher) => {
     setSelectedTeacher(teacher);
     setNewEmail(teacher.email);
+    setSendPasswordReset(true);
     setEmailUpdateDialogOpen(true);
   };
 
@@ -678,7 +684,7 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
       return;
     }
 
-    updateEmailMutation.mutate({ userId: selectedTeacher.userId, email: newEmail });
+    updateEmailMutation.mutate({ userId: selectedTeacher.userId, email: newEmail, sendPasswordReset });
   };
 
   const filteredUsers = usersWithSchools
@@ -911,11 +917,31 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
                 data-testid="input-new-email"
               />
             </div>
+            <div className="flex items-start space-x-2">
+              <Checkbox
+                id="send-password-reset"
+                checked={sendPasswordReset}
+                onCheckedChange={(checked) => setSendPasswordReset(checked as boolean)}
+                data-testid="checkbox-send-password-reset"
+              />
+              <div className="grid gap-1.5 leading-none">
+                <label
+                  htmlFor="send-password-reset"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  Send password reset to new email
+                </label>
+                <p className="text-sm text-muted-foreground">
+                  The teacher will receive an email with a link to set their password for the new email address.
+                </p>
+              </div>
+            </div>
             <AlertDialogFooter>
               <AlertDialogCancel onClick={() => {
                 setEmailUpdateDialogOpen(false);
                 setSelectedTeacher(null);
                 setNewEmail('');
+                setSendPasswordReset(true);
               }}>
                 Cancel
               </AlertDialogCancel>

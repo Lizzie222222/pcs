@@ -6681,10 +6681,11 @@ Return JSON with:
       // Validate request body
       const emailSchema = z.object({
         email: z.string().email("Invalid email address"),
+        sendPasswordReset: z.boolean().optional().default(false),
       });
-      const { email } = emailSchema.parse(req.body);
+      const { email, sendPasswordReset } = emailSchema.parse(req.body);
       
-      console.log(`[Update User Email] Admin ${adminUserId} updating email for user ${id} to ${email}`);
+      console.log(`[Update User Email] Admin ${adminUserId} updating email for user ${id} to ${email}, sendPasswordReset: ${sendPasswordReset}`);
       
       // Check if the new email is already in use by another user
       const existingUser = await storage.findUserByEmail(email);
@@ -6699,10 +6700,50 @@ Return JSON with:
         return res.status(404).json({ message: "User not found" });
       }
 
+      let passwordResetSent = false;
+
+      // Send password reset email if requested
+      if (sendPasswordReset) {
+        try {
+          // Generate secure random token
+          const crypto = await import('crypto');
+          const token = crypto.randomBytes(32).toString('hex');
+          
+          // Token expires in 1 hour
+          const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+          // Save token to database
+          await storage.createPasswordResetToken(email.toLowerCase().trim(), token, expiresAt);
+
+          // Send password reset email
+          const { sendPasswordResetEmail } = await import('./emailService');
+          const emailSent = await sendPasswordResetEmail(
+            email.toLowerCase().trim(),
+            token,
+            user.firstName || undefined,
+            user.preferredLanguage || undefined
+          );
+
+          if (emailSent) {
+            passwordResetSent = true;
+            console.log(`[Update User Email] Password reset email sent to ${email}`);
+          } else {
+            console.error(`[Update User Email] Failed to send password reset email to ${email}`);
+          }
+        } catch (resetError) {
+          console.error('[Update User Email] Error sending password reset:', resetError);
+          // Don't fail the entire operation if password reset fails
+          // The email was still updated successfully
+        }
+      }
+
       console.log(`[Update User Email] Successfully updated email for user ${id}`);
       res.json({ 
-        message: "Email updated successfully",
-        user 
+        message: passwordResetSent 
+          ? "Email updated successfully. Password reset sent to new email."
+          : "Email updated successfully",
+        user,
+        passwordResetSent
       });
     } catch (error) {
       console.error("[Update User Email] Error:", error);

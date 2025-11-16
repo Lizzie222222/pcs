@@ -5,6 +5,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +44,7 @@ export default function SchoolTeachersList() {
   const [emailUpdateDialogOpen, setEmailUpdateDialogOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<SchoolTeacher | null>(null);
   const [newEmail, setNewEmail] = useState('');
+  const [sendPasswordReset, setSendPasswordReset] = useState(true);
 
   const { data: schoolsWithTeachers = [], isLoading } = useQuery<SchoolWithTeachers[]>({
     queryKey: ['/api/admin/school-teachers'],
@@ -71,19 +73,23 @@ export default function SchoolTeachersList() {
   });
 
   const updateEmailMutation = useMutation({
-    mutationFn: async ({ userId, email }: { userId: string; email: string }) => {
-      await apiRequest('PUT', `/api/admin/users/${userId}/email`, { email });
+    mutationFn: async ({ userId, email, sendPasswordReset }: { userId: string; email: string; sendPasswordReset: boolean }) => {
+      return await apiRequest('PUT', `/api/admin/users/${userId}/email`, { email, sendPasswordReset });
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
+      const passwordResetSent = data?.passwordResetSent;
       toast({
         title: "Email Updated",
-        description: "Teacher's email has been successfully updated.",
+        description: passwordResetSent 
+          ? "Email updated successfully. Password reset sent to new email."
+          : "Email updated successfully.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/school-teachers'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
       setEmailUpdateDialogOpen(false);
       setSelectedTeacher(null);
       setNewEmail('');
+      setSendPasswordReset(true);
     },
     onError: (error: any) => {
       toast({
@@ -97,6 +103,7 @@ export default function SchoolTeachersList() {
   const handleOpenEmailUpdate = (teacher: SchoolTeacher) => {
     setSelectedTeacher(teacher);
     setNewEmail(teacher.email);
+    setSendPasswordReset(true);
     setEmailUpdateDialogOpen(true);
   };
 
@@ -112,7 +119,7 @@ export default function SchoolTeachersList() {
       return;
     }
 
-    updateEmailMutation.mutate({ userId: selectedTeacher.userId, email: newEmail });
+    updateEmailMutation.mutate({ userId: selectedTeacher.userId, email: newEmail, sendPasswordReset });
   };
 
   if (isLoading) {
@@ -300,11 +307,31 @@ export default function SchoolTeachersList() {
                 data-testid="input-new-email"
               />
             </div>
+            <div className="flex items-start space-x-2">
+              <Checkbox
+                id="send-password-reset"
+                checked={sendPasswordReset}
+                onCheckedChange={(checked) => setSendPasswordReset(checked as boolean)}
+                data-testid="checkbox-send-password-reset"
+              />
+              <div className="grid gap-1.5 leading-none">
+                <label
+                  htmlFor="send-password-reset"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  Send password reset to new email
+                </label>
+                <p className="text-sm text-muted-foreground">
+                  The teacher will receive an email with a link to set their password for the new email address.
+                </p>
+              </div>
+            </div>
             <AlertDialogFooter>
               <AlertDialogCancel onClick={() => {
                 setEmailUpdateDialogOpen(false);
                 setSelectedTeacher(null);
                 setNewEmail('');
+                setSendPasswordReset(true);
               }}>
                 Cancel
               </AlertDialogCancel>
