@@ -41,7 +41,7 @@ export default function EventRegistrations({
       reg.school?.name || t('events.registrations.notAvailable'),
       reg.school?.country || t('events.registrations.notAvailable'),
       reg.status,
-      reg.registeredAt ? format(new Date(reg.registeredAt), 'd MMM yyyy HH:mm') : t('events.registrations.notAvailable')
+      reg.registeredAt ? format(new Date(reg.registeredAt), 'dd/MM/yyyy HH:mm') : t('events.registrations.notAvailable')
     ]);
     
     const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
@@ -172,7 +172,7 @@ export default function EventRegistrations({
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600" data-testid={`text-date-${registration.id}`}>
-                        {registration.registeredAt ? format(new Date(registration.registeredAt), 'd MMM yyyy') : t('events.registrations.notAvailable')}
+                        {registration.registeredAt ? format(new Date(registration.registeredAt), 'dd/MM/yyyy HH:mm') : t('events.registrations.notAvailable')}
                       </td>
                       <td className="px-4 py-3 text-sm">
                         {registration.status === 'registered' && (

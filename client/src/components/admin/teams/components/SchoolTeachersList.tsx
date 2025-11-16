@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Users, School, CheckCircle, XCircle, Trash2, Edit } from "lucide-react";
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
+import { format } from "date-fns";
 
 interface SchoolTeacher {
   userId: string;
@@ -206,7 +207,7 @@ export default function SchoolTeachersList() {
                           )}
                         </td>
                         <td className="p-2 text-sm text-gray-600">
-                          {new Date(teacher.joinedAt).toLocaleDateString()}
+                          {format(new Date(teacher.joinedAt), 'dd/MM/yyyy')}
                         </td>
                         <td className="p-2">
                           <div className="flex items-center gap-2">

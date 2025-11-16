@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { getEventAvailableLanguages, LANGUAGE_FLAG_MAP } from "@/lib/languageUtils";
 import whiteLogoUrl from "@assets/PCSWhite_1761216344335.png";
 import { normalizeObjectStorageUrl } from "@/lib/urlNormalization";
+import { format } from "date-fns";
 
 interface Event {
   id: string;
@@ -245,11 +246,7 @@ function EventCard({ event, isPast = false }: { event: Event; isPast?: boolean }
           <div className="space-y-2 mb-4">
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Calendar className="w-4 h-4" />
-              <span>{new Date(event.startDateTime).toLocaleDateString('en-GB', { 
-                day: 'numeric',
-                month: 'long', 
-                year: 'numeric'
-              })}</span>
+              <span>{format(new Date(event.startDateTime), 'dd/MM/yyyy')}</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Clock className="w-4 h-4" />

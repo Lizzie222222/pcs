@@ -19,6 +19,7 @@ import { CertificateTemplate } from "@/components/CertificateTemplate";
 import { LoadingSpinner, EmptyState, ErrorState } from "@/components/ui/states";
 import type { Certificate, School } from "@shared/schema";
 import { insertCertificateSchema } from "@shared/schema";
+import { format } from "date-fns";
 
 interface CertificatesSectionProps {
   activeTab: string;
@@ -473,7 +474,7 @@ export default function CertificatesSection({ activeTab }: CertificatesSectionPr
                           </Badge>
                         </td>
                         <td className="p-3 text-sm text-gray-600">
-                          {new Date(cert.completedDate).toLocaleDateString()}
+                          {format(new Date(cert.completedDate), 'dd/MM/yyyy')}
                         </td>
                         <td className="p-3">
                           <Button

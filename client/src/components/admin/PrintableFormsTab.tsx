@@ -258,7 +258,7 @@ export default function PrintableFormsTab() {
                         <div className="text-xs text-gray-500">{submission.submittedByUser.email}</div>
                       </td>
                       <td className="p-3 text-sm text-gray-600">
-                        {format(new Date(submission.submittedAt), 'MMM d, yyyy')}
+                        {format(new Date(submission.submittedAt), 'dd/MM/yyyy HH:mm')}
                       </td>
                       <td className="p-3">
                         <div className="flex gap-2">

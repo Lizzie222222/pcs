@@ -31,6 +31,7 @@ import {
 import { z } from "zod";
 import { createLoginSchema, type LoginForm } from "@shared/schema";
 import pcsLogoUrl from "@assets/PSC Logo - Blue_1761334524895.png";
+import { format } from "date-fns";
 
 interface InvitationDetails {
   email: string;
@@ -741,7 +742,7 @@ export default function InvitationAccept() {
           </Button>
 
           <p className="text-xs text-center text-gray-500" data-testid="text-expires-info">
-            This invitation expires on {new Date(invitation.expiresAt).toLocaleDateString()}
+            This invitation expires on {format(new Date(invitation.expiresAt), 'dd/MM/yyyy')}
           </p>
         </CardContent>
       </Card>

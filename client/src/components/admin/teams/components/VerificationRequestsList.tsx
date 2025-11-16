@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { CheckCircle, XCircle } from "lucide-react";
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
+import { format } from "date-fns";
 
 interface VerificationRequest {
   id: string;
@@ -112,7 +113,7 @@ export default function VerificationRequestsList() {
                   {request.evidence}
                 </td>
                 <td className="p-3 text-gray-600">
-                  {new Date(request.createdAt).toLocaleDateString()}
+                  {format(new Date(request.createdAt), 'dd/MM/yyyy')}
                 </td>
                 <td className="p-3">
                   <Badge variant="outline" className="bg-yellow-100 text-yellow-800" data-testid={`text-status-${request.id}`}>

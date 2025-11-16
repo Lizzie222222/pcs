@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/states";
 import { useTranslation } from 'react-i18next';
+import { format } from "date-fns";
 
 interface PhotoConsentQueueProps {
   activeTab: string;
@@ -115,7 +116,7 @@ export default function PhotoConsentQueue({
                         {school.photoConsent?.uploadedAt && (
                           <span className="flex items-center gap-1">
                             <Clock className="h-4 w-4" />
-                            {new Date(school.photoConsent.uploadedAt).toLocaleDateString()}
+                            {format(new Date(school.photoConsent.uploadedAt), 'dd/MM/yyyy HH:mm')}
                           </span>
                         )}
                       </div>

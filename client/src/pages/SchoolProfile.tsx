@@ -53,6 +53,7 @@ import type { ReductionPromise } from "@shared/schema";
 import { calculateAggregateMetrics } from "@shared/plasticMetrics";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { UploadEvidenceDialog } from "@/components/admin/UploadEvidenceDialog";
+import { format } from "date-fns";
 import { EditEvidenceDialog } from "@/components/admin/EditEvidenceDialog";
 import { UploadPhotoConsentDialog } from "@/components/admin/UploadPhotoConsentDialog";
 import { UploadAuditDialog } from "@/components/admin/UploadAuditDialog";
@@ -460,7 +461,7 @@ function OverviewTab({ school }: { school: SchoolData }) {
           <div>
             <label className="text-sm font-medium text-gray-600">Joined</label>
             <p className="text-base" data-testid="text-overview-joined">
-              {new Date(school.createdAt).toLocaleDateString()}
+              {format(new Date(school.createdAt), 'dd/MM/yyyy')}
             </p>
           </div>
           {school.address && (
@@ -824,7 +825,7 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
                         {teacher.legacyEvidenceCount ? `${teacher.legacyEvidenceCount} submissions` : '0 submissions'}
                       </td>
                       <td className="p-3 text-gray-600">
-                        {new Date(teacher.createdAt).toLocaleDateString()}
+                        {format(new Date(teacher.createdAt), 'dd/MM/yyyy')}
                       </td>
                       <td className="p-3">
                         <Button
@@ -1174,7 +1175,7 @@ function EvidenceTab({ schoolId, evidence, isLoading }: {
                             {ev.status}
                           </Badge>
                           <span className="text-sm text-gray-600">
-                            {new Date(ev.submittedAt).toLocaleDateString()}
+                            {format(new Date(ev.submittedAt), 'dd/MM/yyyy HH:mm')}
                           </span>
                         </div>
                         {ev.description && (
@@ -1665,7 +1666,7 @@ function SettingsTab({ school, photoConsentStatus }: {
               {photoConsentStatus.uploadedAt && (
                 <div>
                   <span className="text-sm text-gray-600">Uploaded</span>
-                  <p className="text-sm">{new Date(photoConsentStatus.uploadedAt).toLocaleDateString()}</p>
+                  <p className="text-sm">{format(new Date(photoConsentStatus.uploadedAt), 'dd/MM/yyyy HH:mm')}</p>
                 </div>
               )}
               {photoConsentStatus.reviewNotes && (
@@ -1925,7 +1926,7 @@ function AuditsTab({ schoolId }: { schoolId: string }) {
                         <div>
                           <p className="text-gray-600">Submitted on</p>
                           <p className="font-medium" data-testid={`text-submitted-date-${audit.id}`}>
-                            {audit.submittedAt ? new Date(audit.submittedAt).toLocaleDateString() : 'Not submitted'}
+                            {audit.submittedAt ? format(new Date(audit.submittedAt), 'dd/MM/yyyy HH:mm') : 'Not submitted'}
                           </p>
                         </div>
                         {audit.reviewedByUser && (
@@ -1941,7 +1942,7 @@ function AuditsTab({ schoolId }: { schoolId: string }) {
                             <div>
                               <p className="text-gray-600">Reviewed on</p>
                               <p className="font-medium" data-testid={`text-reviewed-date-${audit.id}`}>
-                                {audit.reviewedAt ? new Date(audit.reviewedAt).toLocaleDateString() : 'N/A'}
+                                {audit.reviewedAt ? format(new Date(audit.reviewedAt), 'dd/MM/yyyy HH:mm') : 'N/A'}
                               </p>
                             </div>
                           </>
@@ -2013,7 +2014,7 @@ function AuditsTab({ schoolId }: { schoolId: string }) {
                 </Badge>
               </AlertDialogTitle>
               <AlertDialogDescription>
-                Complete audit submission from {selectedAudit.submittedAt ? new Date(selectedAudit.submittedAt).toLocaleDateString() : 'N/A'}
+                Complete audit submission from {selectedAudit.submittedAt ? format(new Date(selectedAudit.submittedAt), 'dd/MM/yyyy HH:mm') : 'N/A'}
               </AlertDialogDescription>
             </AlertDialogHeader>
             
@@ -2067,7 +2068,7 @@ function AuditsTab({ schoolId }: { schoolId: string }) {
                     <div>
                       <p className="text-gray-600">Submitted on</p>
                       <p className="font-medium">
-                        {selectedAudit.submittedAt ? new Date(selectedAudit.submittedAt).toLocaleDateString() : 'N/A'}
+                        {selectedAudit.submittedAt ? format(new Date(selectedAudit.submittedAt), 'dd/MM/yyyy HH:mm') : 'N/A'}
                       </p>
                     </div>
                     {selectedAudit.reviewedByUser && (
@@ -2083,7 +2084,7 @@ function AuditsTab({ schoolId }: { schoolId: string }) {
                         <div>
                           <p className="text-gray-600">Reviewed on</p>
                           <p className="font-medium">
-                            {selectedAudit.reviewedAt ? new Date(selectedAudit.reviewedAt).toLocaleDateString() : 'N/A'}
+                            {selectedAudit.reviewedAt ? format(new Date(selectedAudit.reviewedAt), 'dd/MM/yyyy HH:mm') : 'N/A'}
                           </p>
                         </div>
                       </>

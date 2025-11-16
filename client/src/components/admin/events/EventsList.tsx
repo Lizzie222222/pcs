@@ -186,7 +186,7 @@ export default function EventsList({
                       {event.eventType.replace('_', ' ').charAt(0).toUpperCase() + event.eventType.replace('_', ' ').slice(1)}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600" data-testid={`text-date-${event.id}`}>
-                      {format(new Date(event.startDateTime), 'd MMM yyyy')}
+                      {format(new Date(event.startDateTime), 'dd/MM/yyyy')}
                     </td>
                     <td className="px-4 py-3 text-sm" data-testid={`text-status-${event.id}`}>
                       <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${

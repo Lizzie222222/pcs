@@ -82,6 +82,7 @@ import { useCountries } from "@/hooks/useCountries";
 import { useDebounce } from "@/hooks/useDebounce";
 import type { PendingEvidence } from "@/components/admin/shared/types";
 import type { User, EvidenceWithSchool } from "@shared/schema";
+import { format } from "date-fns";
 
 interface EvidenceReviewQueueProps {
   activeTab: string;
@@ -425,7 +426,7 @@ export default function EvidenceReviewQueue({
                 </Badge>
               </TableCell>
               <TableCell className="text-sm text-gray-600">
-                {new Date(item.submittedAt).toLocaleDateString()}
+                {format(new Date(item.submittedAt), 'dd/MM/yyyy HH:mm')}
               </TableCell>
               <TableCell>
                 <div className="min-w-[150px]">
@@ -1030,7 +1031,7 @@ export default function EvidenceReviewQueue({
                           </button>
                         )}
                         <span>{t('reviews.evidence.labels.schoolId', { id: evidence.schoolId })}</span>
-                        <span>{t('reviews.evidence.labels.submitted', { date: new Date(evidence.submittedAt).toLocaleDateString() })}</span>
+                        <span>{t('reviews.evidence.labels.submitted', { date: format(new Date(evidence.submittedAt), 'dd/MM/yyyy HH:mm') })}</span>
                         <span>{t('reviews.evidence.labels.files', { count: evidence.files?.length || 0 })}</span>
                       </div>
 
@@ -1354,7 +1355,7 @@ export default function EvidenceReviewQueue({
                   <span className="font-medium text-gray-700">School:</span> {previewEvidence.school?.name || 'Unknown'}
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Submitted:</span> {new Date(previewEvidence.submittedAt).toLocaleDateString()}
+                  <span className="font-medium text-gray-700">Submitted:</span> {format(new Date(previewEvidence.submittedAt), 'dd/MM/yyyy HH:mm')}
                 </div>
               </div>
               {previewEvidence.videoLinks && previewEvidence.videoLinks.length > 0 && (

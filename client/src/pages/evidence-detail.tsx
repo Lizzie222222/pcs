@@ -9,6 +9,7 @@ import { useState } from "react";
 import { ShareDialog } from "@/components/ShareDialog";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
+import { format } from "date-fns";
 
 interface EvidenceData {
   id: string;
@@ -130,11 +131,7 @@ export default function EvidenceDetail() {
 
               {/* Date */}
               <p className="text-sm text-gray-500">
-                Submitted: {new Date(evidence.submittedAt).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
+                Submitted: {format(new Date(evidence.submittedAt), 'dd/MM/yyyy HH:mm')}
               </p>
             </div>
 

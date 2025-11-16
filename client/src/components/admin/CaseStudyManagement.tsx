@@ -35,6 +35,7 @@ import {
 import { CaseStudyEditor } from "@/components/admin/CaseStudyEditor";
 import DocumentLockWarning from "@/components/admin/DocumentLockWarning";
 import type { CaseStudy } from "@shared/schema";
+import { format } from "date-fns";
 
 interface CaseStudyManagementProps {
   user: any;
@@ -372,7 +373,7 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
                         </span>
                         <span data-testid={`case-study-date-${caseStudy.id}`}>
                           <Calendar className="h-4 w-4 inline mr-1" />
-                          {new Date(caseStudy.createdAt).toLocaleDateString()}
+                          {format(new Date(caseStudy.createdAt), 'dd/MM/yyyy')}
                         </span>
                       </div>
                     </div>

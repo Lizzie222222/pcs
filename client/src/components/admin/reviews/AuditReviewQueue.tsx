@@ -15,6 +15,7 @@ import { EmptyState } from "@/components/ui/states";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from 'react-i18next';
 import type { PendingAudit } from "@/components/admin/shared/types";
+import { format } from "date-fns";
 
 interface AuditReviewQueueProps {
   activeTab: string;
@@ -116,7 +117,7 @@ export default function AuditReviewQueue({
                         </span>
                         <span data-testid={`text-submitted-at-${audit.id}`}>
                           <Calendar className="h-3 w-3 inline mr-1" />
-                          {new Date(audit.submittedAt).toLocaleDateString()}
+                          {format(new Date(audit.submittedAt), 'dd/MM/yyyy HH:mm')}
                         </span>
                       </div>
 

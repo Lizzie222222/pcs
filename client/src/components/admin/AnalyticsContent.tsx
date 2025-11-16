@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
-import { subDays } from "date-fns";
+import { subDays, format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { 
   School, 
@@ -339,7 +339,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                     Select which sections to include in your analytics report. The report will include data from{' '}
                     {dateRange?.from && dateRange?.to && (
                       <span className="font-medium text-gray-900">
-                        {dateRange.from.toLocaleDateString()} - {dateRange.to.toLocaleDateString()}
+                        {format(dateRange.from, 'dd/MM/yyyy')} - {format(dateRange.to, 'dd/MM/yyyy')}
                       </span>
                     )}
                   </DialogDescription>
@@ -1008,7 +1008,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                           <td className="py-2 px-3">{school.country}</td>
                           <td className="text-center py-2 px-3">{school.totalPlasticItems}</td>
                           <td className="py-2 px-3">{school.topProblemPlastic || 'N/A'}</td>
-                          <td className="text-center py-2 px-3">{new Date(school.auditDate).toLocaleDateString()}</td>
+                          <td className="text-center py-2 px-3">{format(new Date(school.auditDate), 'dd/MM/yyyy')}</td>
                           <td className="text-center py-2 px-3">
                             <div className="flex justify-center gap-1">
                               {school.hasRecycling && (

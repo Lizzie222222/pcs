@@ -6,6 +6,7 @@ import i18n from "@/lib/i18n";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { format } from "date-fns";
 import ProgressTracker from "@/components/ProgressTracker";
 import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
 import { EvidenceDetailModal } from "@/components/EvidenceDetailModal";
@@ -1250,7 +1251,7 @@ export default function Home() {
                             <div className="flex-1">
                               <p className="text-sm font-medium text-gray-800">{evidence.title}</p>
                               <p className="text-xs text-gray-500">
-                                {new Date(evidence.submittedAt).toLocaleDateString()}
+                                {format(new Date(evidence.submittedAt), 'dd/MM/yyyy HH:mm')}
                               </p>
                             </div>
                             <Badge
@@ -1374,7 +1375,7 @@ export default function Home() {
                                 {t('certificates.certificate_number', { ns: 'dashboard', number: cert.certificateNumber })}
                               </p>
                               <p className="text-xs text-gray-600 mb-3">
-                                {t('certificates.completed_on', { ns: 'dashboard', date: new Date(cert.completedDate).toLocaleDateString() })}
+                                {t('certificates.completed_on', { ns: 'dashboard', date: format(new Date(cert.completedDate), 'dd/MM/yyyy') })}
                               </p>
                               <div className="space-y-2">
                                 <Button
@@ -1523,7 +1524,7 @@ export default function Home() {
                             </div>
                             <p className="text-sm text-gray-600 flex items-center gap-2">
                               <Calendar className="h-3 w-3" />
-                              {t('evidence.submitted_on', { date: new Date(evidence.submittedAt).toLocaleDateString() })}
+                              {t('evidence.submitted_on', { date: format(new Date(evidence.submittedAt), 'dd/MM/yyyy HH:mm') })}
                             </p>
                           </div>
                           {evidence.status === 'pending' && (

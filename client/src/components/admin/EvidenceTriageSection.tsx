@@ -361,7 +361,7 @@ export default function EvidenceTriageSection() {
                           </div>
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
-                          {format(new Date(evidence.submittedAt), 'MMM d, yyyy')}
+                          {format(new Date(evidence.submittedAt), 'dd/MM/yyyy HH:mm')}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex gap-2 justify-end">

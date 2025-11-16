@@ -43,6 +43,7 @@ import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
 import type { SchoolData } from "@/components/admin/shared/types";
 import type { ReductionPromise } from "@shared/schema";
 import { calculateAggregateMetrics } from "@shared/plasticMetrics";
+import { format } from "date-fns";
 
 interface SchoolDetailsDialogProps {
   viewingSchool: SchoolData | null;
@@ -388,7 +389,7 @@ export default function SchoolDetailsDialog({
               <div>
                 <label className="text-sm font-medium text-gray-600">{t('schools.school_details.labels.joined')}</label>
                 <p className="text-base" data-testid={`text-joined-${viewingSchool.id}`}>
-                  {new Date(viewingSchool.createdAt).toLocaleDateString()}
+                  {format(new Date(viewingSchool.createdAt), 'dd/MM/yyyy')}
                 </p>
               </div>
             </div>
@@ -712,7 +713,7 @@ export default function SchoolDetailsDialog({
                         
                         {photoConsentStatus.uploadedAt && (
                           <p className="text-sm text-gray-600" data-testid="text-photo-consent-upload-date">
-                            <strong>{t('schools.school_details.photoConsent.uploadedAt')}</strong> {new Date(photoConsentStatus.uploadedAt).toLocaleDateString()}
+                            <strong>{t('schools.school_details.photoConsent.uploadedAt')}</strong> {format(new Date(photoConsentStatus.uploadedAt), 'dd/MM/yyyy HH:mm')}
                           </p>
                         )}
 
@@ -765,7 +766,7 @@ export default function SchoolDetailsDialog({
                     {photoConsentStatus.status === 'approved' && photoConsentStatus.approvedAt && (
                       <div className="border-t pt-3 text-sm text-gray-600" data-testid="info-photo-consent-approval">
                         <p>
-                          <strong>{t('schools.school_details.photoConsent.approvedAt')}</strong> {new Date(photoConsentStatus.approvedAt).toLocaleDateString()}
+                          <strong>{t('schools.school_details.photoConsent.approvedAt')}</strong> {format(new Date(photoConsentStatus.approvedAt), 'dd/MM/yyyy HH:mm')}
                         </p>
                         {photoConsentStatus.approvedBy && (
                           <p>

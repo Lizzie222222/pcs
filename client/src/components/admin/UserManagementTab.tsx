@@ -47,6 +47,7 @@ import {
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
 import AssignTeacherForm from "@/components/admin/AssignTeacherForm";
 import EditUserDialog from "@/components/admin/EditUserDialog";
+import { format } from "date-fns";
 
 interface UserWithSchools {
   user: {
@@ -772,7 +773,7 @@ export default function UserManagementTab() {
                         </td>
                         <td className="p-3 text-sm text-gray-600" data-testid={`text-last-active-${currentUser.id}`}>
                           {currentUser.lastActiveAt 
-                            ? new Date(currentUser.lastActiveAt).toLocaleDateString()
+                            ? format(new Date(currentUser.lastActiveAt), 'dd/MM/yyyy')
                             : '-'}
                         </td>
                         <td className="p-3">
@@ -928,8 +929,8 @@ export default function UserManagementTab() {
                           {invitation.status === 'pending' ? t('userManagement.badges.pendingInvite') : invitation.status}
                         </Badge>
                       </td>
-                      <td className="p-3 text-gray-600">{new Date(invitation.createdAt).toLocaleDateString()}</td>
-                      <td className="p-3 text-gray-600">{new Date(invitation.expiresAt).toLocaleDateString()}</td>
+                      <td className="p-3 text-gray-600">{format(new Date(invitation.createdAt), 'dd/MM/yyyy')}</td>
+                      <td className="p-3 text-gray-600">{format(new Date(invitation.expiresAt), 'dd/MM/yyyy')}</td>
                       <td className="p-3">
                         <Button
                           variant="ghost"

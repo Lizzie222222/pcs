@@ -831,7 +831,7 @@ export default function EventLivePage() {
               <div className="mt-6 flex flex-wrap justify-center gap-4">
                 <div className="flex items-center gap-2 bg-pcs_blue/10 px-4 py-2 rounded-full">
                   <Calendar className="w-5 h-5 text-pcs_blue" />
-                  <span className="font-medium text-gray-800">{format(new Date(event.startDateTime), 'MMMM d, yyyy')}</span>
+                  <span className="font-medium text-gray-800">{format(new Date(event.startDateTime), 'dd/MM/yyyy')}</span>
                 </div>
               </div>
             </div>
@@ -886,7 +886,7 @@ export default function EventLivePage() {
               <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-200">
                 <Calendar className="w-4 h-4 text-pcs_blue" />
                 <span className="text-sm font-medium text-gray-700">
-                  {format(new Date(event.startDateTime), 'MMMM d, yyyy • h:mm a')}
+                  {format(new Date(event.startDateTime), 'dd/MM/yyyy HH:mm')}
                 </span>
               </div>
               {event.location && (
@@ -1130,7 +1130,7 @@ export default function EventLivePage() {
                 Content Not Yet Available
               </p>
               <p className="text-lg text-amber-800 mb-2" data-testid="text-recording-available-date">
-                This pre-recorded event will be available on {format(new Date(event.recordingAvailableFrom), 'EEEE, MMMM d, yyyy \'at\' h:mm a')}
+                This pre-recorded event will be available on {format(new Date(event.recordingAvailableFrom), 'EEEE, dd/MM/yyyy \'at\' HH:mm')}
               </p>
               <p className="text-amber-700">
                 Please check back after this date to access the content.
@@ -1230,7 +1230,7 @@ export default function EventLivePage() {
           <div className="flex flex-wrap justify-center gap-4 text-gray-700 mb-8">
             <div className="flex items-center gap-2 bg-white/70 px-4 py-2 rounded-full shadow-sm" data-testid="div-event-date">
               <Calendar className="w-5 h-5 text-pcs_blue" />
-              <span className="font-medium">{format(startDate, 'EEEE, MMMM d, yyyy')}</span>
+              <span className="font-medium">{format(startDate, 'EEEE, dd/MM/yyyy')}</span>
             </div>
             
             <div className="flex items-center gap-2 bg-white/70 px-4 py-2 rounded-full shadow-sm" data-testid="div-event-time">

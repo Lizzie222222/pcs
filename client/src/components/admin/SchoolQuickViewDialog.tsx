@@ -16,6 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { format } from "date-fns";
 import {
   Building,
   MapPin,
@@ -978,7 +979,7 @@ export default function SchoolQuickViewDialog({
                                     )}
                                     
                                     <p className="text-xs text-gray-500 dark:text-gray-500">
-                                      {evidence.submittedAt ? new Date(evidence.submittedAt).toLocaleDateString() : 'N/A'}
+                                      {evidence.submittedAt ? format(new Date(evidence.submittedAt), 'dd/MM/yyyy HH:mm') : 'N/A'}
                                     </p>
                                   </>
                                 )}

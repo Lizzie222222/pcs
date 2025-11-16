@@ -20,6 +20,7 @@ import {
   Calendar,
   TrendingUp
 } from "lucide-react";
+import { format } from "date-fns";
 
 interface SearchResult {
   resources: any[];
@@ -186,7 +187,7 @@ export function AdvancedSearch({ className = "", defaultQuery = "", onResultsCha
         <div className="flex items-center space-x-4 text-sm text-gray-500">
           <span className="flex items-center space-x-1">
             <Calendar className="w-3 h-3" />
-            <span>{new Date(evidence.submittedAt).toLocaleDateString()}</span>
+            <span>{format(new Date(evidence.submittedAt), 'dd/MM/yyyy HH:mm')}</span>
           </span>
           <Badge variant="outline" className="text-xs">{evidence.stage}</Badge>
         </div>

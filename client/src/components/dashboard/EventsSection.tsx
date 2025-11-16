@@ -841,7 +841,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                   <Calendar className="h-5 w-5 text-pcs_blue" />
                   <div>
                     <p className="text-xs text-gray-500">Date</p>
-                    <p className="font-semibold">{format(new Date(selectedEvent.startDateTime), 'PPP')}</p>
+                    <p className="font-semibold">{format(new Date(selectedEvent.startDateTime), 'dd/MM/yyyy')}</p>
                   </div>
                 </div>
 
@@ -849,7 +849,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                   <Clock className="h-5 w-5 text-pcs_blue" />
                   <div>
                     <p className="text-xs text-gray-500">Time (your timezone)</p>
-                    <p className="font-semibold">{format(new Date(selectedEvent.startDateTime), 'p')}</p>
+                    <p className="font-semibold">{format(new Date(selectedEvent.startDateTime), 'HH:mm')}</p>
                   </div>
                 </div>
 

@@ -143,7 +143,7 @@ export function ActivityHistory({
                 </span>
               </div>
               <p className="text-muted-foreground text-xs mb-1" data-testid={`activity-log-time-${log.id}`}>
-                {format(new Date(log.createdAt), 'PPp')}
+                {format(new Date(log.createdAt), 'dd/MM/yyyy HH:mm')}
               </p>
               {log.details && (
                 <div className="text-muted-foreground text-xs mt-2 bg-muted/30 p-2 rounded">

@@ -32,6 +32,7 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { PDFThumbnail } from "@/components/PDFThumbnail";
 import { Footer } from "@/components/Footer";
 import { normalizeObjectStorageUrl } from "@/lib/urlNormalization";
+import { format } from "date-fns";
 
 /**
  * Check if a URL points to a PDF file by checking Content-Type header
@@ -387,7 +388,7 @@ function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
         {/* Footer */}
         <div className="flex items-center justify-between pt-3 border-t">
           <span className="text-xs text-gray-500">
-            {new Date(caseStudy.createdAt).toLocaleDateString()}
+            {format(new Date(caseStudy.createdAt), 'dd/MM/yyyy')}
           </span>
           <Link href={caseStudy.contentType === 'evidence' ? `/evidence/${caseStudy.id}` : `/case-study/${caseStudy.id}`}>
             <Button 

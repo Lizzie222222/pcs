@@ -8,6 +8,7 @@ import { CertificateTemplate } from "@/components/CertificateTemplate";
 import { SocialMetaTags } from "@/components/SocialMetaTags";
 import { CheckCircle, XCircle, Download, ArrowLeft, Shield } from "lucide-react";
 import type { Certificate, School } from "@shared/schema";
+import { format } from "date-fns";
 
 interface CertificateVerificationResponse extends Certificate {
   school: School;
@@ -40,11 +41,7 @@ export default function VerifyCertificate() {
 
   // Extract metadata
   const roundNumber = certificate ? (certificate.metadata as any)?.round || 1 : 1;
-  const completionDate = certificate ? new Date(certificate.completedDate).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  }) : '';
+  const completionDate = certificate ? format(new Date(certificate.completedDate), 'dd/MM/yyyy') : '';
 
   // SEO and Open Graph meta tags
   const pageTitle = certificate 
@@ -172,11 +169,7 @@ export default function VerifyCertificate() {
               <div>
                 <h3 className="text-sm font-semibold text-gray-600 mb-1">Issue Date</h3>
                 <p className="text-lg font-medium text-navy" data-testid="text-issue-date">
-                  {new Date(certificate.issuedDate || certificate.createdAt || new Date()).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
+                  {format(new Date(certificate.issuedDate || certificate.createdAt || new Date()), 'dd/MM/yyyy')}
                 </p>
               </div>
             </div>

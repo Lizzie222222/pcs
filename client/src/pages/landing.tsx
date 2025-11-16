@@ -15,6 +15,7 @@ import {
 import { OptimizedImage, generateBlurDataURL } from "@/components/ui/OptimizedImage";
 import { getEventAvailableLanguages, LANGUAGE_FLAG_MAP } from "@/lib/languageUtils";
 import { normalizeObjectStorageUrl } from "@/lib/urlNormalization";
+import { format } from "date-fns";
 
 // Lazy load heavy components below the fold
 const SchoolSignUpForm = lazy(() => import("@/components/SchoolSignUpForm"));
@@ -621,7 +622,7 @@ export default function Landing() {
                             <div className="space-y-2 mb-4">
                               <div className="flex items-center gap-2 text-sm text-gray-600">
                                 <Calendar className="w-4 h-4" />
-                                <span>{new Date(event.startDateTime).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                                <span>{format(new Date(event.startDateTime), 'dd/MM/yyyy')}</span>
                               </div>
                               {event.location && (
                                 <div className="flex items-center gap-2 text-sm text-gray-600">

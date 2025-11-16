@@ -28,6 +28,7 @@ import {
   ArrowRight,
   Globe
 } from "lucide-react";
+import { format } from "date-fns";
 import { createLoginSchema, type LoginForm } from "@shared/schema";
 import { z } from "zod";
 import pcsLogoUrl from "@assets/PSC Logo - Blue_1761334524895.png";
@@ -973,7 +974,7 @@ export default function AdminInvitationAccept() {
           )}
 
           <p className="text-xs text-center text-gray-500" data-testid="text-admin-expires-info">
-            This invitation expires on {new Date(invitation.expiresAt).toLocaleDateString()}
+            This invitation expires on {format(new Date(invitation.expiresAt), 'dd/MM/yyyy')}
           </p>
         </CardContent>
       </Card>

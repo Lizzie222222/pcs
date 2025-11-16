@@ -8,6 +8,7 @@ import { CheckCircle, XCircle, Eye, Trash2, ChevronDown, ChevronUp, ArrowUp, Arr
 import type { SchoolData } from "@/components/admin/shared/types";
 import { useTranslation } from 'react-i18next';
 import EditSchoolDialog from "@/components/admin/EditSchoolDialog";
+import { format } from "date-fns";
 
 // SchoolTeachersRow component
 interface SchoolTeacher {
@@ -114,7 +115,7 @@ function SchoolTeachersRow({ schoolId, isExpanded }: { schoolId: string; isExpan
                           )}
                         </td>
                         <td className="p-3 text-sm text-gray-600">
-                          {new Date(teacher.joinedAt).toLocaleDateString()}
+                          {format(new Date(teacher.joinedAt), 'dd/MM/yyyy')}
                         </td>
                       </tr>
                     ))}
@@ -342,7 +343,7 @@ export default function SchoolsTable({
                         : school.primaryContactEmail || t('schools.school_table.notAvailable')}
                     </td>
                     <td className="p-3 text-gray-600">
-                      {new Date(school.createdAt).toLocaleDateString()}
+                      {format(new Date(school.createdAt), 'dd/MM/yyyy')}
                     </td>
                     <td className="p-3">
                       <div className="flex gap-2">
