@@ -5,6 +5,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SchoolCombobox } from "@/components/ui/school-combobox";
 import { LoadingSpinner } from "@/components/ui/states";
 
 interface SchoolData {
@@ -156,18 +157,13 @@ export default function AssignTeacherForm() {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             School *
           </label>
-          <Select value={selectedSchool} onValueChange={setSelectedSchool}>
-            <SelectTrigger data-testid="select-school">
-              <SelectValue placeholder="Select school" />
-            </SelectTrigger>
-            <SelectContent>
-              {schools.map((school) => (
-                <SelectItem key={school.id} value={school.id}>
-                  {school.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <SchoolCombobox
+            schools={schools}
+            value={selectedSchool}
+            onValueChange={setSelectedSchool}
+            placeholder="Select school..."
+            testId="select-school"
+          />
         </div>
 
         <div>
