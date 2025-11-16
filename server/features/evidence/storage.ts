@@ -211,6 +211,18 @@ export class EvidenceStorage {
           id: schools.id,
           name: schools.name,
           country: schools.country,
+          type: schools.type,
+          address: schools.address,
+          studentCount: schools.studentCount,
+          currentStage: schools.currentStage,
+          progressPercentage: schools.progressPercentage,
+          inspireCompleted: schools.inspireCompleted,
+          investigateCompleted: schools.investigateCompleted,
+          actCompleted: schools.actCompleted,
+          awardCompleted: schools.awardCompleted,
+          currentRound: schools.currentRound,
+          roundsCompleted: schools.roundsCompleted,
+          primaryContactId: schools.primaryContactId,
           photoConsentStatus: schools.photoConsentStatus,
           photoConsentDocumentUrl: schools.photoConsentDocumentUrl,
           photoConsentUploadedAt: schools.photoConsentUploadedAt,
@@ -253,15 +265,45 @@ export class EvidenceStorage {
 
     const results = await query;
     
-    // Transform results to use nested photoConsent structure
+    // Get unique primary contact IDs to fetch in batch
+    const primaryContactIds = Array.from(new Set(
+      results
+        .filter(r => r.school?.primaryContactId)
+        .map(r => r.school!.primaryContactId!)
+    ));
+
+    // Fetch all primary contacts in one query
+    const primaryContacts = primaryContactIds.length > 0
+      ? await db
+          .select({
+            id: users.id,
+            email: users.email,
+            firstName: users.firstName,
+            lastName: users.lastName,
+          })
+          .from(users)
+          .where(inArray(users.id, primaryContactIds))
+      : [];
+
+    // Create a map for quick lookup
+    const primaryContactMap = new Map(
+      primaryContacts.map(contact => [contact.id, contact])
+    );
+    
+    // Transform results to use nested photoConsent and primaryContact structures
     return results
       .filter(r => r.school !== null)
       .map(r => {
         const school = r.school!; // Already filtered null above
+        const primaryContact = school.primaryContactId
+          ? primaryContactMap.get(school.primaryContactId) || null
+          : null;
+
         return {
           ...r,
           school: {
             ...school,
+            primaryContact,
             photoConsent: school.photoConsentStatus || school.photoConsentDocumentUrl ? {
               status: school.photoConsentStatus,
               documentUrl: school.photoConsentDocumentUrl,
@@ -270,6 +312,7 @@ export class EvidenceStorage {
               reviewNotes: school.photoConsentReviewNotes,
             } : null,
             // Remove flattened fields
+            primaryContactId: undefined,
             photoConsentStatus: undefined,
             photoConsentDocumentUrl: undefined,
             photoConsentUploadedAt: undefined,

@@ -1870,6 +1870,23 @@ export type EvidenceWithSchool = Evidence & {
     id: string;
     name: string;
     country: string;
+    type?: string | null;
+    address?: string | null;
+    studentCount?: number | null;
+    currentStage?: string | null;
+    progressPercentage?: number | null;
+    inspireCompleted?: boolean | null;
+    investigateCompleted?: boolean | null;
+    actCompleted?: boolean | null;
+    awardCompleted?: boolean | null;
+    currentRound?: number | null;
+    roundsCompleted?: number | null;
+    primaryContact?: {
+      id: string | null;
+      email: string | null;
+      firstName: string | null;
+      lastName: string | null;
+    } | null;
     photoConsent?: {
       status: 'pending' | 'approved' | 'rejected' | null;
       documentUrl: string | null;
