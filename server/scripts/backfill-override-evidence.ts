@@ -9,10 +9,12 @@ import { eq, isNull } from 'drizzle-orm';
  * have linked evidence. The evidence appears identical to school-submitted evidence
  * to maintain consistency and cover data migration issues.
  * 
- * Usage: npm run migrate:backfill-override-evidence
+ * Can be run:
+ * 1. Manually: npm run migrate:backfill-override-evidence
+ * 2. Automatically: Called from server startup in production
  */
 
-async function backfillOverrideEvidence() {
+export async function backfillOverrideEvidence() {
   console.log('[Migration] Starting backfill of override evidence records...');
   
   // Check total overrides for context
@@ -94,17 +96,22 @@ async function backfillOverrideEvidence() {
   
   if (errorCount > 0) {
     console.error('[Migration] WARNING: Some overrides failed to backfill. Check errors above.');
-    process.exit(1);
+    // Throw error instead of exiting process (allows caller to decide how to handle)
+    throw new Error(`Failed to backfill ${errorCount} override(s). Check logs for details.`);
   }
+  
+  return { successCount, errorCount };
 }
 
-// Run migration
-backfillOverrideEvidence()
-  .then(() => {
-    console.log('[Migration] Migration finished successfully');
-    process.exit(0);
-  })
-  .catch((error) => {
-    console.error('[Migration] FATAL ERROR:', error);
-    process.exit(1);
-  });
+// Run migration when executed directly (not imported)
+if (require.main === module) {
+  backfillOverrideEvidence()
+    .then(() => {
+      console.log('[Migration] Migration finished successfully');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('[Migration] FATAL ERROR:', error);
+      process.exit(1);
+    });
+}
