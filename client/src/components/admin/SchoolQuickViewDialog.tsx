@@ -97,6 +97,7 @@ export default function SchoolQuickViewDialog({
   const [duplicateCheckResult, setDuplicateCheckResult] = useState<any>(null);
   const [statusChangeConfirm, setStatusChangeConfirm] = useState<{ evidenceId: string; newStatus: string } | null>(null);
   const [visibilityWarning, setVisibilityWarning] = useState<{ evidenceId: string; newVisibility: string; message: string } | null>(null);
+  const [duplicateWarning, setDuplicateWarning] = useState<{ evidenceId: string; requirementId: string; requirementTitle: string; duplicateStatus: string; markAsBonus: boolean } | null>(null);
 
   // Fetch school details
   const { data: schoolDetails, isLoading: schoolLoading } = useQuery<any>({
@@ -148,10 +149,7 @@ export default function SchoolQuickViewDialog({
   // Mutations
   const updateEvidenceMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
-      return apiRequest(`/api/admin/evidence/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(updates),
-      });
+      return apiRequest('PATCH', `/api/admin/evidence/${id}`, updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
@@ -169,19 +167,13 @@ export default function SchoolQuickViewDialog({
 
   const checkDuplicateMutation = useMutation({
     mutationFn: async ({ evidenceId, requirementId }: { evidenceId: string; requirementId: string }) => {
-      return apiRequest(`/api/admin/evidence/${evidenceId}/check-duplicate`, {
-        method: 'POST',
-        body: JSON.stringify({ requirementId }),
-      });
+      return apiRequest('POST', `/api/admin/evidence/${evidenceId}/check-duplicate`, { requirementId });
     },
   });
 
   const assignRequirementMutation = useMutation({
     mutationFn: async ({ evidenceId, requirementId }: { evidenceId: string; requirementId: string }) => {
-      return apiRequest(`/api/admin/evidence/${evidenceId}/assign-requirement`, {
-        method: 'PATCH',
-        body: JSON.stringify({ evidenceRequirementId: requirementId }),
-      });
+      return apiRequest('PATCH', `/api/admin/evidence/${evidenceId}/assign-requirement`, { evidenceRequirementId: requirementId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
@@ -189,6 +181,7 @@ export default function SchoolQuickViewDialog({
       setAssignmentDialog(null);
       setSelectedRequirement("");
       setDuplicateCheckResult(null);
+      setMarkAsBonus(false);
       toast({ title: "Requirement assigned successfully" });
     },
     onError: (error: any) => {
@@ -202,10 +195,7 @@ export default function SchoolQuickViewDialog({
 
   const markBonusMutation = useMutation({
     mutationFn: async ({ evidenceId, isBonus }: { evidenceId: string; isBonus: boolean }) => {
-      return apiRequest(`/api/admin/evidence/${evidenceId}/mark-bonus`, {
-        method: 'PATCH',
-        body: JSON.stringify({ isBonus }),
-      });
+      return apiRequest('PATCH', `/api/admin/evidence/${evidenceId}/mark-bonus`, { isBonus });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
@@ -353,10 +343,24 @@ export default function SchoolQuickViewDialog({
       evidenceName: evidence.title,
       evidenceStage: evidence.stage,
     });
+    setSelectedRequirement("");
+    setDuplicateCheckResult(null);
+    setDuplicateWarning(null);
+    setMarkAsBonus(false);
+  };
+
+  const handleCloseAssignmentDialog = () => {
+    setAssignmentDialog(null);
+    setSelectedRequirement("");
+    setDuplicateCheckResult(null);
+    setDuplicateWarning(null);
+    setMarkAsBonus(false);
   };
 
   const handleRequirementSelect = async (requirementId: string) => {
     setSelectedRequirement(requirementId);
+    setDuplicateCheckResult(null);
+    setDuplicateWarning(null);
     
     if (!assignmentDialog) return;
     
@@ -372,7 +376,28 @@ export default function SchoolQuickViewDialog({
   const handleAssignRequirement = async () => {
     if (!assignmentDialog || !selectedRequirement) return;
     
-    if (markAsBonus) {
+    // Check if duplicate exists - if so, show confirmation dialog
+    if (duplicateCheckResult?.hasDuplicate) {
+      setDuplicateWarning({
+        evidenceId: assignmentDialog.evidenceId,
+        requirementId: selectedRequirement,
+        requirementTitle: duplicateCheckResult.requirementTitle || 'this requirement',
+        duplicateStatus: duplicateCheckResult.duplicate?.status || 'existing',
+        markAsBonus: markAsBonus,
+      });
+      return; // Wait for user confirmation
+    }
+    
+    // No duplicate, proceed with assignment
+    await confirmAssignRequirement();
+  };
+
+  const confirmAssignRequirement = async () => {
+    if (!assignmentDialog || !selectedRequirement) return;
+    
+    const shouldMarkAsBonus = duplicateWarning?.markAsBonus ?? markAsBonus;
+    
+    if (shouldMarkAsBonus) {
       // Mark as bonus first, then assign
       await markBonusMutation.mutateAsync({
         evidenceId: assignmentDialog.evidenceId,
@@ -384,6 +409,9 @@ export default function SchoolQuickViewDialog({
       evidenceId: assignmentDialog.evidenceId,
       requirementId: selectedRequirement,
     });
+    
+    // Close duplicate warning if it was shown
+    setDuplicateWarning(null);
   };
 
   if (!school) return null;
@@ -981,7 +1009,7 @@ export default function SchoolQuickViewDialog({
 
       {/* Assignment Dialog */}
       {assignmentDialog && (
-        <Dialog open={!!assignmentDialog} onOpenChange={(open) => !open && setAssignmentDialog(null)}>
+        <Dialog open={!!assignmentDialog} onOpenChange={(open) => !open && handleCloseAssignmentDialog()}>
           <DialogContent className="max-w-lg" data-testid="dialog-assign-requirement">
             <DialogHeader>
               <DialogTitle>Assign to Requirement</DialogTitle>
@@ -1035,7 +1063,7 @@ export default function SchoolQuickViewDialog({
               <div className="flex justify-end gap-2">
                 <Button
                   variant="outline"
-                  onClick={() => setAssignmentDialog(null)}
+                  onClick={handleCloseAssignmentDialog}
                   data-testid="button-cancel-assignment"
                 >
                   Cancel
@@ -1091,6 +1119,46 @@ export default function SchoolQuickViewDialog({
               data-testid="button-confirm-visibility-change"
             >
               Continue Anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Duplicate Assignment Warning */}
+      <AlertDialog open={!!duplicateWarning} onOpenChange={(open) => !open && setDuplicateWarning(null)}>
+        <AlertDialogContent data-testid="dialog-duplicate-warning">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-yellow-600" />
+              Duplicate Evidence Detected
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>
+                This school already has <strong>{duplicateWarning?.duplicateStatus}</strong> evidence assigned to <strong>"{duplicateWarning?.requirementTitle}"</strong>.
+              </p>
+              {duplicateWarning?.markAsBonus ? (
+                <p className="text-green-600 dark:text-green-400 flex items-center gap-1">
+                  <Star className="h-4 w-4" />
+                  This will be marked as <strong>bonus evidence</strong> and assigned.
+                </p>
+              ) : (
+                <p className="text-amber-600 dark:text-amber-400">
+                  This could create a duplicate assignment. Consider marking it as bonus evidence.
+                </p>
+              )}
+              <p className="text-sm">
+                Are you sure you want to proceed with this assignment?
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-duplicate-assignment">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmAssignRequirement}
+              className="bg-yellow-600 hover:bg-yellow-700 dark:bg-yellow-700 dark:hover:bg-yellow-800"
+              data-testid="button-confirm-duplicate-assignment"
+            >
+              Assign Anyway
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
