@@ -6672,6 +6672,47 @@ Return JSON with:
     }
   });
 
+  // Update user email (admin only) - Dedicated endpoint for email updates
+  app.put('/api/admin/users/:id/email', isAuthenticated, requireFullAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const adminUserId = req.user.id;
+      
+      // Validate request body
+      const emailSchema = z.object({
+        email: z.string().email("Invalid email address"),
+      });
+      const { email } = emailSchema.parse(req.body);
+      
+      console.log(`[Update User Email] Admin ${adminUserId} updating email for user ${id} to ${email}`);
+      
+      // Check if the new email is already in use by another user
+      const existingUser = await storage.findUserByEmail(email);
+      if (existingUser && existingUser.id !== id) {
+        return res.status(409).json({ message: "Email already in use by another user" });
+      }
+      
+      // Update user email
+      const user = await storage.updateUser(id, { email });
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      console.log(`[Update User Email] Successfully updated email for user ${id}`);
+      res.json({ 
+        message: "Email updated successfully",
+        user 
+      });
+    } catch (error) {
+      console.error("[Update User Email] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update email" });
+    }
+  });
+
   // Get deletion preview for a user
   app.get('/api/admin/users/:id/deletion-preview', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
