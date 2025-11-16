@@ -30,6 +30,7 @@ import { EmptyState } from "@/components/ui/states";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
 import { PDFThumbnail } from "@/components/PDFThumbnail";
+import SchoolQuickViewDialog from "./SchoolQuickViewDialog";
 import type { EvidenceWithSchool } from "@shared/schema";
 
 export default function EvidenceGalleryTab() {
@@ -48,7 +49,6 @@ export default function EvidenceGalleryTab() {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [schoolHistoryDialogOpen, setSchoolHistoryDialogOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState<EvidenceWithSchool['school'] | null>(null);
-  const [schoolHistoryFilter, setSchoolHistoryFilter] = useState<'all' | 'approved' | 'pending' | 'rejected' | 'inspire' | 'investigate' | 'act'>('all');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [evidenceToDelete, setEvidenceToDelete] = useState<string | null>(null);
   
@@ -68,21 +68,6 @@ export default function EvidenceGalleryTab() {
       if (!response.ok) throw new Error('Failed to fetch evidence');
       return response.json();
     },
-  });
-
-  // Fetch school history when selected
-  const { data: schoolHistory = [], isLoading: schoolHistoryLoading, error: schoolHistoryError } = useQuery<EvidenceWithSchool[]>({
-    queryKey: ['/api/admin/evidence', { schoolId: selectedSchool?.id }],
-    queryFn: async () => {
-      if (!selectedSchool?.id) return [];
-      const params = new URLSearchParams({ schoolId: selectedSchool.id });
-      const response = await fetch(`/api/admin/evidence?${params}`, {
-        credentials: 'include',
-      });
-      if (!response.ok) throw new Error('Failed to fetch school history');
-      return response.json();
-    },
-    enabled: !!selectedSchool?.id && schoolHistoryDialogOpen,
   });
 
   // Fetch countries for filter
@@ -196,33 +181,6 @@ export default function EvidenceGalleryTab() {
     
     return null;
   };
-
-  // Calculate evidence statistics
-  const getEvidenceStats = (evidenceList: EvidenceWithSchool[]) => {
-    return {
-      total: evidenceList.length,
-      approved: evidenceList.filter(e => e.status === 'approved').length,
-      pending: evidenceList.filter(e => e.status === 'pending').length,
-      rejected: evidenceList.filter(e => e.status === 'rejected').length,
-      inspire: evidenceList.filter(e => e.stage === 'inspire').length,
-      investigate: evidenceList.filter(e => e.stage === 'investigate').length,
-      act: evidenceList.filter(e => e.stage === 'act').length,
-    };
-  };
-
-  // Filter school history based on selected filter
-  const filteredSchoolHistory = schoolHistory.filter(evidence => {
-    if (schoolHistoryFilter === 'all') return true;
-    if (['approved', 'pending', 'rejected'].includes(schoolHistoryFilter)) {
-      return evidence.status === schoolHistoryFilter;
-    }
-    if (['inspire', 'investigate', 'act'].includes(schoolHistoryFilter)) {
-      return evidence.stage === schoolHistoryFilter;
-    }
-    return true;
-  });
-
-  const schoolStats = getEvidenceStats(schoolHistory);
 
   return (
     <div className="space-y-6" data-refactor-source="EvidenceGalleryTab">
@@ -575,285 +533,12 @@ export default function EvidenceGalleryTab() {
         </DialogContent>
       </Dialog>
 
-      {/* School History Dialog */}
-      <Dialog open={schoolHistoryDialogOpen} onOpenChange={(open) => {
-        setSchoolHistoryDialogOpen(open);
-        if (!open) setSchoolHistoryFilter('all');
-      }}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto" data-testid="dialog-school-history">
-          <DialogHeader>
-            <DialogTitle className="text-2xl flex items-center gap-2">
-              <Building className="h-6 w-6 text-pcs_blue" />
-              {selectedSchool?.name || 'School Overview'}
-            </DialogTitle>
-          </DialogHeader>
-          
-          {schoolHistoryLoading ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin h-8 w-8 border-4 border-pcs_blue border-t-transparent rounded-full" />
-            </div>
-          ) : schoolHistoryError ? (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-red-800">Failed to load school history. Please try again.</p>
-            </div>
-          ) : (
-            <div className="space-y-6" data-testid="school-history-content">
-              {/* School Information */}
-              <Card className="bg-gradient-to-br from-pcs_blue/5 to-pcs_green/5 border-pcs_blue/20" data-testid="card-school-details">
-                <CardContent className="pt-6">
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Building className="h-5 w-5" />
-                    School Information
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div className="flex items-start gap-2">
-                      <Globe className="h-4 w-4 mt-1 text-gray-500" />
-                      <div>
-                        <p className="text-xs text-gray-500">Country</p>
-                        <p className="font-medium">{selectedSchool?.country || 'N/A'}</p>
-                      </div>
-                    </div>
-                    {selectedSchool?.type && (
-                      <div className="flex items-start gap-2">
-                        <Building className="h-4 w-4 mt-1 text-gray-500" />
-                        <div>
-                          <p className="text-xs text-gray-500">School Type</p>
-                          <p className="font-medium capitalize">{selectedSchool.type}</p>
-                        </div>
-                      </div>
-                    )}
-                    {selectedSchool?.studentCount && (
-                      <div className="flex items-start gap-2">
-                        <Users className="h-4 w-4 mt-1 text-gray-500" />
-                        <div>
-                          <p className="text-xs text-gray-500">Student Count</p>
-                          <p className="font-medium">{selectedSchool.studentCount.toLocaleString()}</p>
-                        </div>
-                      </div>
-                    )}
-                    {selectedSchool?.address && (
-                      <div className="flex items-start gap-2">
-                        <MapPin className="h-4 w-4 mt-1 text-gray-500" />
-                        <div>
-                          <p className="text-xs text-gray-500">Address</p>
-                          <p className="font-medium text-sm">{selectedSchool.address}</p>
-                        </div>
-                      </div>
-                    )}
-                    {selectedSchool?.currentRound && (
-                      <div className="flex items-start gap-2">
-                        <Award className="h-4 w-4 mt-1 text-gray-500" />
-                        <div>
-                          <p className="text-xs text-gray-500">Current Round</p>
-                          <p className="font-medium">Round {selectedSchool.currentRound}</p>
-                        </div>
-                      </div>
-                    )}
-                    {selectedSchool?.primaryContact && (selectedSchool.primaryContact.firstName || selectedSchool.primaryContact.email) && (
-                      <div className="flex items-start gap-2">
-                        <Users className="h-4 w-4 mt-1 text-gray-500" />
-                        <div>
-                          <p className="text-xs text-gray-500">Primary Contact</p>
-                          <p className="font-medium">
-                            {selectedSchool.primaryContact.firstName && selectedSchool.primaryContact.lastName
-                              ? `${selectedSchool.primaryContact.firstName} ${selectedSchool.primaryContact.lastName}`
-                              : selectedSchool.primaryContact.email || 'N/A'}
-                          </p>
-                          {selectedSchool.primaryContact.firstName && selectedSchool.primaryContact.email && (
-                            <p className="text-xs text-gray-500">{selectedSchool.primaryContact.email}</p>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Progress Metrics */}
-              {(selectedSchool?.currentStage || selectedSchool?.progressPercentage !== null) && (
-                <Card className="border-pcs_green/20">
-                  <CardContent className="pt-6">
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5" />
-                      Progress
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-xs text-gray-500">Current Stage</p>
-                          <p className="font-medium capitalize">{selectedSchool?.currentStage || 'N/A'}</p>
-                        </div>
-                        {selectedSchool?.progressPercentage !== null && (
-                          <div className="text-right">
-                            <p className="text-xs text-gray-500">Overall Progress</p>
-                            <p className="font-bold text-2xl text-pcs_blue">{selectedSchool?.progressPercentage}%</p>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <Badge variant={selectedSchool?.inspireCompleted ? "default" : "outline"} className={selectedSchool?.inspireCompleted ? "bg-purple-500" : ""}>
-                          {selectedSchool?.inspireCompleted ? <Check className="h-3 w-3 mr-1" /> : null}
-                          Inspire {selectedSchool?.inspireCompleted ? 'Complete' : 'In Progress'}
-                        </Badge>
-                        <Badge variant={selectedSchool?.investigateCompleted ? "default" : "outline"} className={selectedSchool?.investigateCompleted ? "bg-blue-500" : ""}>
-                          {selectedSchool?.investigateCompleted ? <Check className="h-3 w-3 mr-1" /> : null}
-                          Investigate {selectedSchool?.investigateCompleted ? 'Complete' : 'In Progress'}
-                        </Badge>
-                        <Badge variant={selectedSchool?.actCompleted ? "default" : "outline"} className={selectedSchool?.actCompleted ? "bg-green-500" : ""}>
-                          {selectedSchool?.actCompleted ? <Check className="h-3 w-3 mr-1" /> : null}
-                          Act {selectedSchool?.actCompleted ? 'Complete' : 'In Progress'}
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Evidence Statistics */}
-              <Card className="border-pcs_orange/20">
-                <CardContent className="pt-6">
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
-                    Evidence Summary ({schoolStats.total} total)
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-                    <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
-                      <p className="text-2xl font-bold text-green-700">{schoolStats.approved}</p>
-                      <p className="text-xs text-green-600">Approved</p>
-                    </div>
-                    <div className="text-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                      <p className="text-2xl font-bold text-yellow-700">{schoolStats.pending}</p>
-                      <p className="text-xs text-yellow-600">Pending</p>
-                    </div>
-                    <div className="text-center p-3 bg-red-50 rounded-lg border border-red-200">
-                      <p className="text-2xl font-bold text-red-700">{schoolStats.rejected}</p>
-                      <p className="text-xs text-red-600">Rejected</p>
-                    </div>
-                    <div className="text-center p-3 bg-purple-50 rounded-lg border border-purple-200">
-                      <p className="text-2xl font-bold text-purple-700">{schoolStats.inspire}</p>
-                      <p className="text-xs text-purple-600">Inspire</p>
-                    </div>
-                    <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-200">
-                      <p className="text-2xl font-bold text-blue-700">{schoolStats.investigate}</p>
-                      <p className="text-xs text-blue-600">Investigate</p>
-                    </div>
-                    <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
-                      <p className="text-2xl font-bold text-green-700">{schoolStats.act}</p>
-                      <p className="text-xs text-green-600">Act</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Filter Evidence */}
-              {schoolHistory.length > 0 && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Filter className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm font-medium text-gray-700">Filter Evidence:</span>
-                  <div className="flex gap-2 flex-wrap">
-                    <Button 
-                      size="sm" 
-                      variant={schoolHistoryFilter === 'all' ? 'default' : 'outline'}
-                      onClick={() => setSchoolHistoryFilter('all')}
-                      data-testid="filter-all"
-                    >
-                      All ({schoolStats.total})
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant={schoolHistoryFilter === 'approved' ? 'default' : 'outline'}
-                      onClick={() => setSchoolHistoryFilter('approved')}
-                      className={schoolHistoryFilter === 'approved' ? 'bg-green-600 hover:bg-green-700' : ''}
-                      data-testid="filter-approved"
-                    >
-                      Approved ({schoolStats.approved})
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant={schoolHistoryFilter === 'pending' ? 'default' : 'outline'}
-                      onClick={() => setSchoolHistoryFilter('pending')}
-                      className={schoolHistoryFilter === 'pending' ? 'bg-yellow-600 hover:bg-yellow-700' : ''}
-                      data-testid="filter-pending"
-                    >
-                      Pending ({schoolStats.pending})
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant={schoolHistoryFilter === 'rejected' ? 'default' : 'outline'}
-                      onClick={() => setSchoolHistoryFilter('rejected')}
-                      className={schoolHistoryFilter === 'rejected' ? 'bg-red-600 hover:bg-red-700' : ''}
-                      data-testid="filter-rejected"
-                    >
-                      Rejected ({schoolStats.rejected})
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Evidence Grid */}
-              {filteredSchoolHistory.length === 0 ? (
-                <EmptyState 
-                  icon={FileText}
-                  title={schoolHistory.length === 0 ? t('evidenceGallery.emptyStates.noSchoolSubmissions.title') : 'No evidence matches this filter'}
-                  description={schoolHistory.length === 0 ? t('evidenceGallery.emptyStates.noSchoolSubmissions.description') : 'Try selecting a different filter to see more evidence.'}
-                />
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredSchoolHistory.map((evidence: any) => (
-                    <Card 
-                      key={evidence.id} 
-                      className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" 
-                      data-testid={`card-school-evidence-${evidence.id}`}
-                      onClick={() => {
-                        setSelectedEvidence(evidence);
-                        setDetailsDialogOpen(true);
-                      }}
-                    >
-                      <div className="h-32 bg-gray-100 flex items-center justify-center overflow-hidden">
-                        {(() => {
-                          const file = getFileForThumbnail(evidence);
-                          if (file?.type === 'image') {
-                            return (
-                              <img 
-                                src={file.url} 
-                                alt={evidence.title}
-                                className="w-full h-full object-cover"
-                              />
-                            );
-                          } else if (file?.type === 'pdf') {
-                            return (
-                              <PDFThumbnail 
-                                url={file.url}
-                                className="w-full h-full"
-                              />
-                            );
-                          } else {
-                            return <FileText className="h-16 w-16 text-gray-400" />;
-                          }
-                        })()}
-                      </div>
-                      <CardContent className="pt-3">
-                        <h4 className="font-medium text-sm line-clamp-2">{evidence.title}</h4>
-                        <div className="flex gap-1 mt-2">
-                          <Badge className={getStageBadgeColor(evidence.stage)} variant="outline">
-                            {evidence.stage}
-                          </Badge>
-                          <Badge className={getStatusBadgeColor(evidence.status)}>
-                            {evidence.status}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-2">
-                          {new Date(evidence.submittedAt).toLocaleDateString()}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* School Quick View Dialog */}
+      <SchoolQuickViewDialog
+        school={selectedSchool}
+        open={schoolHistoryDialogOpen}
+        onOpenChange={setSchoolHistoryDialogOpen}
+      />
 
       {/* Delete Evidence Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
