@@ -285,8 +285,21 @@ export default function EvidenceReviewQueue({
   };
 
   // School History Dialog Helper Functions
-  const handleSchoolClick = (school: PendingEvidence['school']) => {
-    setSelectedSchool(school);
+  const handleSchoolClick = (e: React.MouseEvent | PendingEvidence['school'], school?: PendingEvidence['school']) => {
+    // Handle both old signature (school only) and new signature (event, school)
+    let actualSchool: PendingEvidence['school'];
+    if (school) {
+      // New signature: (event, school)
+      if (e && typeof e === 'object' && 'stopPropagation' in e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+      actualSchool = school;
+    } else {
+      // Old signature: (school) - for backward compatibility
+      actualSchool = e as PendingEvidence['school'];
+    }
+    setSelectedSchool(actualSchool);
     setSchoolHistoryDialogOpen(true);
   };
 
@@ -465,7 +478,7 @@ export default function EvidenceReviewQueue({
               </TableCell>
               <TableCell className="font-medium">
                 <button
-                  onClick={() => handleSchoolClick(item.school)}
+                  onClick={(e) => handleSchoolClick(e, item.school)}
                   className="flex items-center gap-1 text-left hover:text-pcs_blue transition-colors group"
                   data-testid={`button-school-history-${item.id}`}
                 >
@@ -1086,7 +1099,7 @@ export default function EvidenceReviewQueue({
                       <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
                         {evidence.school?.name && (
                           <button
-                            onClick={() => handleSchoolClick(evidence.school)}
+                            onClick={(e) => handleSchoolClick(e, evidence.school)}
                             className="font-medium text-gray-700 hover:text-pcs_blue transition-colors group flex items-center gap-1"
                             data-testid={`button-school-history-${evidence.id}`}
                           >
