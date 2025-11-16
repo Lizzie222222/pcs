@@ -55,7 +55,7 @@ interface Resource {
 const SUPPORTED_LANGUAGES = ['en', 'es', 'fr', 'de', 'it', 'pt', 'nl', 'ar', 'zh', 'el', 'ru', 'ko', 'id', 'cy'];
 const RESOURCE_TYPES = ['lesson_plan', 'assembly', 'teacher_toolkit', 'student_workbook', 'printable_activities'];
 const RESOURCE_THEMES = ['ocean_literacy', 'climate_change', 'plastic_pollution', 'science', 'design_technology', 'geography', 'cross_curricular', 'enrichment', 'student_action'];
-const RESOURCE_TAGS = ['all_stages', 'beginner', 'advanced', 'featured'];
+const RESOURCE_TAGS = ['all_stages', 'beginner', 'advanced', 'featured', 'events', 'teacher_toolkits', 'student_workbooks'];
 
 function ResourceForm({ resource, onClose, onSuccess }: {
   resource?: Resource;

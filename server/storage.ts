@@ -1919,6 +1919,7 @@ export class DatabaseStorage implements IStorage {
     ageRange?: string;
     resourceType?: string;
     theme?: string;
+    tags?: string;
     search?: string;
     visibility?: 'public' | 'private';
     includeHidden?: boolean;
@@ -1976,6 +1977,10 @@ export class DatabaseStorage implements IStorage {
       if (themeCondition) {
         conditions.push(themeCondition);
       }
+    }
+    if (filters.tags) {
+      // Filter by tags array
+      conditions.push(sql`${filters.tags} = ANY(${resources.tags})`);
     }
     if (filters.visibility) {
       conditions.push(eq(resources.visibility, filters.visibility as any));

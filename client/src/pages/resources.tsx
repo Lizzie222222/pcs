@@ -110,6 +110,7 @@ export default function Resources() {
     resourceType: '',
     theme: '',
     stage: '',
+    tags: '',
   });
   const [selectedLanguageTab, setSelectedLanguageTab] = useState<string>('');
   const [page, setPage] = useState(0);
@@ -932,6 +933,24 @@ export default function Resources() {
                   <SelectItem value="student_action">Student Action</SelectItem>
                 </SelectContent>
               </Select>
+
+              {activeTab === 'resources' && (
+                <Select value={filters.tags} onValueChange={(value) => handleFilterChange('tags', value)}>
+                  <SelectTrigger data-testid="select-tags">
+                    <SelectValue placeholder="All Tags" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Tags</SelectItem>
+                    <SelectItem value="all_stages">All Stages</SelectItem>
+                    <SelectItem value="beginner">Beginner</SelectItem>
+                    <SelectItem value="advanced">Advanced</SelectItem>
+                    <SelectItem value="featured">Featured</SelectItem>
+                    <SelectItem value="events">Events</SelectItem>
+                    <SelectItem value="teacher_toolkits">Teacher Toolkits</SelectItem>
+                    <SelectItem value="student_workbooks">Student Workbooks</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             
             <div className="flex flex-wrap gap-2">
@@ -1064,6 +1083,7 @@ export default function Resources() {
                           resourceType: '',
                           theme: '',
                           stage: '',
+                          tags: '',
                         });
                         setSelectedLanguageTab('');
                         setPage(0);
@@ -1156,6 +1176,7 @@ export default function Resources() {
                           resourceType: '',
                           theme: '',
                           stage: '',
+                          tags: '',
                         });
                         setPackPage(0);
                       },
