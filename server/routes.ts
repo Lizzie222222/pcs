@@ -1638,8 +1638,9 @@ Return JSON with:
       // Validate request body
       const inviteSchema = z.object({
         email: z.string().email("Valid email is required"),
+        message: z.string().optional(),
       });
-      const { email } = inviteSchema.parse(req.body);
+      const { email, message } = inviteSchema.parse(req.body);
       
       console.log(`[Teacher Invitation] User ${userId} inviting ${email} to school ${schoolId}`);
       
@@ -9019,8 +9020,9 @@ Return JSON with:
       // Validate request body
       const inviteSchema = z.object({
         email: z.string().email("Valid email is required"),
+        message: z.string().optional(),
       });
-      const { email } = inviteSchema.parse(req.body);
+      const { email, message } = inviteSchema.parse(req.body);
       
       console.log(`[Admin Teacher Invitation] Admin ${userId} inviting ${email} to school ${schoolId}`);
       

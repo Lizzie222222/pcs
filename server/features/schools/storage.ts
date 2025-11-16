@@ -602,7 +602,17 @@ export class SchoolStorage {
     let query = db
       .select({
         ...getTableColumns(schoolUsers),
-        user: users,
+        user: {
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          role: users.role,
+          isAdmin: users.isAdmin,
+          preferredLanguage: users.preferredLanguage,
+          emailVerified: users.emailVerified,
+          createdAt: users.createdAt,
+        },
       })
       .from(schoolUsers)
       .leftJoin(users, eq(schoolUsers.userId, users.id))
@@ -622,7 +632,13 @@ export class SchoolStorage {
       query = query.offset(filters.offset);
     }
 
-    return await query;
+    const results = await query;
+    
+    // Map results to ensure user is null when all user fields are null (no matching user)
+    return results.map(result => ({
+      ...result,
+      user: result.user?.id ? (result.user as any) : null
+    }));
   }
 
   async updateLegacyEvidenceCount(
