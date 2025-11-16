@@ -1135,48 +1135,58 @@ export function createEvidenceRouters(storage: IStorage): {
   /**
    * PATCH /api/admin/evidence/:id/assign-requirement
    * 
-   * Assign homeless evidence to a requirement
-   * - Validates requirement exists and matches evidence stage
-   * - Updates evidence record with evidenceRequirementId
+   * Assign or reassign evidence to a requirement
+   * - Validates requirement exists
+   * - Allows stage changes (admin can assign to any stage)
+   * - Supports reassignment with allowOverwrite flag
    * - Invalidates school progress cache (triggers progression check)
    * 
-   * Body: { evidenceRequirementId: string }
+   * Body: { evidenceRequirementId: string, allowOverwrite?: boolean }
    */
   adminEvidenceRouter.patch('/:id/assign-requirement', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
       const { id } = req.params;
-      const { evidenceRequirementId } = req.body;
+      const { evidenceRequirementId, allowOverwrite } = req.body;
       const userId = req.user.id;
       
       if (!evidenceRequirementId) {
         return res.status(400).json({ message: "evidenceRequirementId is required" });
       }
       
-      // Get evidence to verify it exists and is homeless
+      // Get evidence to verify it exists
       const evidence = await evidenceStorage.getEvidence(id);
       if (!evidence) {
         return res.status(404).json({ message: "Evidence not found" });
       }
       
-      if (evidence.evidenceRequirementId) {
-        return res.status(400).json({ message: "Evidence is already assigned to a requirement" });
+      // Check if evidence is already assigned to a requirement
+      if (evidence.evidenceRequirementId && !allowOverwrite) {
+        // Get current requirement details for the warning
+        const currentRequirement = await evidenceStorage.getEvidenceRequirement(evidence.evidenceRequirementId);
+        return res.status(409).json({ 
+          message: "Evidence is already assigned to a requirement",
+          conflict: "reassignment",
+          currentRequirement: {
+            id: currentRequirement?.id,
+            title: currentRequirement?.title,
+            stage: currentRequirement?.stage,
+          }
+        });
       }
       
-      // Get requirement to validate it exists and matches stage
+      // Get new requirement to validate it exists
       const requirement = await evidenceStorage.getEvidenceRequirement(evidenceRequirementId);
       if (!requirement) {
         return res.status(404).json({ message: "Evidence requirement not found" });
       }
       
-      if (requirement.stage !== evidence.stage) {
-        return res.status(400).json({ 
-          message: `Requirement stage (${requirement.stage}) does not match evidence stage (${evidence.stage})` 
-        });
-      }
+      // Allow admin to assign to any stage (no stage validation)
+      // Admins can freely move evidence between stages
       
-      // Update evidence with requirement assignment
+      // Update evidence with requirement assignment and stage
       const updatedEvidence = await evidenceStorage.updateEvidence(id, {
         evidenceRequirementId,
+        stage: requirement.stage, // Update evidence stage to match requirement
       });
       
       if (!updatedEvidence) {
@@ -1187,12 +1197,17 @@ export function createEvidenceRouters(storage: IStorage): {
       await delegates.progression.checkAndUpdateSchoolProgression(evidence.schoolId);
       
       // Log the assignment
+      const action = evidence.evidenceRequirementId ? 'reassigned_requirement' : 'assigned_requirement';
       await logAuditAction(
         userId,
-        'assigned_requirement',
+        action,
         'evidence',
         id,
-        { evidenceRequirementId, requirementTitle: requirement.title }
+        { 
+          evidenceRequirementId, 
+          requirementTitle: requirement.title,
+          previousRequirementId: evidence.evidenceRequirementId 
+        }
       );
       
       res.json(updatedEvidence);

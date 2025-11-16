@@ -98,7 +98,7 @@ export default function SchoolQuickViewDialog({
   const [duplicateCheckResult, setDuplicateCheckResult] = useState<any>(null);
   const [statusChangeConfirm, setStatusChangeConfirm] = useState<{ evidenceId: string; newStatus: string } | null>(null);
   const [visibilityWarning, setVisibilityWarning] = useState<{ evidenceId: string; newVisibility: string; message: string } | null>(null);
-  const [duplicateWarning, setDuplicateWarning] = useState<{ evidenceId: string; requirementId: string; requirementTitle: string; duplicateStatus: string; markAsBonus: boolean } | null>(null);
+  const [duplicateWarning, setDuplicateWarning] = useState<{ evidenceId: string; requirementId: string; requirementTitle: string; duplicateStatus: string; markAsBonus: boolean; currentRequirement?: { id: string; title: string; stage: string } } | null>(null);
 
   // Fetch school details
   const { data: schoolDetails, isLoading: schoolLoading } = useQuery<any>({
@@ -173,8 +173,11 @@ export default function SchoolQuickViewDialog({
   });
 
   const assignRequirementMutation = useMutation({
-    mutationFn: async ({ evidenceId, requirementId }: { evidenceId: string; requirementId: string }) => {
-      return apiRequest('PATCH', `/api/admin/evidence/${evidenceId}/assign-requirement`, { evidenceRequirementId: requirementId });
+    mutationFn: async ({ evidenceId, requirementId, allowOverwrite }: { evidenceId: string; requirementId: string; allowOverwrite?: boolean }) => {
+      return apiRequest('PATCH', `/api/admin/evidence/${evidenceId}/assign-requirement`, { 
+        evidenceRequirementId: requirementId,
+        allowOverwrite 
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
@@ -186,6 +189,10 @@ export default function SchoolQuickViewDialog({
       toast({ title: "Requirement assigned successfully" });
     },
     onError: (error: any) => {
+      // Don't show toast for 409 (we'll handle reassignment warnings separately)
+      if (error.status === 409) {
+        return;
+      }
       toast({ 
         title: "Failed to assign requirement", 
         description: error.message || "Please try again",
@@ -379,20 +386,60 @@ export default function SchoolQuickViewDialog({
   const handleAssignRequirement = async () => {
     if (!assignmentDialog || !selectedRequirement) return;
     
-    // Check if duplicate exists - if so, show confirmation dialog
-    if (duplicateCheckResult?.hasDuplicate) {
-      setDuplicateWarning({
+    try {
+      // Try to assign normally first (without allowOverwrite)
+      // DO NOT mark as bonus yet - only do that after user confirms
+      
+      await assignRequirementMutation.mutateAsync({
         evidenceId: assignmentDialog.evidenceId,
         requirementId: selectedRequirement,
-        requirementTitle: duplicateCheckResult.requirementTitle || 'this requirement',
-        duplicateStatus: duplicateCheckResult.duplicate?.status || 'existing',
-        markAsBonus: markAsBonus,
+        allowOverwrite: false,
       });
-      return; // Wait for user confirmation
+      
+      // If we get here, assignment succeeded without warnings
+      // Mark as bonus if requested
+      if (markAsBonus) {
+        await markBonusMutation.mutateAsync({
+          evidenceId: assignmentDialog.evidenceId,
+          isBonus: true,
+        });
+      }
+    } catch (error: any) {
+      // Handle 409 conflict (reassignment needed)
+      if (error.status === 409 && error.conflict === 'reassignment') {
+        // Build warning message combining reassignment and duplicate info
+        const selectedReqTitle = requirements.find(r => r.id === selectedRequirement)?.title || 'selected requirement';
+        
+        setDuplicateWarning({
+          evidenceId: assignmentDialog.evidenceId,
+          requirementId: selectedRequirement,
+          requirementTitle: selectedReqTitle,
+          duplicateStatus: duplicateCheckResult?.hasDuplicate 
+            ? duplicateCheckResult.duplicate?.status || 'existing'
+            : 'reassignment',
+          markAsBonus: markAsBonus,
+          currentRequirement: error.currentRequirement,
+        });
+        return;
+      }
+      
+      // Check if duplicate exists - show confirmation dialog
+      if (duplicateCheckResult?.hasDuplicate) {
+        const selectedReqTitle = requirements.find(r => r.id === selectedRequirement)?.title || 'selected requirement';
+        
+        setDuplicateWarning({
+          evidenceId: assignmentDialog.evidenceId,
+          requirementId: selectedRequirement,
+          requirementTitle: selectedReqTitle,
+          duplicateStatus: duplicateCheckResult.duplicate?.status || 'existing',
+          markAsBonus: markAsBonus,
+        });
+        return;
+      }
+      
+      // Unknown error, rethrow
+      throw error;
     }
-    
-    // No duplicate, proceed with assignment
-    await confirmAssignRequirement();
   };
 
   const confirmAssignRequirement = async () => {
@@ -408,9 +455,11 @@ export default function SchoolQuickViewDialog({
       });
     }
     
+    // Assign with allowOverwrite flag to bypass the conflict check
     await assignRequirementMutation.mutateAsync({
       evidenceId: assignmentDialog.evidenceId,
       requirementId: selectedRequirement,
+      allowOverwrite: true,
     });
     
     // Close duplicate warning if it was shown
@@ -1146,30 +1195,48 @@ export default function SchoolQuickViewDialog({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Duplicate Assignment Warning */}
+      {/* Duplicate/Reassignment Warning */}
       <AlertDialog open={!!duplicateWarning} onOpenChange={(open) => !open && setDuplicateWarning(null)}>
         <AlertDialogContent data-testid="dialog-duplicate-warning">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertCircle className="h-5 w-5 text-yellow-600" />
-              Duplicate Evidence Detected
+              {duplicateWarning?.currentRequirement ? 'Reassignment Warning' : 'Duplicate Evidence Detected'}
             </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
-              <p>
-                This school already has <strong>{duplicateWarning?.duplicateStatus}</strong> evidence assigned to <strong>"{duplicateWarning?.requirementTitle}"</strong>.
-              </p>
+            <AlertDialogDescription className="space-y-3">
+              {duplicateWarning?.currentRequirement && (
+                <div className="p-3 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded">
+                  <p className="font-medium text-yellow-900 dark:text-yellow-100">
+                    This evidence is currently assigned to:
+                  </p>
+                  <p className="text-sm mt-1 text-yellow-800 dark:text-yellow-200">
+                    <strong>"{duplicateWarning.currentRequirement.title}"</strong> ({duplicateWarning.currentRequirement.stage})
+                  </p>
+                  <p className="text-sm mt-1 text-yellow-800 dark:text-yellow-200">
+                    Reassigning will change it to: <strong>"{duplicateWarning?.requirementTitle}"</strong>
+                  </p>
+                </div>
+              )}
+              
+              {!duplicateWarning?.currentRequirement && duplicateWarning?.duplicateStatus !== 'reassignment' && (
+                <p>
+                  This school already has <strong>{duplicateWarning?.duplicateStatus}</strong> evidence assigned to <strong>"{duplicateWarning?.requirementTitle}"</strong>.
+                </p>
+              )}
+              
               {duplicateWarning?.markAsBonus ? (
                 <p className="text-green-600 dark:text-green-400 flex items-center gap-1">
                   <Star className="h-4 w-4" />
                   This will be marked as <strong>bonus evidence</strong> and assigned.
                 </p>
-              ) : (
+              ) : duplicateWarning?.duplicateStatus !== 'reassignment' && !duplicateWarning?.currentRequirement && (
                 <p className="text-amber-600 dark:text-amber-400">
                   This could create a duplicate assignment. Consider marking it as bonus evidence.
                 </p>
               )}
-              <p className="text-sm">
-                Are you sure you want to proceed with this assignment?
+              
+              <p className="text-sm font-medium">
+                Are you sure you want to proceed?
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -1180,7 +1247,7 @@ export default function SchoolQuickViewDialog({
               className="bg-yellow-600 hover:bg-yellow-700 dark:bg-yellow-700 dark:hover:bg-yellow-800"
               data-testid="button-confirm-duplicate-assignment"
             >
-              Assign Anyway
+              {duplicateWarning?.currentRequirement ? 'Reassign' : 'Assign Anyway'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
