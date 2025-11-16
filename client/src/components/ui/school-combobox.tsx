@@ -68,7 +68,7 @@ export function SchoolCombobox({
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
         <Command>
-          <CommandInput placeholder="Search schools..." />
+          <CommandInput placeholder="Search schools..." data-testid="input-school-search" />
           <CommandList>
             <CommandEmpty>{emptyMessage}</CommandEmpty>
             <CommandGroup>
