@@ -92,6 +92,7 @@ export default function SchoolQuickViewDialog({
   // Edit state
   const [editingEvidence, setEditingEvidence] = useState<EditingEvidence | null>(null);
   const [assignmentDialog, setAssignmentDialog] = useState<AssignmentDialog | null>(null);
+  const [assignmentStage, setAssignmentStage] = useState<'inspire' | 'investigate' | 'act'>('inspire');
   const [selectedRequirement, setSelectedRequirement] = useState<string>("");
   const [markAsBonus, setMarkAsBonus] = useState(false);
   const [duplicateCheckResult, setDuplicateCheckResult] = useState<any>(null);
@@ -343,6 +344,7 @@ export default function SchoolQuickViewDialog({
       evidenceName: evidence.title,
       evidenceStage: evidence.stage,
     });
+    setAssignmentStage(evidence.stage as 'inspire' | 'investigate' | 'act');
     setSelectedRequirement("");
     setDuplicateCheckResult(null);
     setDuplicateWarning(null);
@@ -351,6 +353,7 @@ export default function SchoolQuickViewDialog({
 
   const handleCloseAssignmentDialog = () => {
     setAssignmentDialog(null);
+    setAssignmentStage('inspire');
     setSelectedRequirement("");
     setDuplicateCheckResult(null);
     setDuplicateWarning(null);
@@ -418,9 +421,9 @@ export default function SchoolQuickViewDialog({
 
   const isLoading = schoolLoading || usersLoading || evidenceLoading;
 
-  // Filter requirements by stage when assignment dialog is open
+  // Filter requirements by selected assignment stage
   const filteredRequirements = assignmentDialog
-    ? requirements.filter(r => r.stage === assignmentDialog.evidenceStage)
+    ? requirements.filter(r => r.stage === assignmentStage)
     : [];
 
   return (
@@ -1020,7 +1023,26 @@ export default function SchoolQuickViewDialog({
             
             <div className="space-y-4">
               <div>
-                <Label htmlFor="requirement-select">Select Requirement ({assignmentDialog.evidenceStage} stage)</Label>
+                <Label htmlFor="stage-select">Select Stage</Label>
+                <Select value={assignmentStage} onValueChange={(value: 'inspire' | 'investigate' | 'act') => {
+                  setAssignmentStage(value);
+                  setSelectedRequirement("");
+                  setDuplicateCheckResult(null);
+                  setDuplicateWarning(null);
+                }}>
+                  <SelectTrigger id="stage-select" data-testid="select-stage-assignment">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="inspire">Inspire</SelectItem>
+                    <SelectItem value="investigate">Investigate</SelectItem>
+                    <SelectItem value="act">Act</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="requirement-select">Select Requirement</Label>
                 <Select value={selectedRequirement} onValueChange={handleRequirementSelect}>
                   <SelectTrigger id="requirement-select" data-testid="select-requirement-assignment">
                     <SelectValue placeholder="Choose a requirement" />

@@ -1221,17 +1221,24 @@ export function createEvidenceRouters(storage: IStorage): {
         return res.status(400).json({ message: "requirementId is required" });
       }
       
-      // Get current evidence to get schoolId and roundNumber
+      // Get current evidence to get schoolId
       const currentEvidence = await evidenceStorage.getEvidence(id);
       if (!currentEvidence) {
         return res.status(404).json({ message: "Evidence not found" });
       }
       
-      // Find existing evidence for the same school, requirement, and round
+      // Get school to check current round
+      const school = await schoolStorage.getSchool(currentEvidence.schoolId);
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+      
+      // Find existing evidence for the same school, requirement, and the school's CURRENT round
+      // This ensures round 2 assignments don't conflict with round 1
       const duplicates = await evidenceStorage.getAllEvidence({
         schoolId: currentEvidence.schoolId,
         evidenceRequirementId: requirementId,
-        roundNumber: currentEvidence.roundNumber,
+        roundNumber: school.currentRound || 1,
       });
       
       // Filter out the current evidence and only include pending/approved
