@@ -429,6 +429,7 @@ export const adminEvidenceOverrides = pgTable("admin_evidence_overrides", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
   evidenceRequirementId: varchar("evidence_requirement_id").notNull().references(() => evidenceRequirements.id, { onDelete: 'cascade' }),
+  evidenceId: varchar("evidence_id").references(() => evidence.id, { onDelete: 'cascade' }),
   stage: programStageEnum("stage").notNull(),
   roundNumber: integer("round_number").notNull().default(1),
   markedBy: varchar("marked_by").notNull().references(() => users.id),

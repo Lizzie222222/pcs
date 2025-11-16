@@ -2535,18 +2535,55 @@ export class DatabaseStorage implements IStorage {
       );
 
     if (existing) {
+      // Delete the linked evidence record if it exists
+      if (existing.evidenceId) {
+        await db
+          .delete(evidence)
+          .where(eq(evidence.id, existing.evidenceId));
+      }
+      
       // Delete the existing override (toggle off)
       await this.deleteAdminEvidenceOverride(existing.id);
       return { created: false, override: null };
     } else {
-      // Create new override (toggle on)
+      // Fetch the requirement details to populate evidence title and description
+      const requirement = await this.getEvidenceRequirement(evidenceRequirementId);
+      
+      if (!requirement) {
+        throw new Error(`Evidence requirement ${evidenceRequirementId} not found`);
+      }
+
+      // Create evidence record that looks like school-submitted evidence
+      const [evidenceRecord] = await db
+        .insert(evidence)
+        .values({
+          schoolId,
+          submittedBy: markedBy,
+          evidenceRequirementId,
+          title: requirement.title,
+          description: requirement.description,
+          stage,
+          status: 'approved',
+          visibility: 'registered',
+          reviewedBy: markedBy,
+          reviewedAt: new Date(),
+          roundNumber,
+          files: [],
+          videoLinks: null,
+          parentalConsentFiles: [],
+        })
+        .returning();
+
+      // Create new override (toggle on) with link to evidence
       const newOverride = await this.createAdminEvidenceOverride({
         schoolId,
         evidenceRequirementId,
+        evidenceId: evidenceRecord.id,
         stage,
         roundNumber,
         markedBy
       });
+      
       return { created: true, override: newOverride };
     }
   }
