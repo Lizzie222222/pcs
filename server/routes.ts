@@ -5301,11 +5301,12 @@ Return JSON with:
    */
   app.get('/api/admin/activity-logs', isAuthenticated, requireAdmin, async (req, res) => {
     try {
-      const { userId, actionType, startDate, endDate, limit, offset } = req.query;
+      const { userId, actionType, userEmail, startDate, endDate, page, limit } = req.query;
 
       // Parse pagination parameters
+      const parsedPage = page ? parseInt(page as string) : 1;
       const parsedLimit = limit ? parseInt(limit as string) : 100;
-      const parsedOffset = offset ? parseInt(offset as string) : 0;
+      const parsedOffset = (parsedPage - 1) * parsedLimit;
 
       // Build where conditions
       const whereConditions: any[] = [];
@@ -5318,6 +5319,10 @@ Return JSON with:
         whereConditions.push(eq(userActivityLogs.actionType, actionType as string));
       }
 
+      if (userEmail) {
+        whereConditions.push(ilike(users.email, `%${userEmail as string}%`));
+      }
+
       if (startDate) {
         whereConditions.push(gte(userActivityLogs.createdAt, new Date(startDate as string)));
       }
@@ -5326,21 +5331,21 @@ Return JSON with:
         whereConditions.push(lte(userActivityLogs.createdAt, new Date(endDate as string)));
       }
 
-      // Get total count
+      // Get total count with user email filter if applied
       const totalResult = await db
         .select({ count: count() })
         .from(userActivityLogs)
+        .leftJoin(users, eq(userActivityLogs.userId, users.id))
         .where(whereConditions.length > 0 ? and(...whereConditions) : undefined);
 
-      const total = totalResult[0]?.count || 0;
+      const total = Number(totalResult[0]?.count || 0);
+      const totalPages = Math.ceil(total / parsedLimit);
 
       // Get paginated logs with user information
-      const logs = await db
+      const rawLogs = await db
         .select({
           id: userActivityLogs.id,
           userId: userActivityLogs.userId,
-          userEmail: users.email,
-          userName: sql<string>`CONCAT(${users.firstName}, ' ', ${users.lastName})`,
           actionType: userActivityLogs.actionType,
           actionDetails: userActivityLogs.actionDetails,
           targetId: userActivityLogs.targetId,
@@ -5348,6 +5353,9 @@ Return JSON with:
           ipAddress: userActivityLogs.ipAddress,
           userAgent: userActivityLogs.userAgent,
           createdAt: userActivityLogs.createdAt,
+          userEmail: users.email,
+          userFirstName: users.firstName,
+          userLastName: users.lastName,
         })
         .from(userActivityLogs)
         .leftJoin(users, eq(userActivityLogs.userId, users.id))
@@ -5356,7 +5364,31 @@ Return JSON with:
         .limit(parsedLimit)
         .offset(parsedOffset);
 
-      res.json({ logs, total });
+      // Transform logs to match expected frontend structure
+      const logs = rawLogs.map(log => ({
+        id: log.id,
+        userId: log.userId,
+        actionType: log.actionType,
+        actionDetails: log.actionDetails,
+        targetId: log.targetId,
+        targetType: log.targetType,
+        ipAddress: log.ipAddress,
+        userAgent: log.userAgent,
+        createdAt: log.createdAt,
+        user: {
+          email: log.userEmail,
+          firstName: log.userFirstName,
+          lastName: log.userLastName,
+        },
+      }));
+
+      res.json({ 
+        logs, 
+        total, 
+        page: parsedPage, 
+        limit: parsedLimit, 
+        totalPages 
+      });
     } catch (error) {
       console.error("Error fetching activity logs:", error);
       res.status(500).json({ message: "Failed to fetch activity logs" });
