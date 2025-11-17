@@ -3019,18 +3019,8 @@ export class DatabaseStorage implements IStorage {
     const [schoolsCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(schools).where(schoolDateFilter);
     const [usersCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(users).where(userDateFilter);
     
-    // Count ALL evidence submissions (any status)
-    const [evidenceCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(evidence);
-    
-    // Get legacy evidence count from school_users
-    const [legacyStats] = await db
-      .select({
-        legacyTotal: sql<number>`coalesce(sum(legacy_evidence_count), 0)`,
-      })
-      .from(schoolUsers);
-    
-    // Total = All evidence submissions + Legacy evidence
-    const totalEvidence = Number(evidenceCount?.count || 0) + Number(legacyStats?.legacyTotal || 0);
+    // Use shared deduplication logic to ensure consistency with landing page
+    const totalEvidence = await schoolStorage.getDeduplicatedEvidenceCount();
     
     // Count schools that have completed at least one round (became "plastic clever")
     const [completedAwardsCount] = await db.select({ 

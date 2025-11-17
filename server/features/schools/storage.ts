@@ -280,6 +280,26 @@ export class SchoolStorage {
     return school;
   }
 
+  // Shared helper to get deduplicated evidence count
+  // This filters out duplicate evidence created by running the backfill script multiple times
+  async getDeduplicatedEvidenceCount(): Promise<number> {
+    // Count distinct evidence by grouping on school, requirement, round
+    // This automatically collapses duplicates from the backfill script
+    const [deduplicatedCount] = await db
+      .select({
+        count: sql<number>`COUNT(DISTINCT (school_id, evidence_requirement_id, round_number))`,
+      })
+      .from(evidence);
+    
+    const [legacyStats] = await db
+      .select({
+        legacyTotal: sql<number>`coalesce(sum(legacy_evidence_count), 0)`,
+      })
+      .from(schoolUsers);
+    
+    return Number(deduplicatedCount?.count || 0) + Number(legacyStats?.legacyTotal || 0);
+  }
+
   async getSchoolStats(): Promise<{
     totalSchools: number;
     completedAwards: number;
@@ -294,17 +314,8 @@ export class SchoolStorage {
       })
       .from(schools);
     
-    // Count ALL evidence submissions (any status)
-    const [evidenceCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(evidence);
-    
-    const [legacyStats] = await db
-      .select({
-        legacyTotal: sql<number>`coalesce(sum(legacy_evidence_count), 0)`,
-      })
-      .from(schoolUsers);
-    
-    // Total = All evidence submissions + Legacy evidence
-    const totalActions = Number(evidenceCount?.count || 0) + Number(legacyStats?.legacyTotal || 0);
+    // Use shared deduplication logic
+    const totalActions = await this.getDeduplicatedEvidenceCount();
     
     return {
       totalSchools: stats.totalSchools,
