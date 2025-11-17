@@ -10,6 +10,7 @@ import {
   certificates,
   auditResponses,
   reductionPromises,
+  settings,
   type School,
   type InsertSchool,
   type SchoolUser,
@@ -305,7 +306,16 @@ export class SchoolStorage {
       })
       .from(schoolUsers);
     
-    const totalActions = Number(evidenceStats?.approvedEvidence || 0) + Number(legacyStats?.legacyTotal || 0);
+    const [historicalOverwrites] = await db
+      .select({
+        value: settings.value,
+      })
+      .from(settings)
+      .where(eq(settings.key, 'historicalAdminOverwrites'))
+      .limit(1);
+    
+    const historicalCount = Number(historicalOverwrites?.value || 0);
+    const totalActions = Number(evidenceStats?.approvedEvidence || 0) + Number(legacyStats?.legacyTotal || 0) + historicalCount;
     
     return {
       totalSchools: stats.totalSchools,
