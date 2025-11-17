@@ -1684,6 +1684,7 @@ Return JSON with:
         schoolId,
         invitedBy: userId,
         email,
+        message: null,
         token,
         expiresAt,
       });
@@ -8994,6 +8995,7 @@ Return JSON with:
         schoolId,
         invitedBy: userId,
         email,
+        message: null,
         token,
         expiresAt,
       });

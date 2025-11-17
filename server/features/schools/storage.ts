@@ -667,7 +667,7 @@ export class SchoolStorage {
     return schoolUser;
   }
 
-  async createTeacherInvitation(invitationData: InsertTeacherInvitation): Promise<TeacherInvitation> {
+  async createTeacherInvitation(invitationData: Omit<TeacherInvitation, 'id' | 'status' | 'createdAt' | 'acceptedAt'>): Promise<TeacherInvitation> {
     const [invitation] = await db
       .insert(teacherInvitations)
       .values(invitationData)
@@ -1246,7 +1246,7 @@ export class SchoolStorage {
     return invitation;
   }
 
-  async createInvitation(invitationData: InsertTeacherInvitation): Promise<TeacherInvitation> {
+  async createInvitation(invitationData: Omit<TeacherInvitation, 'id' | 'createdAt' | 'acceptedAt'>): Promise<TeacherInvitation> {
     return this.createTeacherInvitation(invitationData);
   }
 

@@ -280,7 +280,7 @@ export interface IStorage {
   updateLegacyEvidenceCount(schoolId: string, userId: string, count: number): Promise<SchoolUser | undefined>;
 
   // Teacher invitation operations  
-  createTeacherInvitation(invitation: InsertTeacherInvitation): Promise<TeacherInvitation>;
+  createTeacherInvitation(invitation: Omit<TeacherInvitation, 'id' | 'status' | 'createdAt' | 'acceptedAt'>): Promise<TeacherInvitation>;
   getTeacherInvitationByToken(token: string): Promise<TeacherInvitation | undefined>;
   getSchoolInvitations(schoolId: string): Promise<TeacherInvitation[]>;
   acceptTeacherInvitation(token: string): Promise<TeacherInvitation | undefined>;
@@ -1705,7 +1705,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Teacher invitation operations
-  async createTeacherInvitation(invitationData: InsertTeacherInvitation): Promise<TeacherInvitation> {
+  async createTeacherInvitation(invitationData: Omit<TeacherInvitation, 'id' | 'status' | 'createdAt' | 'acceptedAt'>): Promise<TeacherInvitation> {
     return schoolStorage.createTeacherInvitation(invitationData);
   }
 
