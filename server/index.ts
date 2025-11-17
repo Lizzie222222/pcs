@@ -1,8 +1,10 @@
 import express, { type Request, Response, NextFunction } from "express";
 import cors from "cors";
 import compression from "compression";
+import fs from "fs";
+import path from "path";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import { setupVite, log } from "./vite";
 import { initializeWebSocket } from "./websocket";
 import { initScheduler } from "./scheduler";
 import { startHealthMonitoring } from "./healthMonitor";
@@ -131,7 +133,46 @@ app.use((req, res, next) => {
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
-    serveStatic(app);
+    // Production: Serve static assets with proper cache-control headers
+    const distPath = path.resolve(import.meta.dirname, "../dist/public");
+
+    if (!fs.existsSync(distPath)) {
+      throw new Error(
+        `Could not find the build directory: ${distPath}, make sure to build the client first`,
+      );
+    }
+
+    // Serve static files with appropriate caching based on file type
+    app.use(express.static(distPath, {
+      setHeaders: (res, filePath) => {
+        const ext = path.extname(filePath);
+        const basename = path.basename(filePath);
+        
+        // For hashed assets (JS/CSS with content hashes in filename), cache aggressively
+        if ((ext === '.js' || ext === '.css') && /[a-f0-9]{8,}/.test(basename)) {
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
+        // For other static assets (images, fonts, media), cache moderately
+        else if (/\.(png|jpg|jpeg|gif|svg|ico|woff2?|ttf|eot|webp|avif|mp4|webm)$/.test(ext)) {
+          res.setHeader('Cache-Control', 'public, max-age=604800'); // 1 week
+        }
+        // For HTML files, never cache
+        else if (ext === '.html' || basename === 'index.html') {
+          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+          res.setHeader('Pragma', 'no-cache');
+          res.setHeader('Expires', '0');
+        }
+      }
+    }));
+
+    // SPA fallback: serve index.html for all other routes
+    app.use("*", (_req, res) => {
+      // Never cache index.html for SPA routes
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      res.sendFile(path.resolve(distPath, "index.html"));
+    });
   }
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
