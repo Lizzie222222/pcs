@@ -1,7 +1,6 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from './ui/button';
-import { isChunkLoadError } from '@/lib/chunkErrorDetection';
 
 interface Props {
   children: ReactNode;
@@ -13,7 +12,6 @@ interface State {
   hasError: boolean;
   error: Error | null;
   errorInfo: ErrorInfo | null;
-  isChunkError: boolean;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
@@ -23,7 +21,6 @@ export class ErrorBoundary extends Component<Props, State> {
       hasError: false,
       error: null,
       errorInfo: null,
-      isChunkError: false,
     };
   }
 
@@ -32,19 +29,15 @@ export class ErrorBoundary extends Component<Props, State> {
       hasError: true,
       error,
       errorInfo: null,
-      isChunkError: isChunkLoadError(error),
     };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Error caught by boundary:', error, errorInfo);
     
-    const isChunk = isChunkLoadError(error);
-    
     this.setState({
       error,
       errorInfo,
-      isChunkError: isChunk,
     });
 
     // Call custom error handler if provided
@@ -52,11 +45,11 @@ export class ErrorBoundary extends Component<Props, State> {
 
     // Log to monitoring service in production
     if (import.meta.env.PROD) {
+      // TODO: Send to error tracking service (e.g., Sentry)
       console.error('Production error:', {
         error: error.toString(),
         componentStack: errorInfo.componentStack,
         timestamp: new Date().toISOString(),
-        isChunkLoadError: isChunk,
       });
     }
   }
@@ -66,12 +59,7 @@ export class ErrorBoundary extends Component<Props, State> {
       hasError: false,
       error: null,
       errorInfo: null,
-      isChunkError: false,
     });
-  };
-
-  handleReload = () => {
-    window.location.reload();
   };
 
   render() {
@@ -80,9 +68,6 @@ export class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback;
       }
 
-      // Show different UI for chunk load errors vs regular errors
-      const isChunk = this.state.isChunkError;
-      
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4" data-testid="error-boundary-fallback">
           <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
@@ -92,14 +77,9 @@ export class ErrorBoundary extends Component<Props, State> {
               </div>
             </div>
             
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              {isChunk ? 'Update Required' : 'Something went wrong'}
-            </h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Something went wrong</h2>
             <p className="text-gray-600 mb-6">
-              {isChunk 
-                ? 'The application has been updated. Please reload the page to get the latest version.'
-                : "We're sorry for the inconvenience. The page encountered an unexpected error."
-              }
+              We're sorry for the inconvenience. The page encountered an unexpected error.
             </p>
 
             {import.meta.env.DEV && this.state.error && (
@@ -119,45 +99,21 @@ export class ErrorBoundary extends Component<Props, State> {
             )}
 
             <div className="flex gap-3 justify-center">
-              {isChunk ? (
-                <>
-                  <Button
-                    onClick={this.handleReload}
-                    className="gap-2"
-                    data-testid="button-reload-page"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                    Reload Page
-                  </Button>
-                  <Button
-                    onClick={() => window.location.href = '/'}
-                    variant="outline"
-                    className="gap-2"
-                    data-testid="button-home"
-                  >
-                    <Home className="h-4 w-4" />
-                    Go Home
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    onClick={this.handleReset}
-                    variant="outline"
-                    className="gap-2"
-                    data-testid="button-retry"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                    Try again
-                  </Button>
-                  <Button
-                    onClick={() => window.location.href = '/'}
-                    data-testid="button-home"
-                  >
-                    Go to homepage
-                  </Button>
-                </>
-              )}
+              <Button
+                onClick={this.handleReset}
+                variant="outline"
+                className="gap-2"
+                data-testid="button-retry"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Try again
+              </Button>
+              <Button
+                onClick={() => window.location.href = '/'}
+                data-testid="button-home"
+              >
+                Go to homepage
+              </Button>
             </div>
           </div>
         </div>

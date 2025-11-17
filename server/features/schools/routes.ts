@@ -96,9 +96,35 @@ schoolsRouter.get('/api/schools/map', async (req, res) => {
   }
 });
 
-// Note: /api/schools/map/summary is handled in server/routes.ts
-// It returns an array of country data for the choropleth map visualization
-// General site statistics are served by /api/stats
+// GET /api/schools/map/summary - Get summary statistics for map
+schoolsRouter.get('/api/schools/map/summary', async (req, res) => {
+  try {
+    const allSchools = await schoolStorage.getSchools({});
+    
+    // Calculate summary statistics
+    const totalSchools = allSchools.length;
+    const completedAwards = allSchools.filter(s => s.awardCompleted).length;
+    
+    // Count unique countries
+    const countries = new Set(allSchools.map(s => s.country).filter(Boolean));
+    const countriesReached = countries.size;
+    
+    // Calculate total students impacted
+    const studentsImpacted = allSchools.reduce((sum, school) => {
+      return sum + (school.studentCount || 0);
+    }, 0);
+
+    res.json({
+      totalSchools,
+      completedAwards,
+      countriesReached,
+      studentsImpacted,
+    });
+  } catch (error) {
+    console.error("Error fetching map summary:", error);
+    res.status(500).json({ message: "Failed to fetch summary" });
+  }
+});
 
 // GET /api/schools - Public endpoint to get list of schools with filtering
 schoolsRouter.get('/api/schools', async (req, res) => {

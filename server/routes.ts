@@ -1223,8 +1223,6 @@ Return JSON with:
   });
 
   // Get school counts by country for choropleth map (cached for 15 minutes)
-  // IMPORTANT: This endpoint MUST return an array of CountryData objects
-  // Do NOT duplicate this endpoint elsewhere - frontend expects array format
   app.get('/api/schools/map/summary', async (req, res) => {
     try {
       const { country, lastActiveDays } = req.query;

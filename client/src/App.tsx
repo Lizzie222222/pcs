@@ -14,29 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getGradientById } from "@shared/gradients";
 import { CollaborationProvider } from "@/contexts/CollaborationContext";
-import { isChunkLoadError } from "@/lib/chunkErrorDetection";
-
-// Global error handler for chunk load failures
-if (typeof window !== 'undefined') {
-  // Handle script/resource loading errors (most common for chunk 404s)
-  window.addEventListener('error', (event) => {
-    // Check both event.error and the event itself (for resource errors)
-    if (isChunkLoadError(event.error) || isChunkLoadError(event)) {
-      console.warn('[Chunk Load Error] Detected stale cache, reloading page...');
-      event.preventDefault();
-      window.location.reload();
-    }
-  }, true); // Use capture phase to catch before other handlers
-
-  // Handle unhandled promise rejections (async chunk loads)
-  window.addEventListener('unhandledrejection', (event) => {
-    if (isChunkLoadError(event.reason)) {
-      console.warn('[Chunk Load Error] Detected stale cache in async load, reloading page...');
-      event.preventDefault();
-      window.location.reload();
-    }
-  });
-}
 
 // Page Loading Component
 const PageLoadingFallback = () => (
