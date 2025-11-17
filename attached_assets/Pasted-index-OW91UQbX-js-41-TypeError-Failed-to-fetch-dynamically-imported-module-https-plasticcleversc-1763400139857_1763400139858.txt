@@ -1,0 +1,54 @@
+index-OW91UQbX.js:41 TypeError: Failed to fetch dynamically imported module: https://plasticcleverschools.org/assets/admin-BwA3J0MR.js
+index-OW91UQbX.js:198 Error caught by boundary: TypeError: Failed to fetch dynamically imported module: https://plasticcleverschools.org/assets/admin-BwA3J0MR.js 
+Object
+index-OW91UQbX.js:198 Production error: 
+Object
+index-OW91UQbX.js:41 TypeError: Failed to fetch dynamically imported module: https://plasticcleverschools.org/assets/admin-BwA3J0MR.js
+index-OW91UQbX.js:198 Error caught by boundary: TypeError: Failed to fetch dynamically imported module: https://plasticcleverschools.org/assets/admin-BwA3J0MR.js 
+Object
+index-OW91UQbX.js:198 Production error: 
+Object
+index-OW91UQbX.js:41 TypeError: Failed to fetch dynamically imported module: https://plasticcleverschools.org/assets/admin-BwA3J0MR.js
+index-OW91UQbX.js:198 Error caught by boundary: TypeError: Failed to fetch dynamically imported module: https://plasticcleverschools.org/assets/admin-BwA3J0MR.js 
+Object
+index-OW91UQbX.js:198 Production error: 
+Object
+componentStack
+: 
+"\n    at Lazy\n    at ie (https://plasticcleverschools.org/assets/index-OW91UQbX.js:49:3296)\n    at bC (https://plasticcleverschools.org/assets/index-OW91UQbX.js:49:4109)\n    at Suspense\n    at sL (https://plasticcleverschools.org/assets/index-OW91UQbX.js:198:115251)\n    at main\n    at div\n    at Jj (https://plasticcleverschools.org/assets/index-OW91UQbX.js:198:88052)\n    at $L (https://plasticcleverschools.org/assets/index-OW91UQbX.js:198:122462)\n    at c (https://plasticcleverschools.org/assets/index-OW91UQbX.js:49:46148)\n    at A_ (https://plasticcleverschools.org/assets/index-OW91UQbX.js:154:50472)\n    at $C (https://plasticcleverschools.org/assets/index-OW91UQbX.js:49:40388)\n    at UL\n    at Suspense"
+error
+: 
+"TypeError: Failed to fetch dynamically imported module: https://plasticcleverschools.org/assets/admin-BwA3J0MR.js"
+timestamp
+: 
+"2025-11-17T17:21:17.927Z"
+[[Prototype]]
+: 
+Object
+index-OW91UQbX.js:41 TypeError: Failed to fetch dynamically imported module: https://plasticcleverschools.org/assets/admin-BwA3J0MR.js
+index-OW91UQbX.js:198 Error caught by boundary: TypeError: Failed to fetch dynamically imported module: https://plasticcleverschools.org/assets/admin-BwA3J0MR.js 
+Object
+index-OW91UQbX.js:198 Production error: 
+Object
+index-OW91UQbX.js:41 TypeError: Failed to fetch dynamically imported module: https://plasticcleverschools.org/assets/inspiration-BJERvf2h.js
+index-OW91UQbX.js:198 Error caught by boundary: TypeError: Failed to fetch dynamically imported module: https://plasticcleverschools.org/assets/inspiration-BJERvf2h.js 
+Object
+index-OW91UQbX.js:198 Production error: 
+Object
+index-OW91UQbX.js:41 TypeError: Failed to fetch dynamically imported module: https://plasticcleverschools.org/assets/landing-B10npQlv.js
+index-OW91UQbX.js:198 Error caught by boundary: TypeError: Failed to fetch dynamically imported module: https://plasticcleverschools.org/assets/landing-B10npQlv.js 
+Object
+index-OW91UQbX.js:198 Production error: 
+Object
+componentStack
+: 
+"\n    at Lazy\n    at ie (https://plasticcleverschools.org/assets/index-OW91UQbX.js:49:3296)\n    at bC (https://plasticcleverschools.org/assets/index-OW91UQbX.js:49:4109)\n    at Suspense\n    at sL (https://plasticcleverschools.org/assets/index-OW91UQbX.js:198:115251)\n    at main\n    at div\n    at Jj (https://plasticcleverschools.org/assets/index-OW91UQbX.js:198:88052)\n    at $L (https://plasticcleverschools.org/assets/index-OW91UQbX.js:198:122462)\n    at c (https://plasticcleverschools.org/assets/index-OW91UQbX.js:49:46148)\n    at A_ (https://plasticcleverschools.org/assets/index-OW91UQbX.js:154:50472)\n    at $C (https://plasticcleverschools.org/assets/index-OW91UQbX.js:49:40388)\n    at UL\n    at Suspense"
+error
+: 
+"TypeError: Failed to fetch dynamically imported module: https://plasticcleverschools.org/assets/landing-B10npQlv.js"
+timestamp
+: 
+"2025-11-17T17:21:33.798Z"
+[[Prototype]]
+: 
+Object
