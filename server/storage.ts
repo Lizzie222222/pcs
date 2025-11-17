@@ -3019,14 +3019,8 @@ export class DatabaseStorage implements IStorage {
     const [schoolsCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(schools).where(schoolDateFilter);
     const [usersCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(users).where(userDateFilter);
     
-    // Get approved evidence count (matching getSchoolStats behavior)
-    // Note: We count only APPROVED evidence to match the landing page stats calculation
-    // We do NOT apply date filtering to totalEvidence as it represents the cumulative total
-    const [approvedEvidenceStats] = await db
-      .select({
-        approvedEvidence: sql<number>`count(*) filter (where status = 'approved')`,
-      })
-      .from(evidence);
+    // Count ALL evidence submissions (any status)
+    const [evidenceCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(evidence);
     
     // Get legacy evidence count from school_users
     const [legacyStats] = await db
@@ -3035,17 +3029,8 @@ export class DatabaseStorage implements IStorage {
       })
       .from(schoolUsers);
     
-    // Get historical admin overwrites that weren't counted before
-    const [historicalOverwrites] = await db
-      .select({
-        value: settings.value,
-      })
-      .from(settings)
-      .where(eq(settings.key, 'historicalAdminOverwrites'))
-      .limit(1);
-    
-    const historicalCount = Number(historicalOverwrites?.value || 0);
-    const totalEvidence = Number(approvedEvidenceStats?.approvedEvidence || 0) + Number(legacyStats?.legacyTotal || 0) + historicalCount;
+    // Total = All evidence submissions + Legacy evidence
+    const totalEvidence = Number(evidenceCount?.count || 0) + Number(legacyStats?.legacyTotal || 0);
     
     // Count schools that have completed at least one round (became "plastic clever")
     const [completedAwardsCount] = await db.select({ 
