@@ -3018,7 +3018,15 @@ export class DatabaseStorage implements IStorage {
     // Get individual metrics separately to avoid complex subquery issues
     const [schoolsCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(schools).where(schoolDateFilter);
     const [usersCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(users).where(userDateFilter);
-    const [evidenceCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(evidence).where(evidenceDateFilter);
+    
+    // Get approved evidence count (matching getSchoolStats behavior)
+    // Note: We count only APPROVED evidence to match the landing page stats calculation
+    // We do NOT apply date filtering to totalEvidence as it represents the cumulative total
+    const [approvedEvidenceStats] = await db
+      .select({
+        approvedEvidence: sql<number>`count(*) filter (where status = 'approved')`,
+      })
+      .from(evidence);
     
     // Get legacy evidence count from school_users
     const [legacyStats] = await db
@@ -3037,7 +3045,7 @@ export class DatabaseStorage implements IStorage {
       .limit(1);
     
     const historicalCount = Number(historicalOverwrites?.value || 0);
-    const totalEvidence = Number(evidenceCount?.count || 0) + Number(legacyStats?.legacyTotal || 0) + historicalCount;
+    const totalEvidence = Number(approvedEvidenceStats?.approvedEvidence || 0) + Number(legacyStats?.legacyTotal || 0) + historicalCount;
     
     // Count schools that have completed at least one round (became "plastic clever")
     const [completedAwardsCount] = await db.select({ 
