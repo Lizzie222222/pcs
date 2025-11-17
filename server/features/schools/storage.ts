@@ -333,7 +333,6 @@ export class SchoolStorage {
     countryName: string;
     totalSchools: number;
     completedAwards: number;
-    featuredSchools: number;
   }>> {
     const conditions = [];
     
@@ -357,9 +356,7 @@ export class SchoolStorage {
     let query = db
       .select({
         country: schools.country,
-        totalSchools: count(),
-        completedAwards: sql<number>`count(*) filter (where ${schools.awardCompleted} = true)`,
-        featuredSchools: sql<number>`count(*) filter (where ${schools.featuredSchool} = true)`,
+        roundsCompleted: schools.roundsCompleted,
       })
       .from(schools);
     
@@ -367,23 +364,38 @@ export class SchoolStorage {
       query = query.where(and(...conditions)) as any;
     }
     
-    query = query.groupBy(schools.country) as any;
-    query = query.orderBy(desc(sql`count(*)`)) as any;
+    const allSchools = await query;
     
-    const results = await query;
+    const countryMap = new Map<string, {
+      countryCode: string;
+      countryName: string;
+      totalSchools: number;
+      completedAwards: number;
+    }>();
     
-    return results.map(row => {
-      const normalizedName = normalizeCountryName(row.country) || row.country;
-      const isoCode = getCountryCode(normalizedName) || row.country;
+    for (const school of allSchools) {
+      const normalizedName = normalizeCountryName(school.country) || school.country;
+      const isoCode = getCountryCode(normalizedName) || school.country;
       
-      return {
-        countryCode: isoCode,
-        countryName: normalizedName,
-        totalSchools: Number(row.totalSchools),
-        completedAwards: Number(row.completedAwards),
-        featuredSchools: Number(row.featuredSchools),
-      };
-    });
+      if (!countryMap.has(normalizedName)) {
+        countryMap.set(normalizedName, {
+          countryCode: isoCode,
+          countryName: normalizedName,
+          totalSchools: 0,
+          completedAwards: 0,
+        });
+      }
+      
+      const countryData = countryMap.get(normalizedName)!;
+      countryData.totalSchools++;
+      
+      if ((school.roundsCompleted || 0) >= 1) {
+        countryData.completedAwards++;
+      }
+    }
+    
+    return Array.from(countryMap.values())
+      .sort((a, b) => b.totalSchools - a.totalSchools);
   }
 
   async getUniqueCountries(): Promise<string[]> {

@@ -15,7 +15,6 @@ interface CountryData {
   countryName: string;
   totalSchools: number;
   completedAwards: number;
-  featuredSchools: number;
 }
 
 interface CountryProperties {
@@ -123,7 +122,6 @@ export default function SchoolsMap() {
           <div style="font-size: 14px; color: #4b5563;">
             <div style="margin: 4px 0;"><strong>Total schools:</strong> ${countryData.totalSchools}</div>
             <div style="margin: 4px 0;"><strong>Awards completed:</strong> ${countryData.completedAwards}</div>
-            <div style="margin: 4px 0;"><strong>Featured schools:</strong> ${countryData.featuredSchools}</div>
           </div>
         </div>
       `;
@@ -156,8 +154,7 @@ export default function SchoolsMap() {
     total: countryCounts.reduce((sum, c) => sum + c.totalSchools, 0),
     completed: countryCounts.reduce((sum, c) => sum + c.completedAwards, 0),
     countries: countryCounts.length,
-    featured: countryCounts.reduce((sum, c) => sum + c.featuredSchools, 0),
-  } : { total: 0, completed: 0, countries: 0, featured: 0 };
+  } : { total: 0, completed: 0, countries: 0 };
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
@@ -268,7 +265,7 @@ export default function SchoolsMap() {
         </Card>
 
         {/* Statistics Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Card>
             <CardContent className="p-6 text-center">
               <div className="text-2xl font-bold text-navy" data-testid="stat-countries">
@@ -291,14 +288,6 @@ export default function SchoolsMap() {
                 {totalStats.completed}
               </div>
               <div className="text-gray-600 text-sm">Awards completed</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6 text-center">
-              <div className="text-2xl font-bold text-navy" data-testid="stat-featured">
-                {totalStats.featured}
-              </div>
-              <div className="text-gray-600 text-sm">Featured schools</div>
             </CardContent>
           </Card>
         </div>
@@ -341,11 +330,6 @@ export default function SchoolsMap() {
                             <Award className="h-4 w-4 sm:h-3 sm:w-3 flex-shrink-0" />
                             <span>{country.completedAwards} completed</span>
                           </div>
-                          {country.featuredSchools > 0 && (
-                            <Badge variant="outline" className="text-yellow border-yellow">
-                              {country.featuredSchools} featured
-                            </Badge>
-                          )}
                         </div>
                       </div>
                     ))
