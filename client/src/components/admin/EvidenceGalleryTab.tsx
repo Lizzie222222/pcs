@@ -44,6 +44,7 @@ export default function EvidenceGalleryTab() {
     stage: '',
     country: '',
     visibility: '',
+    evidenceRequirementId: '',
   });
   const [selectedEvidence, setSelectedEvidence] = useState<EvidenceWithSchool | null>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
@@ -61,6 +62,7 @@ export default function EvidenceGalleryTab() {
       if (filters.stage) params.append('stage', filters.stage);
       if (filters.country) params.append('country', filters.country);
       if (filters.visibility) params.append('visibility', filters.visibility);
+      if (filters.evidenceRequirementId) params.append('evidenceRequirementId', filters.evidenceRequirementId);
       
       const response = await fetch(`/api/admin/evidence?${params}`, {
         credentials: 'include',
@@ -74,6 +76,16 @@ export default function EvidenceGalleryTab() {
   const { data: countries = [] } = useQuery<string[]>({
     queryKey: ['/api/countries'],
   });
+
+  // Fetch evidence requirements for filter
+  const { data: allEvidenceRequirements = [] } = useQuery<Array<{ id: string; stage: string; title: string }>>({
+    queryKey: ['/api/evidence-requirements'],
+  });
+
+  // Filter requirements by selected stage
+  const filteredRequirements = filters.stage 
+    ? allEvidenceRequirements.filter(req => req.stage === filters.stage)
+    : allEvidenceRequirements;
 
   // Update evidence status mutation
   const updateStatusMutation = useMutation({
@@ -198,12 +210,19 @@ export default function EvidenceGalleryTab() {
       {/* Filters */}
       <Card>
         <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('evidenceGallery.filters.labels.stage')}</label>
               <Select 
                 value={filters.stage || 'all'} 
-                onValueChange={(value) => setFilters(prev => ({ ...prev, stage: value === 'all' ? '' : value }))}
+                onValueChange={(value) => {
+                  const newStage = value === 'all' ? '' : value;
+                  setFilters(prev => ({ 
+                    ...prev, 
+                    stage: newStage,
+                    evidenceRequirementId: '' // Clear requirement filter when stage changes
+                  }));
+                }}
               >
                 <SelectTrigger data-testid="select-stage-filter">
                   <SelectValue placeholder={t('evidenceGallery.filters.options.allStages')} />
@@ -213,6 +232,25 @@ export default function EvidenceGalleryTab() {
                   <SelectItem value="inspire">{t('evidenceGallery.filters.stages.inspire')}</SelectItem>
                   <SelectItem value="investigate">{t('evidenceGallery.filters.stages.investigate')}</SelectItem>
                   <SelectItem value="act">{t('evidenceGallery.filters.stages.act')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Step</label>
+              <Select 
+                value={filters.evidenceRequirementId || 'all'} 
+                onValueChange={(value) => setFilters(prev => ({ ...prev, evidenceRequirementId: value === 'all' ? '' : value }))}
+                disabled={!filters.stage || filteredRequirements.length === 0}
+              >
+                <SelectTrigger data-testid="select-requirement-filter">
+                  <SelectValue placeholder={filters.stage ? "All Steps" : "Select stage first"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Steps</SelectItem>
+                  {filteredRequirements.map((req) => (
+                    <SelectItem key={req.id} value={req.id}>{req.title}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -273,7 +311,7 @@ export default function EvidenceGalleryTab() {
             <div className="flex items-end">
               <Button 
                 variant="outline" 
-                onClick={() => setFilters({ status: '', stage: '', country: '', visibility: '' })}
+                onClick={() => setFilters({ status: '', stage: '', country: '', visibility: '', evidenceRequirementId: '' })}
                 data-testid="button-clear-filters"
               >
                 {t('evidenceGallery.buttons.clearFilters')}
