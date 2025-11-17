@@ -2819,7 +2819,19 @@ export class DatabaseStorage implements IStorage {
       .select({ activeUsers: count() })
       .from(users);
     
-    const totalActions = Number(approvedEvidenceStats?.approvedEvidence || 0) + Number(legacyStats?.legacyTotal || 0);
+    // One-time adjustment: Add historical admin overwrites that weren't counted before
+    // The 'historicalAdminOverwrites' setting stores the count of admin overwrites created
+    // before the current tracking system was implemented (8 overwrites as of Nov 2024)
+    const [historicalOverwrites] = await db
+      .select({
+        value: settings.value,
+      })
+      .from(settings)
+      .where(eq(settings.key, 'historicalAdminOverwrites'))
+      .limit(1);
+    
+    const historicalCount = Number(historicalOverwrites?.value || 0);
+    const totalActions = Number(approvedEvidenceStats?.approvedEvidence || 0) + Number(legacyStats?.legacyTotal || 0) + historicalCount;
     
     return {
       totalSchools: schoolStats.totalSchools,
