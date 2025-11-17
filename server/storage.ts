@@ -3020,6 +3020,25 @@ export class DatabaseStorage implements IStorage {
     const [usersCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(users).where(userDateFilter);
     const [evidenceCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(evidence).where(evidenceDateFilter);
     
+    // Get legacy evidence count from school_users
+    const [legacyStats] = await db
+      .select({
+        legacyTotal: sql<number>`coalesce(sum(legacy_evidence_count), 0)`,
+      })
+      .from(schoolUsers);
+    
+    // Get historical admin overwrites that weren't counted before
+    const [historicalOverwrites] = await db
+      .select({
+        value: settings.value,
+      })
+      .from(settings)
+      .where(eq(settings.key, 'historicalAdminOverwrites'))
+      .limit(1);
+    
+    const historicalCount = Number(historicalOverwrites?.value || 0);
+    const totalEvidence = Number(evidenceCount?.count || 0) + Number(legacyStats?.legacyTotal || 0) + historicalCount;
+    
     // Count schools that have completed at least one round (became "plastic clever")
     const [completedAwardsCount] = await db.select({ 
       count: sql<number>`COUNT(*) FILTER (WHERE rounds_completed >= 1)` 
@@ -3033,7 +3052,7 @@ export class DatabaseStorage implements IStorage {
     return {
       totalSchools: schoolsCount?.count || 0,
       totalUsers: usersCount?.count || 0,
-      totalEvidence: evidenceCount?.count || 0,
+      totalEvidence,
       completedAwards: completedAwardsCount?.count || 0,
       pendingEvidence: pendingCount?.count || 0,
       averageProgress: avgProgress?.avg || 0,
