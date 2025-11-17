@@ -371,22 +371,24 @@ export class SchoolStorage {
       countryName: string;
       totalSchools: number;
       completedAwards: number;
+      originalCountryCode: string;
     }>();
     
     for (const school of allSchools) {
-      const normalizedName = normalizeCountryName(school.country) || school.country;
-      const isoCode = getCountryCode(normalizedName) || school.country;
+      const isoCode = getCountryCode(school.country) || school.country;
       
-      if (!countryMap.has(normalizedName)) {
-        countryMap.set(normalizedName, {
+      if (!countryMap.has(isoCode)) {
+        const normalizedName = normalizeCountryName(school.country) || school.country;
+        countryMap.set(isoCode, {
           countryCode: isoCode,
           countryName: normalizedName,
           totalSchools: 0,
           completedAwards: 0,
+          originalCountryCode: school.country,
         });
       }
       
-      const countryData = countryMap.get(normalizedName)!;
+      const countryData = countryMap.get(isoCode)!;
       countryData.totalSchools++;
       
       if ((school.roundsCompleted || 0) >= 1) {
@@ -395,6 +397,7 @@ export class SchoolStorage {
     }
     
     return Array.from(countryMap.values())
+      .map(({ originalCountryCode, ...rest }) => rest)
       .sort((a, b) => b.totalSchools - a.totalSchools);
   }
 
