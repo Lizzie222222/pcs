@@ -484,6 +484,7 @@ export default function EvidenceTriageSection() {
               Cancel
             </Button>
             <Button
+              variant="default"
               onClick={handleAssignSubmit}
               disabled={!selectedRequirementId || assignRequirementMutation.isPending}
               data-testid="button-confirm-assign"
