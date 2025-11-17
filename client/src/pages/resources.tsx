@@ -957,30 +957,6 @@ export default function Resources() {
                 <label className="text-sm font-medium text-gray-700">Tags</label>
                 <div className="flex flex-wrap gap-2">
                   <Button
-                    variant={filters.tags.includes('all_stages') ? 'default' : 'outline'}
-                    onClick={() => handleTagToggle('all_stages')}
-                    size="sm"
-                    data-testid="tag-all-stages"
-                  >
-                    All Stages
-                  </Button>
-                  <Button
-                    variant={filters.tags.includes('beginner') ? 'default' : 'outline'}
-                    onClick={() => handleTagToggle('beginner')}
-                    size="sm"
-                    data-testid="tag-beginner"
-                  >
-                    Beginner
-                  </Button>
-                  <Button
-                    variant={filters.tags.includes('advanced') ? 'default' : 'outline'}
-                    onClick={() => handleTagToggle('advanced')}
-                    size="sm"
-                    data-testid="tag-advanced"
-                  >
-                    Advanced
-                  </Button>
-                  <Button
                     variant={filters.tags.includes('featured') ? 'default' : 'outline'}
                     onClick={() => handleTagToggle('featured')}
                     size="sm"
