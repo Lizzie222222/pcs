@@ -5017,9 +5017,8 @@ export class DatabaseStorage implements IStorage {
     publicSlug?: string;
     limit?: number;
     offset?: number;
-  }): Promise<Event[]> {
-    let query = db.select().from(events);
-    
+  }): Promise<Array<Event & { registrationsCount: number; attendanceCount: number }>> {
+    // Build conditions first to apply to main query
     const conditions = [];
     if (filters?.status) {
       conditions.push(eq(events.status, filters.status as any));
@@ -5034,20 +5033,68 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(events.publicSlug, filters.publicSlug));
     }
     
+    // Start with base events query
+    let baseQuery = db.select().from(events);
+    
     if (conditions.length > 0) {
-      query = query.where(and(...conditions)) as any;
+      baseQuery = baseQuery.where(and(...conditions)) as any;
     }
     
-    query = query.orderBy(asc(events.startDateTime)) as any;
+    baseQuery = baseQuery.orderBy(asc(events.startDateTime)) as any;
     
     if (filters?.limit) {
-      query = query.limit(filters.limit) as any;
+      baseQuery = baseQuery.limit(filters.limit) as any;
     }
     if (filters?.offset) {
-      query = query.offset(filters.offset) as any;
+      baseQuery = baseQuery.offset(filters.offset) as any;
     }
     
-    return await query;
+    // Execute the query to get events
+    const eventsResult = await baseQuery;
+    
+    // If no events, return early
+    if (eventsResult.length === 0) {
+      return [];
+    }
+    
+    // Get event IDs for registration count queries
+    const eventIds = eventsResult.map(e => e.id);
+    
+    // Query registration counts for these events
+    const regCounts = await db
+      .select({
+        eventId: eventRegistrations.eventId,
+        count: count().as('count'),
+      })
+      .from(eventRegistrations)
+      .where(inArray(eventRegistrations.eventId, eventIds))
+      .groupBy(eventRegistrations.eventId);
+    
+    // Query attendance counts for these events
+    const attCounts = await db
+      .select({
+        eventId: eventRegistrations.eventId,
+        count: count().as('count'),
+      })
+      .from(eventRegistrations)
+      .where(
+        and(
+          inArray(eventRegistrations.eventId, eventIds),
+          eq(eventRegistrations.status, 'attended')
+        )
+      )
+      .groupBy(eventRegistrations.eventId);
+    
+    // Create lookup maps
+    const regCountMap = new Map(regCounts.map(r => [r.eventId, Number(r.count)]));
+    const attCountMap = new Map(attCounts.map(a => [a.eventId, Number(a.count)]));
+    
+    // Merge counts into events
+    return eventsResult.map(event => ({
+      ...event,
+      registrationsCount: regCountMap.get(event.id) || 0,
+      attendanceCount: attCountMap.get(event.id) || 0,
+    }));
   }
 
   async updateEvent(id: string, updates: Partial<Event>): Promise<Event | undefined> {
