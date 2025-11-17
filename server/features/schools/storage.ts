@@ -306,6 +306,9 @@ export class SchoolStorage {
       })
       .from(schoolUsers);
     
+    // One-time adjustment: Add historical admin overwrites that weren't counted before
+    // The 'historicalAdminOverwrites' setting stores the count of admin overwrites created
+    // before the current tracking system was implemented (8 overwrites as of Nov 2024)
     const [historicalOverwrites] = await db
       .select({
         value: settings.value,
