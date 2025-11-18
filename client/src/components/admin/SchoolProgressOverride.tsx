@@ -95,7 +95,13 @@ export default function SchoolProgressOverride({ schoolId, onUpdate }: SchoolPro
   // Fetch school evidence for current round only
   // This MUST stay in sync with overrides query (both use currentRound)
   const { data: evidence = [] } = useQuery<Evidence[]>({
-    queryKey: ['/api/admin/schools', schoolId, 'evidence', { roundNumber: school?.currentRound }],
+    queryKey: ['/api/admin/schools', schoolId, 'evidence', school?.currentRound],
+    queryFn: async () => {
+      const url = `/api/admin/schools/${schoolId}/evidence?roundNumber=${school?.currentRound}`;
+      const response = await fetch(url, { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch evidence');
+      return response.json();
+    },
     enabled: !!schoolId && school?.currentRound !== undefined,
   });
 
