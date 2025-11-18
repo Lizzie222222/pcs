@@ -34,9 +34,9 @@ import {
   count, 
   ilike, 
   isNull,
-  getTableColumns,
-  alias
+  getTableColumns
 } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import { getAllCountryCodes, normalizeCountryName, getCountryCode } from './utils/countryMapping';
 import { sendCourseCompletionCelebrationEmail, getBaseUrl } from '../../emailService';
 

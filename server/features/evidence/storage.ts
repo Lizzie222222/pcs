@@ -13,7 +13,8 @@ import {
   type AdminEvidenceOverride,
   type InsertAdminEvidenceOverride
 } from '@shared/schema';
-import { eq, and, or, desc, asc, inArray, sql, ilike, alias } from 'drizzle-orm';
+import { eq, and, or, desc, asc, inArray, sql, ilike } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import type { EvidenceDelegates } from './delegates';
 
 /**
