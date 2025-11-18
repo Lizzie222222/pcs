@@ -417,9 +417,9 @@ export interface IStorage {
   // Progression system operations
   checkAndUpdateSchoolProgression(schoolId: string): Promise<School | undefined>;
   getSchoolEvidenceCounts(schoolId: string): Promise<{
-    inspire: { total: number; approved: number };
-    investigate: { total: number; approved: number; hasQuiz: boolean; hasActionPlan: boolean };
-    act: { total: number; approved: number };
+    inspire: { total: number; approved: number; overrideCount: number };
+    investigate: { total: number; approved: number; overrideCount: number; hasQuiz: boolean; hasActionPlan: boolean };
+    act: { total: number; approved: number; overrideCount: number };
   }>;
   startNewRound(schoolId: string): Promise<School | undefined>;
   migrateStuckSchools(): Promise<{ fixed: number; schools: string[] }>;
@@ -2614,9 +2614,9 @@ export class DatabaseStorage implements IStorage {
 
   // Progression system operations
   async getSchoolEvidenceCounts(schoolId: string): Promise<{
-    inspire: { total: number; approved: number };
-    investigate: { total: number; approved: number; hasQuiz: boolean; hasActionPlan: boolean };
-    act: { total: number; approved: number };
+    inspire: { total: number; approved: number; overrideCount: number };
+    investigate: { total: number; approved: number; overrideCount: number; hasQuiz: boolean; hasActionPlan: boolean };
+    act: { total: number; approved: number; overrideCount: number };
   }> {
     return schoolStorage.getSchoolEvidenceCounts(schoolId);
   }

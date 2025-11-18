@@ -757,16 +757,16 @@ export class SchoolStorage {
   }
 
   async getSchoolEvidenceCounts(schoolId: string, roundNumber?: number): Promise<{
-    inspire: { total: number; approved: number };
-    investigate: { total: number; approved: number; hasQuiz: boolean; hasActionPlan: boolean };
-    act: { total: number; approved: number };
+    inspire: { total: number; approved: number; overrideCount: number };
+    investigate: { total: number; approved: number; overrideCount: number; hasQuiz: boolean; hasActionPlan: boolean };
+    act: { total: number; approved: number; overrideCount: number };
   }> {
     const school = await this.getSchool(schoolId);
     if (!school) {
       return {
-        inspire: { total: 0, approved: 0 },
-        investigate: { total: 0, approved: 0, hasQuiz: false, hasActionPlan: false },
-        act: { total: 0, approved: 0 }
+        inspire: { total: 0, approved: 0, overrideCount: 0 },
+        investigate: { total: 0, approved: 0, overrideCount: 0, hasQuiz: false, hasActionPlan: false },
+        act: { total: 0, approved: 0, overrideCount: 0 }
       };
     }
 
@@ -817,7 +817,10 @@ export class SchoolStorage {
         uniqueRequirementIds.add(override.evidenceRequirementId);
       });
       
-      return uniqueRequirementIds.size + evidenceWithoutRequirement.length;
+      return {
+        total: uniqueRequirementIds.size + evidenceWithoutRequirement.length,
+        overrideCount: stageOverrides.length
+      };
     };
 
     const approvedAudit = await db
@@ -847,20 +850,27 @@ export class SchoolStorage {
 
     const hasActionPlan = actionPlans.length > 0;
 
+    const inspireCounts = getApprovedRequirementsCount(inspireEvidence, 'inspire');
+    const investigateCounts = getApprovedRequirementsCount(investigateEvidence, 'investigate');
+    const actCounts = getApprovedRequirementsCount(actEvidence, 'act');
+
     return {
       inspire: {
         total: inspireEvidence.length,
-        approved: getApprovedRequirementsCount(inspireEvidence, 'inspire')
+        approved: inspireCounts.total,
+        overrideCount: inspireCounts.overrideCount
       },
       investigate: {
         total: investigateEvidence.length,
-        approved: getApprovedRequirementsCount(investigateEvidence, 'investigate'),
+        approved: investigateCounts.total,
+        overrideCount: investigateCounts.overrideCount,
         hasQuiz,
         hasActionPlan
       },
       act: {
         total: actEvidence.length,
-        approved: getApprovedRequirementsCount(actEvidence, 'act')
+        approved: actCounts.total,
+        overrideCount: actCounts.overrideCount
       }
     };
   }
@@ -937,9 +947,9 @@ export class SchoolStorage {
         hasChanges = true;
         justCompletedRound = true;
         
-        if ((school.roundsCompleted || 0) === 0 && !updates.roundsCompleted) {
-          updates.roundsCompleted = 1;
-        }
+        // FIX: Always increment roundsCompleted when completing a round via catch-up path
+        // This ensures Round 2, Round 3, etc. all properly increment the counter
+        updates.roundsCompleted = (school.roundsCompleted ?? 0) + 1;
         
         const nextRound = (school.currentRound || 1) + 1;
         updates.currentRound = nextRound;

@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle, Circle, Clock, X, ExternalLink, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { CheckCircle, Circle, Clock, X, ExternalLink, Info, Shield } from "lucide-react";
 import inspireIcon from "@assets/PSC - Inspire_1760461719847.png";
 import investigateIcon from "@assets/PSC - Investigate_1760461719848.png";
 import actIcon from "@assets/PSC - Act_1760461719847.png";
@@ -18,9 +19,9 @@ import { EvidenceDetailModal } from "@/components/EvidenceDetailModal";
 import type { AuditResponse, Evidence } from "@shared/schema";
 
 interface EvidenceCounts {
-  inspire?: { total: number; approved: number };
-  investigate?: { total: number; approved: number; hasQuiz: boolean; hasActionPlan?: boolean };
-  act?: { total: number; approved: number };
+  inspire?: { total: number; approved: number; overrideCount: number };
+  investigate?: { total: number; approved: number; overrideCount: number; hasQuiz: boolean; hasActionPlan?: boolean };
+  act?: { total: number; approved: number; overrideCount: number };
 }
 
 interface EvidenceRequirement {
@@ -212,11 +213,16 @@ export default function ProgressTracker({
       
       // Add admin overrides for this stage
       const stageOverrides = adminOverrides.filter(o => o.stage === stage);
+      const overrideCount = stageOverrides.length;
+      
       stageOverrides.forEach(override => {
         uniqueRequirementIds.add(override.evidenceRequirementId);
       });
       
-      return uniqueRequirementIds.size + homelessCount;
+      return {
+        total: uniqueRequirementIds.size + homelessCount,
+        overrideCount
+      };
     };
 
     // Check for approved audit quiz
@@ -229,20 +235,27 @@ export default function ProgressTracker({
     const investigateEvidence = allEvidence.filter(e => e.stage === 'investigate');
     const actEvidence = allEvidence.filter(e => e.stage === 'act');
 
+    const inspireCounts = getApprovedRequirementsCount('inspire');
+    const investigateCounts = getApprovedRequirementsCount('investigate');
+    const actCounts = getApprovedRequirementsCount('act');
+
     return {
       inspire: {
         total: inspireEvidence.length,
-        approved: getApprovedRequirementsCount('inspire')
+        approved: inspireCounts.total,
+        overrideCount: inspireCounts.overrideCount
       },
       investigate: {
         total: investigateEvidence.length,
-        approved: getApprovedRequirementsCount('investigate'),
+        approved: investigateCounts.total,
+        overrideCount: investigateCounts.overrideCount,
         hasQuiz,
         hasActionPlan
       },
       act: {
         total: actEvidence.length,
-        approved: getApprovedRequirementsCount('act')
+        approved: actCounts.total,
+        overrideCount: actCounts.overrideCount
       }
     };
   }, [selectedRound, currentRound, allEvidence, adminOverrides, auditResponses, actionPlans]);
@@ -366,6 +379,47 @@ export default function ProgressTracker({
     }
     
     return Math.round((counts.approved / required) * 100);
+  };
+
+  // Get tooltip message for progress circle
+  const getProgressTooltip = (stage: any) => {
+    const stageId = stage.id as keyof EvidenceCounts;
+    const percentage = getProgressPercentage(stage);
+    const required = getStageRequirements(stageId).length || (stageId === 'inspire' ? 3 : stageId === 'investigate' ? 2 : 3);
+    
+    // Use appropriate counts based on selected round
+    const counts = selectedRound === currentRound ? evidenceCounts?.[stageId] : calculatedEvidenceCounts?.[stageId];
+    if (!counts) return null;
+
+    // Safely access overrideCount with fallback to 0 for legacy/cached data
+    const overrideCount = ('overrideCount' in counts) ? (counts.overrideCount || 0) : 0;
+    const approved = counts.approved || 0;
+    
+    // Calculate actual approved items (includes quiz/action plan for investigate)
+    let approvedItems = approved;
+    if (stageId === 'investigate' && 'hasQuiz' in counts) {
+      approvedItems += (counts.hasQuiz ? 1 : 0);
+      if ('hasActionPlan' in counts) {
+        approvedItems += (counts.hasActionPlan ? 1 : 0);
+      }
+    }
+
+    const messages: string[] = [];
+    
+    // Main progress message
+    messages.push(`${approvedItems} of ${required} requirements completed`);
+    
+    // Override message
+    if (overrideCount > 0) {
+      messages.push(`Admin has marked ${overrideCount} additional requirement${overrideCount !== 1 ? 's' : ''} as complete`);
+    }
+    
+    // >100% message
+    if (percentage > 100) {
+      messages.push('Admin has submitted extra evidence on your behalf');
+    }
+    
+    return messages.join('\n');
   };
 
   const getStageGradientClasses = (color: string) => {
@@ -610,45 +664,67 @@ export default function ProgressTracker({
 
                 {/* Progress Circle */}
                 <div className="flex justify-center mb-6 flex-shrink-0">
-                  <div className="relative w-24 h-24">
-                    <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 80 80">
-                      <circle
-                        strokeWidth="6"
-                        stroke="#e5e7eb"
-                        fill="transparent"
-                        r="34"
-                        cx="40"
-                        cy="40"
-                      />
-                      <circle
-                        strokeWidth="6"
-                        strokeDasharray={`${2 * Math.PI * 34}`}
-                        strokeDashoffset={`${2 * Math.PI * 34 * (1 - percentage / 100)}`}
-                        strokeLinecap="round"
-                        stroke={status === 'completed' ? 'url(#greenGradient)' : 'url(#blueGradient)'}
-                        fill="transparent"
-                        r="34"
-                        cx="40"
-                        cy="40"
-                        className="transition-all duration-500"
-                      />
-                      <defs>
-                        <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="#10b981" />
-                          <stop offset="100%" stopColor="#059669" />
-                        </linearGradient>
-                        <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="#3b82f6" />
-                          <stop offset="100%" stopColor="#2563eb" />
-                        </linearGradient>
-                      </defs>
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className={`text-xl font-bold ${status === 'completed' ? 'text-green-500' : 'text-navy'}`}>
-                        {percentage}%
-                      </span>
-                    </div>
-                  </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="relative w-24 h-24 cursor-help">
+                          <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 80 80">
+                            <circle
+                              strokeWidth="6"
+                              stroke="#e5e7eb"
+                              fill="transparent"
+                              r="34"
+                              cx="40"
+                              cy="40"
+                            />
+                            <circle
+                              strokeWidth="6"
+                              strokeDasharray={`${2 * Math.PI * 34}`}
+                              strokeDashoffset={`${2 * Math.PI * 34 * (1 - percentage / 100)}`}
+                              strokeLinecap="round"
+                              stroke={status === 'completed' ? 'url(#greenGradient)' : 'url(#blueGradient)'}
+                              fill="transparent"
+                              r="34"
+                              cx="40"
+                              cy="40"
+                              className="transition-all duration-500"
+                            />
+                            <defs>
+                              <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#10b981" />
+                                <stop offset="100%" stopColor="#059669" />
+                              </linearGradient>
+                              <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#3b82f6" />
+                                <stop offset="100%" stopColor="#2563eb" />
+                              </linearGradient>
+                            </defs>
+                          </svg>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className={`text-xl font-bold ${status === 'completed' ? 'text-green-500' : 'text-navy'}`}>
+                              {percentage}%
+                            </span>
+                          </div>
+                          {/* Admin override indicator */}
+                          {(() => {
+                            const stageId = stage.id as keyof EvidenceCounts;
+                            const counts = selectedRound === currentRound ? evidenceCounts?.[stageId] : calculatedEvidenceCounts?.[stageId];
+                            // Safely check for overrides with fallback to 0 for legacy/cached data
+                            const overrideCount = counts && 'overrideCount' in counts ? (counts.overrideCount || 0) : 0;
+                            const hasOverrides = overrideCount > 0;
+                            return hasOverrides ? (
+                              <div className="absolute -bottom-2 -right-2 w-7 h-7 bg-purple-600 rounded-full flex items-center justify-center text-white shadow-lg" data-testid={`admin-override-indicator-${stage.id}`}>
+                                <Shield className="h-4 w-4" />
+                              </div>
+                            ) : null;
+                          })()}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs whitespace-pre-line" data-testid={`progress-tooltip-${stage.id}`}>
+                        {getProgressTooltip(stage)}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
 
                 {/* Evidence Requirements Checklist */}
