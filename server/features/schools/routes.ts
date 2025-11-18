@@ -264,22 +264,6 @@ schoolsRouter.post('/api/schools/register-multi-step', isAuthenticated, async (r
 
     const schoolData = validationResult.data;
 
-    // Check if domain is already registered
-    if (schoolData.adminEmail) {
-      const domain = schoolData.adminEmail.split('@')[1]?.toLowerCase();
-      if (domain) {
-        const existingSchool = await schoolStorage.getSchoolByDomain(domain);
-        if (existingSchool) {
-          console.warn('[Multi-step Registration] Domain already registered:', domain);
-          return res.status(400).json({ 
-            message: "A school with this email domain is already registered",
-            schoolId: existingSchool.id,
-            schoolName: existingSchool.name
-          });
-        }
-      }
-    }
-
     const school = await schoolStorage.createSchool(schoolData);
     console.log('[Multi-step Registration] School created:', school.id);
 
