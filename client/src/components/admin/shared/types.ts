@@ -31,6 +31,13 @@ export interface PendingEvidence {
       documentUrl: string | null;
     } | null;
   };
+  submitter?: {
+    id: string | null;
+    email: string | null;
+    firstName: string | null;
+    lastName: string | null;
+    isAdmin: boolean | null;
+  } | null;
 }
 
 export interface SchoolData {

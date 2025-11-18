@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { EmptyState, LoadingSpinner } from "@/components/ui/states";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
@@ -39,6 +40,7 @@ import {
   X,
   Link2,
   Star,
+  Shield,
 } from "lucide-react";
 import type { EvidenceWithSchool, EvidenceRequirement } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
@@ -959,6 +961,24 @@ export default function SchoolQuickViewDialog({
                                       <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200" data-testid={`badge-evidence-round-${evidence.id}`}>
                                         Round {evidence.roundNumber || 1}
                                       </Badge>
+                                      
+                                      {evidence.submitter?.isAdmin && (
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <div 
+                                                className="w-6 h-6 bg-white/90 border-2 border-[hsl(178,100%,37%)] rounded-full flex items-center justify-center shadow-md cursor-help"
+                                                data-testid={`admin-submitted-badge-${evidence.id}`}
+                                              >
+                                                <Shield className="h-3 w-3 text-[hsl(178,100%,37%)]" />
+                                              </div>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>Submitted by admin on behalf of school</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                      )}
                                       
                                       {editMode ? (
                                         <Select

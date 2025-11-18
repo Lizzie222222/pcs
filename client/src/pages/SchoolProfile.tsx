@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
 import {
   AlertDialog,
@@ -48,6 +49,7 @@ import {
   Eye,
   EyeOff,
   ClipboardCheck,
+  Shield,
 } from "lucide-react";
 import type { ReductionPromise } from "@shared/schema";
 import { calculateAggregateMetrics } from "@shared/plasticMetrics";
@@ -107,6 +109,13 @@ interface Evidence {
   files: any[];
   videoLinks: string | null;
   roundNumber: number;
+  submitter?: {
+    id: string | null;
+    email: string | null;
+    firstName: string | null;
+    lastName: string | null;
+    isAdmin: boolean | null;
+  } | null;
 }
 
 interface AuditData {
@@ -1241,6 +1250,23 @@ function EvidenceTab({ schoolId, evidence, isLoading, roundFilter, setRoundFilte
                           }>
                             {ev.status}
                           </Badge>
+                          {ev.submitter?.isAdmin && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div 
+                                    className="w-6 h-6 bg-white/90 border-2 border-[hsl(178,100%,37%)] rounded-full flex items-center justify-center shadow-md cursor-help"
+                                    data-testid={`admin-submitted-badge-${ev.id}`}
+                                  >
+                                    <Shield className="h-3 w-3 text-[hsl(178,100%,37%)]" />
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Submitted by admin on behalf of school</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
                           <span className="text-sm text-gray-600">
                             {format(new Date(ev.submittedAt), 'dd/MM/yyyy HH:mm')}
                           </span>

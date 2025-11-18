@@ -34,7 +34,8 @@ import {
   count, 
   ilike, 
   isNull,
-  getTableColumns 
+  getTableColumns,
+  alias
 } from 'drizzle-orm';
 import { getAllCountryCodes, normalizeCountryName, getCountryCode } from './utils/countryMapping';
 import { sendCourseCompletionCelebrationEmail, getBaseUrl } from '../../emailService';
@@ -724,12 +725,15 @@ export class SchoolStorage {
    *                      from that round. If omitted, returns ALL rounds (backward compatible).
    * @returns Array of evidence with reviewer details
    */
-  async getSchoolEvidence(schoolId: string, roundNumber?: number): Promise<Array<Evidence & { reviewer?: { id: string | null; email: string | null; firstName: string | null; lastName: string | null; } | null }>> {
+  async getSchoolEvidence(schoolId: string, roundNumber?: number): Promise<Array<Evidence & { reviewer?: { id: string | null; email: string | null; firstName: string | null; lastName: string | null; } | null; submitter?: { id: string | null; email: string | null; firstName: string | null; lastName: string | null; isAdmin: boolean | null; } | null }>> {
     const conditions = [eq(evidence.schoolId, schoolId)];
     
     if (roundNumber !== undefined) {
       conditions.push(eq(evidence.roundNumber, roundNumber));
     }
+    
+    // Create alias for submitter users table (since we're joining users twice)
+    const submitterUser = alias(users, 'submitter');
     
     return await db
       .select({
@@ -762,9 +766,17 @@ export class SchoolStorage {
           firstName: users.firstName,
           lastName: users.lastName,
         },
+        submitter: {
+          id: submitterUser.id,
+          email: submitterUser.email,
+          firstName: submitterUser.firstName,
+          lastName: submitterUser.lastName,
+          isAdmin: submitterUser.isAdmin,
+        },
       })
       .from(evidence)
       .leftJoin(users, eq(evidence.reviewedBy, users.id))
+      .leftJoin(submitterUser, eq(evidence.submittedBy, submitterUser.id))
       .where(and(...conditions))
       .orderBy(desc(evidence.submittedAt));
   }

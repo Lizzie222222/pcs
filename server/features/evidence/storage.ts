@@ -13,7 +13,7 @@ import {
   type AdminEvidenceOverride,
   type InsertAdminEvidenceOverride
 } from '@shared/schema';
-import { eq, and, or, desc, asc, inArray, sql, ilike } from 'drizzle-orm';
+import { eq, and, or, desc, asc, inArray, sql, ilike, alias } from 'drizzle-orm';
 import type { EvidenceDelegates } from './delegates';
 
 /**
@@ -209,7 +209,10 @@ export class EvidenceStorage {
       );
     }
 
-    // Query with JOIN to include school data and reviewer info
+    // Create alias for submitter users table (since we're joining users twice)
+    const submitterUser = alias(users, 'submitter');
+    
+    // Query with JOIN to include school data, reviewer info, and submitter info
     let query = db
       .select({
         id: evidence.id,
@@ -263,10 +266,18 @@ export class EvidenceStorage {
           firstName: users.firstName,
           lastName: users.lastName,
         },
+        submitter: {
+          id: submitterUser.id,
+          email: submitterUser.email,
+          firstName: submitterUser.firstName,
+          lastName: submitterUser.lastName,
+          isAdmin: submitterUser.isAdmin,
+        },
       })
       .from(evidence)
       .leftJoin(schools, eq(evidence.schoolId, schools.id))
-      .leftJoin(users, eq(evidence.reviewedBy, users.id));
+      .leftJoin(users, eq(evidence.reviewedBy, users.id))
+      .leftJoin(submitterUser, eq(evidence.submittedBy, submitterUser.id));
 
     // Apply WHERE conditions
     if (conditions.length > 0) {

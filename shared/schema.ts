@@ -1908,6 +1908,13 @@ export type EvidenceWithSchool = Evidence & {
     firstName: string | null;
     lastName: string | null;
   } | null;
+  submitter?: {
+    id: string | null;
+    email: string | null;
+    firstName: string | null;
+    lastName: string | null;
+    isAdmin: boolean | null;
+  } | null;
 };
 export type AdminEvidenceOverride = typeof adminEvidenceOverrides.$inferSelect;
 export type InsertAdminEvidenceOverride = z.infer<typeof insertAdminEvidenceOverrideSchema>;

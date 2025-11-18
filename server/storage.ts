@@ -2385,7 +2385,7 @@ export class DatabaseStorage implements IStorage {
     return evidenceStorage.getEvidenceById(id);
   }
 
-  async getSchoolEvidence(schoolId: string, roundNumber?: number): Promise<Array<Evidence & { reviewer?: { id: string | null; email: string | null; firstName: string | null; lastName: string | null; } | null }>> {
+  async getSchoolEvidence(schoolId: string, roundNumber?: number): Promise<Array<Evidence & { reviewer?: { id: string | null; email: string | null; firstName: string | null; lastName: string | null; } | null; submitter?: { id: string | null; email: string | null; firstName: string | null; lastName: string | null; isAdmin: boolean | null; } | null }>> {
     return schoolStorage.getSchoolEvidence(schoolId, roundNumber);
   }
 

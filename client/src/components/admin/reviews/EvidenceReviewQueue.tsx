@@ -41,6 +41,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Clock,
   Trophy,
   CheckCircle,
@@ -417,9 +423,28 @@ export default function EvidenceReviewQueue({
                 </Badge>
               </TableCell>
               <TableCell>
-                <Badge className="bg-navy text-white" data-testid={`badge-table-round-${item.id}`}>
-                  Round {item.roundNumber}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-navy text-white" data-testid={`badge-table-round-${item.id}`}>
+                    Round {item.roundNumber}
+                  </Badge>
+                  {item.submitter?.isAdmin && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div 
+                            className="w-6 h-6 bg-white/90 border-2 border-[hsl(178,100%,37%)] rounded-full flex items-center justify-center shadow-md cursor-help"
+                            data-testid={`admin-submitted-badge-${item.id}`}
+                          >
+                            <Shield className="h-3 w-3 text-[hsl(178,100%,37%)]" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Submitted by admin on behalf of school</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
               </TableCell>
               <TableCell>
                 <div className="max-w-xs">
@@ -989,6 +1014,23 @@ export default function EvidenceReviewQueue({
                         <Badge className="bg-navy text-white" data-testid={`badge-evidence-round-${evidence.id}`}>
                           Round {evidence.roundNumber}
                         </Badge>
+                        {evidence.submitter?.isAdmin && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div 
+                                  className="w-6 h-6 bg-white/90 border-2 border-[hsl(178,100%,37%)] rounded-full flex items-center justify-center shadow-md cursor-help"
+                                  data-testid={`admin-submitted-badge-${evidence.id}`}
+                                >
+                                  <Shield className="h-3 w-3 text-[hsl(178,100%,37%)]" />
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Submitted by admin on behalf of school</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
                         <Badge variant="outline" className="bg-yellow text-black">
                           {evidence.status}
                         </Badge>
@@ -1358,6 +1400,23 @@ export default function EvidenceReviewQueue({
                 <Badge variant="outline" className="bg-yellow text-black">
                   {previewEvidence.status}
                 </Badge>
+                {previewEvidence.submitter?.isAdmin && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div 
+                          className="w-6 h-6 bg-white/90 border-2 border-[hsl(178,100%,37%)] rounded-full flex items-center justify-center shadow-md cursor-help"
+                          data-testid={`admin-submitted-badge-${previewEvidence.id}`}
+                        >
+                          <Shield className="h-3 w-3 text-[hsl(178,100%,37%)]" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Submitted by admin on behalf of school</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
               </div>
               <p className="text-gray-600">{previewEvidence.description}</p>
               <div className="grid grid-cols-2 gap-4 text-sm">
