@@ -87,6 +87,7 @@ export default function SchoolQuickViewDialog({
   const [editMode, setEditMode] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | 'approved' | 'pending' | 'rejected'>('all');
   const [stageFilter, setStageFilter] = useState<'all' | 'inspire' | 'investigate' | 'act'>('all');
+  const [roundFilter, setRoundFilter] = useState<'current' | 'all' | number>('current');
   const [selectedEvidence, setSelectedEvidence] = useState<EvidenceWithSchool | null>(null);
   const [evidenceDetailsOpen, setEvidenceDetailsOpen] = useState(false);
   
@@ -115,7 +116,13 @@ export default function SchoolQuickViewDialog({
 
   // Fetch evidence
   const { data: evidenceList = [], isLoading: evidenceLoading } = useQuery<EvidenceWithSchool[]>({
-    queryKey: ['/api/admin/evidence', { schoolId: school?.id }],
+    queryKey: [
+      '/api/admin/evidence', 
+      { 
+        schoolId: school?.id,
+        ...(roundFilter === 'all' ? {} : { roundNumber: roundFilter === 'current' ? schoolDetails?.currentRound : roundFilter })
+      }
+    ],
     enabled: !!school?.id && open,
   });
 
@@ -710,6 +717,21 @@ export default function SchoolQuickViewDialog({
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <FileText className="h-5 w-5 text-pcs_blue" />
                     Evidence Statistics
+                    {roundFilter === 'current' && (
+                      <Badge variant="outline" className="ml-2 text-xs font-normal">
+                        Current Round ({schoolDetails?.currentRound || 1})
+                      </Badge>
+                    )}
+                    {roundFilter === 'all' && (
+                      <Badge variant="outline" className="ml-2 text-xs font-normal">
+                        All Rounds
+                      </Badge>
+                    )}
+                    {typeof roundFilter === 'number' && (
+                      <Badge variant="outline" className="ml-2 text-xs font-normal">
+                        Round {roundFilter}
+                      </Badge>
+                    )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -789,6 +811,23 @@ export default function SchoolQuickViewDialog({
                           <SelectItem value="inspire">Inspire</SelectItem>
                           <SelectItem value="investigate">Investigate</SelectItem>
                           <SelectItem value="act">Act</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select 
+                        value={String(roundFilter)} 
+                        onValueChange={(value: string) => setRoundFilter(value === 'current' || value === 'all' ? value : Number(value))}
+                      >
+                        <SelectTrigger className="w-[140px]" data-testid="select-round-filter">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="current">Current Round</SelectItem>
+                          <SelectItem value="all">All Rounds</SelectItem>
+                          {schoolDetails?.currentRound && Array.from({ length: schoolDetails.currentRound }, (_, i) => i + 1).map((round) => (
+                            <SelectItem key={round} value={String(round)}>
+                              Round {round}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -915,6 +954,10 @@ export default function SchoolQuickViewDialog({
                                     <div className="flex flex-wrap gap-2">
                                       <Badge className={getStageBadgeColor(evidence.stage || '')} data-testid={`badge-evidence-stage-${evidence.id}`}>
                                         {evidence.stage || 'N/A'}
+                                      </Badge>
+                                      
+                                      <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200" data-testid={`badge-evidence-round-${evidence.id}`}>
+                                        Round {evidence.roundNumber || 1}
                                       </Badge>
                                       
                                       {editMode ? (

@@ -106,6 +106,7 @@ interface Evidence {
   reviewNotes: string | null;
   files: any[];
   videoLinks: string | null;
+  roundNumber: number;
 }
 
 interface AuditData {
@@ -150,6 +151,33 @@ export default function SchoolProfile() {
   const [photoConsentDialogOpen, setPhotoConsentDialogOpen] = useState(false);
   const [auditDialogOpen, setAuditDialogOpen] = useState(false);
   
+  /**
+   * ROUND FILTERING APPROACH - SchoolProfile Evidence Tab:
+   * =======================================================
+   * This view defaults to 'all' rounds (historical review pattern) rather than
+   * filtering by currentRound like ProgressTracker and SchoolProgressOverride.
+   * 
+   * WHY "all rounds" is the right default here:
+   * - Admins reviewing school profiles want to see complete history
+   * - Evidence tab is for historical review, not active progress tracking
+   * - Filtering happens at UI level (dropdown) rather than initial query
+   * - This allows admins to easily switch between "all" and specific rounds
+   * 
+   * Implementation pattern:
+   * - roundFilter state defaults to 'all' (line 153)
+   * - Evidence query uses roundFilter to build URL with conditional param (line 181-183)
+   * - UI dropdown in EvidenceTab component allows selecting 'all' or specific rounds
+   * 
+   * Contrast with other components:
+   * - ProgressTracker: Defaults to currentRound (students see active progress)
+   * - SchoolProgressOverride: MUST use currentRound (admin managing active round)
+   * - SchoolProfile Evidence: Defaults to 'all' (admin reviewing history)
+   * 
+   * This pattern gives admins flexibility while preventing student-facing
+   * components from showing confusing multi-round data.
+   */
+  const [roundFilter, setRoundFilter] = useState<string>('all');
+  
   // School data query
   const { data: school, isLoading: schoolLoading } = useQuery<SchoolData>({
     queryKey: ['/api/admin/schools', id],
@@ -174,9 +202,12 @@ export default function SchoolProfile() {
 
   // Evidence query
   const { data: evidence = [], isLoading: evidenceLoading } = useQuery<Evidence[]>({
-    queryKey: ['/api/admin/schools', id, 'evidence'],
+    queryKey: ['/api/admin/schools', id, 'evidence', roundFilter],
     queryFn: async () => {
-      const response = await fetch(`/api/admin/schools/${id}/evidence`, { credentials: 'include' });
+      const url = roundFilter === 'all' 
+        ? `/api/admin/schools/${id}/evidence`
+        : `/api/admin/schools/${id}/evidence?roundNumber=${roundFilter}`;
+      const response = await fetch(url, { credentials: 'include' });
       if (!response.ok) throw new Error('Failed to fetch evidence');
       return response.json();
     },
@@ -370,6 +401,8 @@ export default function SchoolProfile() {
               schoolId={id!}
               evidence={evidence}
               isLoading={evidenceLoading}
+              roundFilter={roundFilter}
+              setRoundFilter={setRoundFilter}
             />
           </TabsContent>
 
@@ -1060,15 +1093,20 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
 }
 
 // Evidence Tab Component
-function EvidenceTab({ schoolId, evidence, isLoading }: {
+function EvidenceTab({ schoolId, evidence, isLoading, roundFilter, setRoundFilter }: {
   schoolId: string;
   evidence: Evidence[];
   isLoading: boolean;
+  roundFilter: string;
+  setRoundFilter: (value: string) => void;
 }) {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterStage, setFilterStage] = useState<string>('all');
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [editingEvidence, setEditingEvidence] = useState<Evidence | null>(null);
+
+  // Get unique rounds from evidence
+  const availableRounds = Array.from(new Set(evidence.map(e => e.roundNumber))).sort((a, b) => a - b);
 
   const filteredEvidence = evidence.filter(e => {
     if (filterStatus !== 'all' && e.status !== filterStatus) return false;
@@ -1085,9 +1123,18 @@ function EvidenceTab({ schoolId, evidence, isLoading }: {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <FileText className="h-5 w-5 text-pcs_blue" />
-              <CardTitle>Evidence Submissions ({evidence.length})</CardTitle>
+              <div>
+                <CardTitle>Evidence Submissions ({filteredEvidence.length})</CardTitle>
+                <p className="text-sm text-gray-600 mt-1">
+                  {roundFilter === 'all' ? (
+                    <>Showing all rounds ({evidence.length} total)</>
+                  ) : (
+                    <>Showing Round {roundFilter} ({filteredEvidence.length} of {evidence.length} total)</>
+                  )}
+                </p>
+              </div>
             </div>
             <Button
               onClick={() => setUploadDialogOpen(true)}
@@ -1099,6 +1146,19 @@ function EvidenceTab({ schoolId, evidence, isLoading }: {
             </Button>
           </div>
           <div className="flex gap-2 mt-4">
+            <Select value={roundFilter} onValueChange={setRoundFilter}>
+              <SelectTrigger className="w-[150px]" data-testid="select-filter-round">
+                <SelectValue placeholder="All Rounds" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Rounds</SelectItem>
+                {availableRounds.map((round) => (
+                  <SelectItem key={round} value={round.toString()}>
+                    Round {round}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select value={filterStage} onValueChange={setFilterStage}>
               <SelectTrigger className="w-[150px]" data-testid="select-filter-stage">
                 <SelectValue placeholder="All Stages" />
@@ -1159,6 +1219,13 @@ function EvidenceTab({ schoolId, evidence, isLoading }: {
                           </Badge>
                         </div>
                         <div className="flex items-center gap-2 flex-wrap">
+                          <Badge 
+                            variant="outline" 
+                            className="border-navy text-navy bg-blue-50"
+                            data-testid={`badge-round-${ev.id}`}
+                          >
+                            Round {ev.roundNumber}
+                          </Badge>
                           <Badge className={
                             ev.stage === 'inspire' ? 'bg-pcs_blue' :
                             ev.stage === 'investigate' ? 'bg-teal' :

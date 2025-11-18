@@ -118,7 +118,35 @@ export class EvidenceStorage {
 
   /**
    * Get all evidence with filters
+   * 
+   * ROUND FILTERING EXPECTATIONS:
+   * =============================
+   * The `roundNumber` filter is OPTIONAL and controls round-specific queries:
+   * 
+   * WHY round filtering exists:
+   * - Schools can complete multiple rounds (Round 1, 2, 3, etc.)
+   * - Each round is an independent journey through inspire/investigate/act stages
+   * - Evidence, audits, and admin overrides are all tagged with roundNumber
+   * - Showing all rounds together would confuse progress tracking and admin review
+   * 
+   * WHEN to include roundNumber:
+   * - Admin reviewing evidence for a school's current round (most common)
+   * - ProgressTracker displaying requirements for a selected round
+   * - SchoolProgressOverride managing overrides for current round only
+   * - Evidence Review Queue filtering by admin's assigned round
+   * 
+   * WHEN to omit roundNumber (returns ALL rounds):
+   * - SchoolProfile "Evidence" tab with historical review (uses UI filter instead)
+   * - Public gallery/inspiration page showing best evidence across all rounds
+   * - Admin reports that aggregate evidence across multiple rounds
+   * 
+   * CONSISTENCY requirement:
+   * - If filtering evidence by roundNumber, also filter audits and overrides by same round
+   * - This ensures progress calculations are accurate and consistent
+   * 
    * @param filters - Filter criteria
+   * @param filters.roundNumber - Optional round filter. If provided, returns only evidence
+   *                               from that round. If omitted, returns ALL rounds.
    * @returns Array of evidence with school details
    */
   async getAllEvidence(filters?: {

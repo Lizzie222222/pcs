@@ -19,6 +19,7 @@ export interface PendingEvidence {
   schoolId: string;
   submittedBy: string;
   assignedTo: string | null;
+  roundNumber: number;
   files: any[];
   videoLinks: string | null;
   school?: {

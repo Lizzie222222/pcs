@@ -1,7 +1,5 @@
-import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -61,16 +59,44 @@ export default function SchoolProgressOverride({ schoolId, onUpdate }: SchoolPro
     queryKey: ['/api/evidence-requirements'],
   });
 
+  /**
+   * ROUND FILTERING - WHY IT'S CRITICAL FOR ADMIN OVERRIDES:
+   * ========================================================
+   * Admin overrides and evidence queries MUST filter by school.currentRound.
+   * This is non-negotiable because:
+   * 
+   * WHY showing all rounds would confuse admins:
+   * - Each requirement appears once per round (e.g., "Community Event" in Round 1, 2, 3)
+   * - Without filtering, the list would show "Community Event" 3+ times
+   * - Admins wouldn't know which checkbox applies to which round
+   * - Toggling overrides would affect the wrong round's progress
+   * 
+   * WHY filtering by currentRound specifically:
+   * - Admin overrides affect the school's active round progression
+   * - Historical rounds are completed and shouldn't be modified
+   * - The round selector in this component changes school.currentRound directly
+   * - Evidence counts and progression logic all use currentRound
+   * 
+   * CONSISTENCY requirement:
+   * - Overrides query: Filters by school.currentRound (implicit via API)
+   * - Evidence query: MUST filter by school.currentRound (line 70)
+   * - toggleOverride mutation: Automatically uses currentRound (backend adds it)
+   * 
+   * If evidence and overrides queries use different rounds, the UI will show
+   * incorrect completion badges and admins will make mistakes.
+   */
+
   // Fetch admin overrides for current round
   const { data: overrides = [] } = useQuery<AdminOverride[]>({
     queryKey: ['/api/admin/schools', schoolId, 'evidence-overrides'],
     enabled: !!schoolId,
   });
 
-  // Fetch school evidence
+  // Fetch school evidence for current round only
+  // This MUST stay in sync with overrides query (both use currentRound)
   const { data: evidence = [] } = useQuery<Evidence[]>({
-    queryKey: ['/api/admin/schools', schoolId, 'evidence'],
-    enabled: !!schoolId,
+    queryKey: ['/api/admin/schools', schoolId, 'evidence', { roundNumber: school?.currentRound }],
+    enabled: !!schoolId && school?.currentRound !== undefined,
   });
 
   // Toggle override mutation

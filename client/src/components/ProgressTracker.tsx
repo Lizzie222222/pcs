@@ -67,6 +67,33 @@ export default function ProgressTracker({
   currentRound,
 }: ProgressTrackerProps) {
   const { t, i18n } = useTranslation('dashboard');
+  
+  /**
+   * ROUND FILTERING LOGIC:
+   * ======================
+   * The selectedRound state controls which round's evidence is displayed.
+   * This is critical because schools can complete multiple rounds, and each
+   * round has independent evidence, audits, and admin overrides.
+   * 
+   * WHY round filtering is needed:
+   * - Users want to review their progress history (e.g., "What did we submit in Round 1?")
+   * - Each round is a complete journey through inspire/investigate/act stages
+   * - Showing all rounds together would duplicate requirement titles and confuse users
+   * 
+   * CONSISTENCY requirement (CRITICAL):
+   * - Evidence query: MUST filter by selectedRound (line 134)
+   * - Admin overrides: MUST filter by selectedRound (line 184)
+   * - Audit responses: MUST filter by selectedRound (line 154)
+   * - Action plans: MUST filter by selectedRound (line 163)
+   * 
+   * If these queries use different rounds, progress calculations will be incorrect.
+   * 
+   * Implementation notes:
+   * - selectedRound defaults to currentRound (most common case)
+   * - Round selector appears only if currentRound > 1 (line 538)
+   * - When viewing previous rounds, progress is calculated client-side (lines 189-261)
+   * - When viewing currentRound, progress uses API-provided evidenceCounts prop
+   */
   const [selectedRound, setSelectedRound] = useState(currentRound);
   const [showEvidenceForm, setShowEvidenceForm] = useState(false);
   const [selectedRequirementId, setSelectedRequirementId] = useState<string | undefined>();
@@ -713,8 +740,8 @@ export default function ProgressTracker({
                             const overrideCount = counts && 'overrideCount' in counts ? (counts.overrideCount || 0) : 0;
                             const hasOverrides = overrideCount > 0;
                             return hasOverrides ? (
-                              <div className="absolute -bottom-2 -right-2 w-7 h-7 bg-purple-600 rounded-full flex items-center justify-center text-white shadow-lg" data-testid={`admin-override-indicator-${stage.id}`}>
-                                <Shield className="h-4 w-4" />
+                              <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-white/90 border-2 border-[hsl(178,100%,37%)] rounded-full flex items-center justify-center shadow-md" data-testid={`admin-override-indicator-${stage.id}`}>
+                                <Shield className="h-3 w-3 text-[hsl(178,100%,37%)]" />
                               </div>
                             ) : null;
                           })()}

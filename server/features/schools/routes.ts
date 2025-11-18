@@ -1246,7 +1246,8 @@ schoolsRouter.get('/api/admin/schools/:id', isAuthenticated, requireAdminOrPartn
 schoolsRouter.get('/api/admin/schools/:id/evidence', isAuthenticated, requireAdminOrPartner, async (req, res) => {
   try {
     const schoolId = req.params.id;
-    const evidence = await storage.getSchoolEvidence(schoolId);
+    const roundNumber = req.query.roundNumber ? parseInt(req.query.roundNumber as string, 10) : undefined;
+    const evidence = await storage.getSchoolEvidence(schoolId, roundNumber);
     res.json(evidence);
   } catch (error) {
     console.error("Error fetching school evidence:", error);

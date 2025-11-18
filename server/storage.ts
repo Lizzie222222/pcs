@@ -247,7 +247,6 @@ export interface IStorage {
     countryName: string;
     totalSchools: number;
     completedAwards: number;
-    featuredSchools: number;
   }>>;
   getUniqueCountries(): Promise<string[]>;
   findSchoolsByEmailDomain(domain: string): Promise<Array<School & { userEmails: string[] }>>;
@@ -354,7 +353,7 @@ export interface IStorage {
   createEvidence(evidence: InsertEvidence): Promise<Evidence>;
   getEvidence(id: string): Promise<Evidence | undefined>;
   getEvidenceById(id: string): Promise<EvidenceWithSchool & { schoolName: string; schoolCountry: string; schoolLanguage: string | null } | undefined>;
-  getSchoolEvidence(schoolId: string): Promise<Evidence[]>;
+  getSchoolEvidence(schoolId: string, roundNumber?: number): Promise<Evidence[]>;
   getPendingEvidence(): Promise<Evidence[]>;
   getAllEvidence(filters?: {
     status?: 'pending' | 'approved' | 'rejected';
@@ -1609,7 +1608,6 @@ export class DatabaseStorage implements IStorage {
     countryName: string;
     totalSchools: number;
     completedAwards: number;
-    featuredSchools: number;
   }>> {
     return schoolStorage.getSchoolCountsByCountry(filters);
   }
@@ -2387,8 +2385,8 @@ export class DatabaseStorage implements IStorage {
     return evidenceStorage.getEvidenceById(id);
   }
 
-  async getSchoolEvidence(schoolId: string): Promise<Array<Evidence & { reviewer?: { id: string | null; email: string | null; firstName: string | null; lastName: string | null; } | null }>> {
-    return schoolStorage.getSchoolEvidence(schoolId);
+  async getSchoolEvidence(schoolId: string, roundNumber?: number): Promise<Array<Evidence & { reviewer?: { id: string | null; email: string | null; firstName: string | null; lastName: string | null; } | null }>> {
+    return schoolStorage.getSchoolEvidence(schoolId, roundNumber);
   }
 
   async getPendingEvidence(): Promise<Evidence[]> {

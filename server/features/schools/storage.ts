@@ -698,7 +698,39 @@ export class SchoolStorage {
       .orderBy(desc(teacherInvitations.createdAt));
   }
 
-  async getSchoolEvidence(schoolId: string): Promise<Array<Evidence & { reviewer?: { id: string | null; email: string | null; firstName: string | null; lastName: string | null; } | null }>> {
+  /**
+   * Get all evidence for a school, optionally filtered by round
+   * 
+   * ROUND FILTERING EXPECTATIONS:
+   * =============================
+   * The `roundNumber` parameter is OPTIONAL for backward compatibility:
+   * 
+   * WHY round filtering is needed:
+   * - Schools complete multiple rounds, each with separate evidence submissions
+   * - Mixing rounds would show duplicate requirement titles and confuse admins
+   * - Progress tracking requires round-specific evidence counts
+   * 
+   * WHEN to provide roundNumber:
+   * - SchoolProgressOverride: MUST filter by school.currentRound (line 70)
+   * - Dashboard/ProgressTracker: Filter by selectedRound state
+   * - Admin evidence review for specific round
+   * 
+   * WHEN to omit roundNumber (backward compatible, returns ALL):
+   * - SchoolProfile Evidence tab uses UI-level filtering instead
+   * - Historical evidence export/reports across all rounds
+   * 
+   * @param schoolId - School ID to fetch evidence for
+   * @param roundNumber - Optional round filter. If provided, returns only evidence
+   *                      from that round. If omitted, returns ALL rounds (backward compatible).
+   * @returns Array of evidence with reviewer details
+   */
+  async getSchoolEvidence(schoolId: string, roundNumber?: number): Promise<Array<Evidence & { reviewer?: { id: string | null; email: string | null; firstName: string | null; lastName: string | null; } | null }>> {
+    const conditions = [eq(evidence.schoolId, schoolId)];
+    
+    if (roundNumber !== undefined) {
+      conditions.push(eq(evidence.roundNumber, roundNumber));
+    }
+    
     return await db
       .select({
         id: evidence.id,
@@ -733,7 +765,7 @@ export class SchoolStorage {
       })
       .from(evidence)
       .leftJoin(users, eq(evidence.reviewedBy, users.id))
-      .where(eq(evidence.schoolId, schoolId))
+      .where(and(...conditions))
       .orderBy(desc(evidence.submittedAt));
   }
 
@@ -756,6 +788,39 @@ export class SchoolStorage {
       .where(eq(adminEvidenceOverrides.schoolId, schoolId));
   }
 
+  /**
+   * Calculate evidence counts for a school, filtered by round
+   * 
+   * ROUND FILTERING EXPECTATIONS:
+   * =============================
+   * The `roundNumber` parameter is OPTIONAL but DEFAULTS to school's currentRound:
+   * 
+   * WHY round filtering is critical:
+   * - Progress percentage must be calculated per-round, not across all rounds
+   * - Each round has independent requirements and completion tracking
+   * - Mixing rounds would show inflated counts and incorrect progress
+   * - Admin overrides are round-specific and must match evidence round
+   * 
+   * WHEN to provide roundNumber:
+   * - ProgressTracker viewing historical rounds: Pass selectedRound state
+   * - Admin reports for specific round: Pass explicit round number
+   * - Testing/debugging specific round data
+   * 
+   * WHEN to omit roundNumber (uses school.currentRound):
+   * - Dashboard displaying current progress (most common case)
+   * - POST /api/evidence review triggering progression check
+   * - Automatic progression calculations after evidence approval
+   * 
+   * CONSISTENCY requirement (CRITICAL):
+   * - This method queries evidence, adminOverrides, audits, and actionPlans
+   * - ALL queries use the same round number (lines 782-855)
+   * - If these get out of sync, progress calculations will be incorrect
+   * 
+   * @param schoolId - School ID to calculate counts for
+   * @param roundNumber - Optional round filter. If provided, counts evidence for that round.
+   *                      If omitted, uses school's currentRound (backward compatible).
+   * @returns Evidence counts broken down by stage with override counts
+   */
   async getSchoolEvidenceCounts(schoolId: string, roundNumber?: number): Promise<{
     inspire: { total: number; approved: number; overrideCount: number };
     investigate: { total: number; approved: number; overrideCount: number; hasQuiz: boolean; hasActionPlan: boolean };

@@ -350,6 +350,7 @@ export default function EvidenceReviewQueue({
             <TableHead className="w-20">Preview</TableHead>
             <TableHead>School</TableHead>
             <TableHead>Stage</TableHead>
+            <TableHead>Round</TableHead>
             <TableHead>Title</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Submitted Date</TableHead>
@@ -413,6 +414,11 @@ export default function EvidenceReviewQueue({
               <TableCell>
                 <Badge className={getStageColor(item.stage)} data-testid={`badge-stage-${item.id}`}>
                   {item.stage}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <Badge className="bg-navy text-white" data-testid={`badge-table-round-${item.id}`}>
+                  Round {item.roundNumber}
                 </Badge>
               </TableCell>
               <TableCell>
@@ -625,6 +631,28 @@ export default function EvidenceReviewQueue({
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Round Filter - Promoted to Primary UI */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700">Round:</span>
+                  <Select
+                    value={evidenceRoundFilter}
+                    onValueChange={setEvidenceRoundFilter}
+                    data-testid="filter-round"
+                  >
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue placeholder="All Rounds" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Rounds</SelectItem>
+                      <SelectItem value="1">Round 1</SelectItem>
+                      <SelectItem value="2">Round 2</SelectItem>
+                      <SelectItem value="3">Round 3</SelectItem>
+                      <SelectItem value="4">Round 4</SelectItem>
+                      <SelectItem value="5">Round 5</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               {/* View Toggle */}
@@ -825,28 +853,6 @@ export default function EvidenceReviewQueue({
                   </Select>
                 </div>
 
-                {/* Round Filter */}
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-gray-700">Round</label>
-                  <Select
-                    value={evidenceRoundFilter}
-                    onValueChange={setEvidenceRoundFilter}
-                    data-testid="filter-round"
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="All Rounds" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Rounds</SelectItem>
-                      <SelectItem value="1">Round 1</SelectItem>
-                      <SelectItem value="2">Round 2</SelectItem>
-                      <SelectItem value="3">Round 3</SelectItem>
-                      <SelectItem value="4">Round 4</SelectItem>
-                      <SelectItem value="5">Round 5</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 {/* Visibility Filter */}
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-gray-700">Visibility</label>
@@ -979,6 +985,9 @@ export default function EvidenceReviewQueue({
                         <h3 className="font-semibold text-navy">{evidence.title}</h3>
                         <Badge className={getStageColor(evidence.stage)}>
                           {evidence.stage}
+                        </Badge>
+                        <Badge className="bg-navy text-white" data-testid={`badge-evidence-round-${evidence.id}`}>
+                          Round {evidence.roundNumber}
                         </Badge>
                         <Badge variant="outline" className="bg-yellow text-black">
                           {evidence.status}
