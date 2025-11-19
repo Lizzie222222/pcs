@@ -1,0 +1,30 @@
+eferenceError: Download is not defined
+
+    at OverviewTab (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/pages/SchoolProfile.tsx?t=1763551957354:710:3)
+    at div
+    at https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-DVHSTOKX.js?v=83f9876e:42:13
+    at Presence (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-MP2AVB7R.js?v=83f9876e:24:11)
+    at https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tabs.js?v=83f9876e:174:13
+    at _c5 (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/components/ui/tabs.tsx:72:12)
+    at div
+    at https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-DVHSTOKX.js?v=83f9876e:42:13
+    at Provider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-3RXG37ZK.js?v=83f9876e:38:15)
+    at https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tabs.js?v=83f9876e:52:7
+    at div
+    at div
+    at SchoolProfile (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/pages/SchoolProfile.tsx?t=1763551957354:77:18)
+    at Route (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=83f9876e:191:16)
+    at Switch (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=83f9876e:247:17)
+    at Suspense
+    at ErrorBoundary (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/components/ErrorBoundary.tsx:9:5)
+    at main
+    at div
+    at CollaborationProvider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/contexts/CollaborationContext.tsx:20:41)
+    at Router (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/App.tsx?t=1763551957354&v=Fat0NBJMOpc3m_tYA3_gF:112:17)
+    at Provider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-3RXG37ZK.js?v=83f9876e:38:15)
+    at TooltipProvider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=83f9876e:62:5)
+    at QueryClientProvider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=83f9876e:2805:3)
+    at App
+    at Suspense
+Try again
+Go to homepage

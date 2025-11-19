@@ -1,10 +1,22 @@
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle2, Circle, Settings } from "lucide-react";
+import { CheckCircle2, Circle, Settings, Eye, Save } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 interface EvidenceRequirement {
@@ -53,6 +65,20 @@ export default function SchoolProgressOverride({ schoolId, onUpdate }: SchoolPro
   const { data: school } = useQuery<School>({
     queryKey: ['/api/admin/schools', schoolId],
   });
+  
+  // Viewing state - separate from actual current round/stage
+  // Initialize with school data or safe defaults
+  const [viewingRound, setViewingRound] = useState<number>(() => school?.currentRound || 1);
+  const [viewingStage, setViewingStage] = useState<'inspire' | 'investigate' | 'act'>(() => school?.currentStage || 'inspire');
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+
+  // Sync viewing state when school data loads or changes
+  useEffect(() => {
+    if (school) {
+      setViewingRound(school.currentRound);
+      setViewingStage(school.currentStage);
+    }
+  }, [school?.currentRound, school?.currentStage]);
 
   // Fetch evidence requirements
   const { data: requirements = [] } = useQuery<EvidenceRequirement[]>({
@@ -86,35 +112,44 @@ export default function SchoolProgressOverride({ schoolId, onUpdate }: SchoolPro
    * incorrect completion badges and admins will make mistakes.
    */
 
-  // Fetch admin overrides for current round
+  // Fetch admin overrides for viewing round
+  // Must be scoped to viewingRound so checkboxes match the evidence being viewed
   const { data: overrides = [] } = useQuery<AdminOverride[]>({
-    queryKey: ['/api/admin/schools', schoolId, 'evidence-overrides'],
-    enabled: !!schoolId,
+    queryKey: ['/api/admin/schools', schoolId, 'evidence-overrides', viewingRound],
+    queryFn: async () => {
+      const url = `/api/admin/schools/${schoolId}/evidence-overrides?roundNumber=${viewingRound}`;
+      const response = await fetch(url, { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch overrides');
+      return response.json();
+    },
+    enabled: !!schoolId && viewingRound !== null,
   });
 
-  // Fetch school evidence for current round only
-  // This MUST stay in sync with overrides query (both use currentRound)
+  // Fetch school evidence for viewing round
+  // Now uses viewingRound to allow browsing different rounds without changing current round
   const { data: evidence = [] } = useQuery<Evidence[]>({
-    queryKey: ['/api/admin/schools', schoolId, 'evidence', school?.currentRound],
+    queryKey: ['/api/admin/schools', schoolId, 'evidence', viewingRound],
     queryFn: async () => {
-      const url = `/api/admin/schools/${schoolId}/evidence?roundNumber=${school?.currentRound}`;
+      const url = `/api/admin/schools/${schoolId}/evidence?roundNumber=${viewingRound}`;
       const response = await fetch(url, { credentials: 'include' });
       if (!response.ok) throw new Error('Failed to fetch evidence');
       return response.json();
     },
-    enabled: !!schoolId && school?.currentRound !== undefined,
+    enabled: !!schoolId && viewingRound !== null,
   });
 
   // Toggle override mutation
+  // Must include viewingRound to ensure override is applied to the correct round
   const toggleOverrideMutation = useMutation({
     mutationFn: async ({ requirementId, stage }: { requirementId: string; stage: string }) => {
       return await apiRequest('POST', `/api/admin/schools/${schoolId}/evidence-overrides/toggle`, {
         evidenceRequirementId: requirementId,
         stage,
+        roundNumber: viewingRound,
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools', schoolId, 'evidence-overrides'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools', schoolId, 'evidence-overrides', viewingRound] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/schools', schoolId] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
       toast({
@@ -156,6 +191,17 @@ export default function SchoolProgressOverride({ schoolId, onUpdate }: SchoolPro
       });
     },
   });
+  
+  // Handle setting current round/stage from viewing state
+  const handleSetAsCurrent = () => {
+    if (viewingRound !== null && viewingStage !== null) {
+      updateProgressionMutation.mutate({ 
+        currentRound: viewingRound,
+        currentStage: viewingStage
+      });
+      setConfirmDialogOpen(false);
+    }
+  };
 
   // Check if a requirement has admin override
   const hasOverride = (requirementId: string) => {
@@ -182,6 +228,9 @@ export default function SchoolProgressOverride({ schoolId, onUpdate }: SchoolPro
     return null;
   }
 
+  // Check if viewing differs from current
+  const hasChanges = viewingRound !== school.currentRound || viewingStage !== school.currentStage;
+
   return (
     <div className="space-y-6">
       <Card>
@@ -193,16 +242,41 @@ export default function SchoolProgressOverride({ schoolId, onUpdate }: SchoolPro
         </CardHeader>
         
         <CardContent className="space-y-6">
-          {/* Round and Stage Controls */}
+          {/* Viewing vs Current Indicator */}
+          <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center gap-2 text-sm">
+              <Eye className="h-4 w-4 text-blue-600" />
+              <span className="font-medium text-blue-900">
+                Viewing: Round {viewingRound} - {viewingStage && viewingStage.charAt(0).toUpperCase() + viewingStage.slice(1)}
+              </span>
+              <span className="text-blue-600">|</span>
+              <span className="text-blue-700">
+                Current: Round {school.currentRound} - {school.currentStage.charAt(0).toUpperCase() + school.currentStage.slice(1)}
+              </span>
+            </div>
+            {hasChanges && (
+              <Button
+                size="sm"
+                onClick={() => setConfirmDialogOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700"
+                data-testid="button-set-as-current"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Set as Current Round/Stage
+              </Button>
+            )}
+          </div>
+
+          {/* Round and Stage Controls - Now for viewing only */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Current Round</label>
+              <label className="text-sm font-medium">Browse Round</label>
               <Select
-                value={school.currentRound?.toString() || "1"}
+                value={viewingRound?.toString() || "1"}
                 onValueChange={(value) => {
-                  updateProgressionMutation.mutate({ currentRound: parseInt(value) });
+                  setViewingRound(parseInt(value));
                 }}
-                data-testid="select-current-round"
+                data-testid="select-viewing-round"
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -218,13 +292,13 @@ export default function SchoolProgressOverride({ schoolId, onUpdate }: SchoolPro
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Current Stage</label>
+              <label className="text-sm font-medium">Browse Stage</label>
               <Select
-                value={school.currentStage || "inspire"}
+                value={viewingStage || "inspire"}
                 onValueChange={(value: any) => {
-                  updateProgressionMutation.mutate({ currentStage: value });
+                  setViewingStage(value);
                 }}
-                data-testid="select-current-stage"
+                data-testid="select-viewing-stage"
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -261,7 +335,7 @@ export default function SchoolProgressOverride({ schoolId, onUpdate }: SchoolPro
                       data-testid={`requirement-${requirement.id}`}
                     >
                       <Checkbox
-                        checked={isOverridden}
+                        checked={isOverridden || isApproved}
                         onCheckedChange={() => {
                           toggleOverrideMutation.mutate({
                             requirementId: requirement.id,
@@ -311,11 +385,36 @@ export default function SchoolProgressOverride({ schoolId, onUpdate }: SchoolPro
               <li>• <strong>Approved badge:</strong> School has submitted and admin approved this evidence</li>
               <li>• <strong>Submitted badge:</strong> School has submitted evidence (pending review)</li>
               <li>• <strong>Admin Override badge:</strong> You've manually marked this as complete</li>
-              <li>• <strong>Checkbox:</strong> Toggle admin override (works independently of submissions)</li>
+              <li>• <strong>Checkbox (Ticked):</strong> Either approved by admin OR manually overridden</li>
+              <li>• <strong>Checkbox (Unticked):</strong> Not yet completed - click to add admin override</li>
             </ul>
           </div>
         </CardContent>
       </Card>
+      
+      {/* Confirmation Dialog */}
+      <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Set Current Round and Stage?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will update the school's current round to <strong>Round {viewingRound}</strong> and 
+              current stage to <strong>{viewingStage && viewingStage.charAt(0).toUpperCase() + viewingStage.slice(1)}</strong>.
+              <br /><br />
+              This action will affect the school's progression and what evidence they can submit.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleSetAsCurrent}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

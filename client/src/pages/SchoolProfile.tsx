@@ -42,6 +42,7 @@ import {
   XCircle,
   Clock,
   Upload,
+  Download,
   ExternalLink,
   Loader2,
   TrendingUp,
@@ -116,6 +117,17 @@ interface Evidence {
     lastName: string | null;
     isAdmin: boolean | null;
   } | null;
+}
+
+interface Certificate {
+  id: string;
+  schoolId: string;
+  certificateNumber: string;
+  title: string;
+  completedDate: string;
+  issuedDate: string;
+  shareableUrl: string | null;
+  metadata: any;
 }
 
 interface AuditData {
@@ -246,6 +258,17 @@ export default function SchoolProfile() {
       return response.json();
     },
     enabled: !!id && activeTab === 'settings',
+  });
+
+  // Certificates query
+  const { data: certificates = [], isLoading: certificatesLoading } = useQuery<Certificate[]>({
+    queryKey: ['/api/schools', id, 'certificates'],
+    queryFn: async () => {
+      const response = await fetch(`/api/schools/${id}/certificates`, { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch certificates');
+      return response.json();
+    },
+    enabled: !!id && activeTab === 'overview',
   });
 
   if (schoolLoading) {
@@ -392,7 +415,7 @@ export default function SchoolProfile() {
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
-            <OverviewTab school={school} />
+            <OverviewTab school={school} certificates={certificates} certificatesLoading={certificatesLoading} />
           </TabsContent>
 
           {/* Teachers Tab */}
@@ -460,7 +483,11 @@ export default function SchoolProfile() {
 }
 
 // Overview Tab Component
-function OverviewTab({ school }: { school: SchoolData }) {
+function OverviewTab({ school, certificates, certificatesLoading }: { 
+  school: SchoolData; 
+  certificates: Certificate[];
+  certificatesLoading: boolean;
+}) {
   const { t } = useTranslation('admin');
 
   return (
@@ -579,6 +606,79 @@ function OverviewTab({ school }: { school: SchoolData }) {
               </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Certificates */}
+      <Card className="lg:col-span-3">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Award className="h-5 w-5 text-pcs_blue" />
+            Certificates Generated ({certificates.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {certificatesLoading ? (
+            <LoadingSpinner message="Loading certificates..." />
+          ) : certificates.length === 0 ? (
+            <EmptyState
+              icon={Award}
+              title="No Certificates Yet"
+              description="Certificates will appear here once the school completes a round."
+            />
+          ) : (
+            <div className="space-y-3">
+              {certificates.map((cert) => {
+                const roundNumber = (cert.metadata as any)?.round || 1;
+                return (
+                  <div
+                    key={cert.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                    data-testid={`certificate-${cert.id}`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-100">
+                        <Award className="h-6 w-6 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium" data-testid={`certificate-title-${cert.id}`}>
+                          Round {roundNumber} Completion Certificate
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Certificate #{cert.certificateNumber}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Issued: {format(new Date(cert.issuedDate), 'dd/MM/yyyy')}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      {cert.shareableUrl && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(cert.shareableUrl!, '_blank')}
+                          data-testid={`button-view-certificate-${cert.id}`}
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          View
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        onClick={() => window.open(`/api/certificates/${cert.id}/download`, '_blank')}
+                        className="bg-green-600 hover:bg-green-700"
+                        data-testid={`button-download-certificate-${cert.id}`}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download PDF
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 

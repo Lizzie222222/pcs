@@ -33,7 +33,8 @@ import { storage } from '../../storage';
 // Validation schemas - exported for use in routes.ts
 export const toggleEvidenceOverrideSchema = z.object({
   evidenceRequirementId: z.string().uuid(),
-  stage: z.enum(['inspire', 'investigate', 'act'])
+  stage: z.enum(['inspire', 'investigate', 'act']),
+  roundNumber: z.number().int().min(1).max(10).optional()
 });
 
 export const updateSchoolProgressionSchema = z.object({
