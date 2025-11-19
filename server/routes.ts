@@ -6053,8 +6053,9 @@ Return JSON with:
         console.warn("Failed to send audit review email:", emailError);
       }
 
-      // Check and update school progression if approved
-      if (approved) {
+      // CRITICAL: Trigger school progression check on approval
+      // This ensures schools can advance when their audit is approved
+      if (audit.status === 'approved') {
         await storage.checkAndUpdateSchoolProgression(audit.schoolId);
       }
 
