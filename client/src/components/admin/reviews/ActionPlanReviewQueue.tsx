@@ -374,24 +374,50 @@ export default function ActionPlanReviewQueue({
             }
           };
 
-          const approveAllSchoolPlans = (e: React.MouseEvent) => {
+          const approveAllSchoolPlans = async (e: React.MouseEvent) => {
             e.stopPropagation();
             const planIds = schoolPlans.map(p => p.id);
-            // Add all school plans to selection (don't clear other selections)
-            const combined = [...selectedActionPlans, ...planIds];
-            setSelectedActionPlans(Array.from(new Set(combined)));
-            setBulkAction({ type: 'approve', notes: '' });
-            setBulkActionPlanDialogOpen(true);
+            // Instant approval without dialog
+            try {
+              await bulkActionPlanReviewMutation.mutateAsync({
+                actionPlanIds: planIds,
+                reviewStatus: 'approved',
+                reviewNotes: '',
+              });
+              toast({
+                title: "Success",
+                description: `Approved all ${planIds.length} action plan(s) for ${firstPlan.school?.name || 'this school'}.`,
+              });
+            } catch (error: any) {
+              toast({
+                title: "Approval Failed",
+                description: error.message || "Failed to approve action plans.",
+                variant: "destructive",
+              });
+            }
           };
 
-          const rejectAllSchoolPlans = (e: React.MouseEvent) => {
+          const rejectAllSchoolPlans = async (e: React.MouseEvent) => {
             e.stopPropagation();
             const planIds = schoolPlans.map(p => p.id);
-            // Add all school plans to selection (don't clear other selections)
-            const combined = [...selectedActionPlans, ...planIds];
-            setSelectedActionPlans(Array.from(new Set(combined)));
-            setBulkAction({ type: 'reject', notes: '' });
-            setBulkActionPlanDialogOpen(true);
+            // Instant rejection without dialog
+            try {
+              await bulkActionPlanReviewMutation.mutateAsync({
+                actionPlanIds: planIds,
+                reviewStatus: 'rejected',
+                reviewNotes: '',
+              });
+              toast({
+                title: "Success",
+                description: `Rejected all ${planIds.length} action plan(s) for ${firstPlan.school?.name || 'this school'}.`,
+              });
+            } catch (error: any) {
+              toast({
+                title: "Rejection Failed",
+                description: error.message || "Failed to reject action plans.",
+                variant: "destructive",
+              });
+            }
           };
 
           return (
