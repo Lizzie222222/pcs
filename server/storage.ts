@@ -637,6 +637,23 @@ export interface IStorage {
   deleteReductionPromise(id: string): Promise<void>;
   getActivePromisesBySchool(schoolId: string): Promise<ReductionPromise[]>;
   getAllActivePromises(): Promise<ReductionPromise[]>;
+  getActionPlanById(id: string): Promise<(ReductionPromise & { schoolName: string; schoolCountry: string; creatorName: string }) | undefined>;
+  getAdminActionPlans(filters?: {
+    reviewStatus?: 'pending' | 'approved' | 'rejected';
+    schoolId?: string;
+    country?: string;
+    roundNumber?: number;
+    search?: string;
+    sortBy?: 'newest' | 'oldest' | 'schoolName';
+    limit?: number;
+    offset?: number;
+  }): Promise<Array<ReductionPromise & { schoolName: string; schoolCountry: string; creatorName: string }>>;
+  reviewActionPlan(
+    id: string,
+    reviewStatus: 'approved' | 'rejected',
+    reviewedBy: string,
+    reviewNotes?: string
+  ): Promise<ReductionPromise | undefined>;
 
   // Printable Form Submission operations
   createPrintableFormSubmission(data: InsertPrintableFormSubmission): Promise<PrintableFormSubmission>;
@@ -4918,6 +4935,155 @@ export class DatabaseStorage implements IStorage {
       .from(reductionPromises)
       .where(eq(reductionPromises.status, 'active'))
       .orderBy(desc(reductionPromises.createdAt));
+  }
+
+  async getActionPlanById(id: string): Promise<(ReductionPromise & { schoolName: string; schoolCountry: string; creatorName: string }) | undefined> {
+    const [actionPlan] = await db
+      .select({
+        id: reductionPromises.id,
+        schoolId: reductionPromises.schoolId,
+        auditId: reductionPromises.auditId,
+        roundNumber: reductionPromises.roundNumber,
+        plasticItemType: reductionPromises.plasticItemType,
+        plasticItemLabel: reductionPromises.plasticItemLabel,
+        baselineQuantity: reductionPromises.baselineQuantity,
+        targetQuantity: reductionPromises.targetQuantity,
+        reductionAmount: reductionPromises.reductionAmount,
+        timeframeUnit: reductionPromises.timeframeUnit,
+        status: reductionPromises.status,
+        notes: reductionPromises.notes,
+        createdBy: reductionPromises.createdBy,
+        reviewStatus: reductionPromises.reviewStatus,
+        reviewedBy: reductionPromises.reviewedBy,
+        reviewedAt: reductionPromises.reviewedAt,
+        reviewNotes: reductionPromises.reviewNotes,
+        createdAt: reductionPromises.createdAt,
+        updatedAt: reductionPromises.updatedAt,
+        schoolName: schools.name,
+        schoolCountry: schools.country,
+        creatorName: sql<string>`CONCAT(${users.firstName}, ' ', ${users.lastName})`,
+      })
+      .from(reductionPromises)
+      .leftJoin(schools, eq(reductionPromises.schoolId, schools.id))
+      .leftJoin(users, eq(reductionPromises.createdBy, users.id))
+      .where(eq(reductionPromises.id, id))
+      .limit(1);
+    
+    return actionPlan as any;
+  }
+
+  async getAdminActionPlans(filters?: {
+    reviewStatus?: 'pending' | 'approved' | 'rejected';
+    schoolId?: string;
+    country?: string;
+    roundNumber?: number;
+    search?: string;
+    sortBy?: 'newest' | 'oldest' | 'schoolName';
+    limit?: number;
+    offset?: number;
+  }): Promise<Array<ReductionPromise & { schoolName: string; schoolCountry: string; creatorName: string }>> {
+    let query = db
+      .select({
+        id: reductionPromises.id,
+        schoolId: reductionPromises.schoolId,
+        auditId: reductionPromises.auditId,
+        roundNumber: reductionPromises.roundNumber,
+        plasticItemType: reductionPromises.plasticItemType,
+        plasticItemLabel: reductionPromises.plasticItemLabel,
+        baselineQuantity: reductionPromises.baselineQuantity,
+        targetQuantity: reductionPromises.targetQuantity,
+        reductionAmount: reductionPromises.reductionAmount,
+        timeframeUnit: reductionPromises.timeframeUnit,
+        status: reductionPromises.status,
+        notes: reductionPromises.notes,
+        createdBy: reductionPromises.createdBy,
+        reviewStatus: reductionPromises.reviewStatus,
+        reviewedBy: reductionPromises.reviewedBy,
+        reviewedAt: reductionPromises.reviewedAt,
+        reviewNotes: reductionPromises.reviewNotes,
+        createdAt: reductionPromises.createdAt,
+        updatedAt: reductionPromises.updatedAt,
+        schoolName: schools.name,
+        schoolCountry: schools.country,
+        creatorName: sql<string>`CONCAT(${users.firstName}, ' ', ${users.lastName})`,
+      })
+      .from(reductionPromises)
+      .leftJoin(schools, eq(reductionPromises.schoolId, schools.id))
+      .leftJoin(users, eq(reductionPromises.createdBy, users.id))
+      .$dynamic();
+
+    // Apply filters
+    const conditions: any[] = [];
+    
+    if (filters?.reviewStatus) {
+      conditions.push(eq(reductionPromises.reviewStatus, filters.reviewStatus));
+    }
+    
+    if (filters?.schoolId) {
+      conditions.push(eq(reductionPromises.schoolId, filters.schoolId));
+    }
+    
+    if (filters?.country) {
+      conditions.push(eq(schools.country, filters.country));
+    }
+    
+    if (filters?.roundNumber) {
+      conditions.push(eq(reductionPromises.roundNumber, filters.roundNumber));
+    }
+    
+    if (filters?.search) {
+      conditions.push(
+        or(
+          sql`LOWER(${schools.name}) LIKE LOWER(${`%${filters.search}%`})`,
+          sql`LOWER(${reductionPromises.plasticItemLabel}) LIKE LOWER(${`%${filters.search}%`})`,
+          sql`LOWER(${reductionPromises.notes}) LIKE LOWER(${`%${filters.search}%`})`
+        )
+      );
+    }
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    // Apply sorting
+    if (filters?.sortBy === 'oldest') {
+      query = query.orderBy(asc(reductionPromises.createdAt));
+    } else if (filters?.sortBy === 'schoolName') {
+      query = query.orderBy(asc(schools.name));
+    } else {
+      query = query.orderBy(desc(reductionPromises.createdAt));
+    }
+
+    // Apply pagination
+    if (filters?.limit) {
+      query = query.limit(filters.limit);
+    }
+    if (filters?.offset) {
+      query = query.offset(filters.offset);
+    }
+
+    return await query as any;
+  }
+
+  async reviewActionPlan(
+    id: string,
+    reviewStatus: 'approved' | 'rejected',
+    reviewedBy: string,
+    reviewNotes?: string
+  ): Promise<ReductionPromise | undefined> {
+    const [updated] = await db
+      .update(reductionPromises)
+      .set({
+        reviewStatus,
+        reviewedBy,
+        reviewedAt: new Date(),
+        reviewNotes,
+        updatedAt: new Date(),
+      })
+      .where(eq(reductionPromises.id, id))
+      .returning();
+    
+    return updated;
   }
 
   // Printable Form Submission operations

@@ -6134,8 +6134,120 @@ Return JSON with:
     }
   });
 
+  // Admin Action Plan Review Routes
+  
+  // Get all action plans for admin review (with filters)
+  app.get('/api/admin/action-plans', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
+    try {
+      const filters = {
+        reviewStatus: req.query.reviewStatus as 'pending' | 'approved' | 'rejected' | undefined,
+        schoolId: req.query.schoolId as string | undefined,
+        country: req.query.country as string | undefined,
+        roundNumber: req.query.roundNumber ? parseInt(req.query.roundNumber as string) : undefined,
+        search: req.query.search as string | undefined,
+        sortBy: req.query.sortBy as 'newest' | 'oldest' | 'schoolName' | undefined,
+        limit: req.query.limit ? parseInt(req.query.limit as string) : 100,
+        offset: req.query.offset ? parseInt(req.query.offset as string) : 0,
+      };
+      
+      // Remove undefined values
+      const cleanFilters = Object.fromEntries(
+        Object.entries(filters).filter(([_, v]) => v !== undefined)
+      );
+      
+      const actionPlans = await storage.getAdminActionPlans(cleanFilters);
+      res.json(actionPlans);
+    } catch (error) {
+      console.error("Error fetching action plans:", error);
+      res.status(500).json({ message: "Failed to fetch action plans" });
+    }
+  });
+  
+  // Get single action plan by ID (admin only)
+  app.get('/api/admin/action-plans/:id', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
+    try {
+      const actionPlan = await storage.getActionPlanById(req.params.id);
+      
+      if (!actionPlan) {
+        return res.status(404).json({ message: "Action plan not found" });
+      }
+      
+      res.json(actionPlan);
+    } catch (error) {
+      console.error("Error fetching action plan:", error);
+      res.status(500).json({ message: "Failed to fetch action plan" });
+    }
+  });
+  
+  // Review action plan (approve/reject)
+  app.patch('/api/admin/action-plans/:id/review', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
+    try {
+      const { reviewStatus, reviewNotes } = req.body;
+      const reviewerId = req.user.id;
+      
+      if (!['approved', 'rejected'].includes(reviewStatus)) {
+        return res.status(400).json({ message: "Invalid review status. Must be 'approved' or 'rejected'" });
+      }
+      
+      // Get the action plan first to check if it exists and get school info
+      const actionPlan = await storage.getActionPlanById(req.params.id);
+      
+      if (!actionPlan) {
+        return res.status(404).json({ message: "Action plan not found" });
+      }
+      
+      // Update review status
+      const reviewed = await storage.reviewActionPlan(
+        req.params.id,
+        reviewStatus,
+        reviewerId,
+        reviewNotes
+      );
+      
+      if (!reviewed) {
+        return res.status(404).json({ message: "Action plan not found" });
+      }
+      
+      // CRITICAL: Trigger school progression check on approval
+      // This ensures schools can advance when their action plan is approved
+      if (reviewStatus === 'approved') {
+        await storage.checkAndUpdateSchoolProgression(actionPlan.schoolId);
+      }
+      
+      // Log review activity
+      await logUserActivity(
+        reviewerId,
+        req.user.email,
+        reviewStatus === 'approved' ? 'promise_update' : 'promise_update',
+        {
+          actionPlanId: reviewed.id,
+          schoolId: reviewed.schoolId,
+          reviewStatus,
+          reviewNotes,
+        },
+        reviewed.id,
+        'reduction_promise',
+        req
+      );
+      
+      // Log audit action
+      await logAuditAction(
+        reviewerId,
+        reviewStatus === 'approved' ? 'approved' : 'rejected',
+        'action_plan',
+        reviewed.id,
+        { reason: reviewNotes }
+      );
+      
+      res.json(reviewed);
+    } catch (error) {
+      console.error("Error reviewing action plan:", error);
+      res.status(500).json({ message: "Failed to review action plan" });
+    }
+  });
+
   // Get aggregated metrics for reduction promises (admin only)
-  app.get('/api/admin/reduction-promises/metrics', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/reduction-promises/metrics', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
       // Check if user is admin
       if (!req.user?.isAdmin) {
