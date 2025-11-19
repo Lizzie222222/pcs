@@ -164,6 +164,14 @@ export function useAuth() {
       setAuthHint(true);
       queryClient.setQueryData(["/api/auth/user"], user);
       
+      // Invalidate all analytics queries to clear any cached 401 errors
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          const key = query.queryKey[0];
+          return typeof key === 'string' && key.startsWith('/api/admin/analytics');
+        }
+      });
+      
       // Apply user's preferred language and wait for it to complete
       if (user.preferredLanguage && user.preferredLanguage !== i18n.language) {
         await i18n.changeLanguage(user.preferredLanguage);
