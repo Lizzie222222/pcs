@@ -2869,12 +2869,12 @@ export class DatabaseStorage implements IStorage {
     const totalActions = Number(approvedEvidenceStats?.approvedEvidence || 0) + Number(legacyStats?.legacyTotal || 0) + historicalCount;
     
     return {
-      totalSchools: schoolStats.totalSchools,
-      pendingEvidence: evidenceStats.pendingEvidence,
+      totalSchools: Number(schoolStats.totalSchools || 0),
+      pendingEvidence: Number(evidenceStats.pendingEvidence || 0),
       featuredCaseStudies,
-      activeUsers: userStats.activeUsers,
+      activeUsers: Number(userStats.activeUsers || 0),
       totalActions,
-      pendingActionPlansCount: actionPlanStats.pendingActionPlans,
+      pendingActionPlansCount: Number(actionPlanStats.pendingActionPlans || 0),
     };
   }
 
