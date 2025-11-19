@@ -309,7 +309,7 @@ export class SchoolStorage {
   }> {
     const [stats] = await db
       .select({
-        totalSchools: count(),
+        totalSchools: sql<number>`count(*)`,
         countries: sql<number>`count(distinct country)`,
         studentsImpacted: sql<number>`coalesce(sum(student_count), 0)`,
       })
@@ -319,10 +319,10 @@ export class SchoolStorage {
     const totalActions = await this.getDeduplicatedEvidenceCount();
     
     return {
-      totalSchools: stats.totalSchools,
+      totalSchools: Number(stats.totalSchools || 0),
       completedAwards: totalActions,
-      countries: stats.countries,
-      studentsImpacted: stats.studentsImpacted,
+      countries: Number(stats.countries || 0),
+      studentsImpacted: Number(stats.studentsImpacted || 0),
     };
   }
 

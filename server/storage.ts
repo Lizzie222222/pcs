@@ -1493,54 +1493,54 @@ export class DatabaseStorage implements IStorage {
 
     // Get counts of all content types
     const [evidenceCount] = await db
-      .select({ count: count() })
+      .select({ count: sql<number>`count(*)` })
       .from(evidence)
       .where(eq(evidence.submittedBy, userId));
 
     const [caseStudiesCount] = await db
-      .select({ count: count() })
+      .select({ count: sql<number>`count(*)` })
       .from(caseStudies)
       .where(eq(caseStudies.createdBy, userId));
 
     const [reductionPromisesCount] = await db
-      .select({ count: count() })
+      .select({ count: sql<number>`count(*)` })
       .from(reductionPromises)
       .where(eq(reductionPromises.createdBy, userId));
 
     const [mediaAssetsCount] = await db
-      .select({ count: count() })
+      .select({ count: sql<number>`count(*)` })
       .from(mediaAssets)
       .where(eq(mediaAssets.uploadedBy, userId));
 
     const [certificatesCount] = await db
-      .select({ count: count() })
+      .select({ count: sql<number>`count(*)` })
       .from(certificates)
       .where(eq(certificates.issuedBy, userId));
 
     const [importBatchesCount] = await db
-      .select({ count: count() })
+      .select({ count: sql<number>`count(*)` })
       .from(importBatches)
       .where(eq(importBatches.importedBy, userId));
 
     const [teacherInvitationsCount] = await db
-      .select({ count: count() })
+      .select({ count: sql<number>`count(*)` })
       .from(teacherInvitations)
       .where(eq(teacherInvitations.invitedBy, userId));
 
     const [adminInvitationsCount] = await db
-      .select({ count: count() })
+      .select({ count: sql<number>`count(*)` })
       .from(adminInvitations)
       .where(eq(adminInvitations.invitedBy, userId));
 
     return {
-      evidence: evidenceCount?.count || 0,
-      caseStudies: caseStudiesCount?.count || 0,
-      reductionPromises: reductionPromisesCount?.count || 0,
-      mediaAssets: mediaAssetsCount?.count || 0,
-      certificates: certificatesCount?.count || 0,
-      importBatches: importBatchesCount?.count || 0,
-      teacherInvitations: teacherInvitationsCount?.count || 0,
-      adminInvitations: adminInvitationsCount?.count || 0,
+      evidence: Number(evidenceCount?.count || 0),
+      caseStudies: Number(caseStudiesCount?.count || 0),
+      reductionPromises: Number(reductionPromisesCount?.count || 0),
+      mediaAssets: Number(mediaAssetsCount?.count || 0),
+      certificates: Number(certificatesCount?.count || 0),
+      importBatches: Number(importBatchesCount?.count || 0),
+      teacherInvitations: Number(teacherInvitationsCount?.count || 0),
+      adminInvitations: Number(adminInvitationsCount?.count || 0),
     };
   }
 
@@ -2346,24 +2346,24 @@ export class DatabaseStorage implements IStorage {
 
   async getUnreadNotificationCount(schoolId: string): Promise<number> {
     const result = await db
-      .select({ count: count() })
+      .select({ count: sql<number>`count(*)` })
       .from(notifications)
       .where(and(
         eq(notifications.schoolId, schoolId),
         eq(notifications.isRead, false)
       ));
-    return result[0]?.count || 0;
+    return Number(result[0]?.count || 0);
   }
 
   async getUnreadNotificationCountForUser(userId: string): Promise<number> {
     const result = await db
-      .select({ count: count() })
+      .select({ count: sql<number>`count(*)` })
       .from(notifications)
       .where(and(
         eq(notifications.userId, userId),
         eq(notifications.isRead, false)
       ));
-    return result[0]?.count || 0;
+    return Number(result[0]?.count || 0);
   }
 
   async createResourceNotifications(resourceId: string, resourceTitle: string, resourceStage: string, isUpdate: boolean = false): Promise<void> {
