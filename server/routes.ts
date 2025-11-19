@@ -52,6 +52,7 @@ import { createEvidenceRouters } from './features/evidence/routes';
 import { initCaseStudyRoutes, adminRouter as caseStudyAdminRouter } from './features/case-studies/routes';
 import { getPDFDelegate } from './features/case-studies/delegates';
 import { apiLimiter } from './middleware/rateLimiting';
+import { backfillSchoolActivity } from './scripts/backfill-school-activity';
 
 /**
  * @description Main route registration function setting up all API endpoints including auth, schools, evidence, case studies, events, email, and file uploads. Applies authentication middleware and ACL policies.
@@ -6613,6 +6614,27 @@ Return JSON with:
     } catch (error) {
       console.error("Error creating case study from evidence:", error);
       res.status(500).json({ message: "Failed to create case study" });
+    }
+  });
+
+  // Admin: Trigger school activity backfill
+  app.post('/api/admin/backfill-school-activity', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      console.log('[API] School activity backfill triggered by admin:', req.user.email);
+      
+      // Run the backfill process
+      const result = await backfillSchoolActivity();
+      
+      console.log('[API] Backfill completed:', result);
+      
+      res.json(result);
+    } catch (error) {
+      console.error('[API] Error running school activity backfill:', error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to run school activity backfill",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 

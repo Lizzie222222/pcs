@@ -21,7 +21,15 @@ interface SchoolActivityResult {
   last_active_at: Date | null;
 }
 
-async function backfillSchoolActivity() {
+export interface BackfillResult {
+  success: boolean;
+  updated: number;
+  noActivity: number;
+  total: number;
+  errors?: string[];
+}
+
+async function backfillSchoolActivity(): Promise<BackfillResult> {
   console.log('[Backfill] Starting school activity backfill...\n');
 
   try {
@@ -132,13 +140,22 @@ async function backfillSchoolActivity() {
 
     console.log('\n');
 
+    // Return results for API endpoint
+    return {
+      success: true,
+      updated: updatedCount,
+      noActivity: noActivityCount,
+      total: schoolActivities.length,
+      ...(errors.length > 0 ? { errors } : {})
+    };
+
   } catch (error) {
     console.error('[Backfill] Fatal error:', error);
     throw error;
   }
 }
 
-// Main execution function
+// Main execution function (only runs when executed as a script)
 async function main() {
   try {
     await backfillSchoolActivity();
@@ -150,7 +167,9 @@ async function main() {
   }
 }
 
-// Execute main function
-main();
+// Only execute if run directly as a script (not when imported)
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}
 
 export { backfillSchoolActivity };
