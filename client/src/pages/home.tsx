@@ -79,7 +79,8 @@ import {
   X,
   Download,
   FileText,
-  Video
+  Video,
+  Shield
 } from "lucide-react";
 import { PDFThumbnail } from "@/components/PDFThumbnail";
 import { MigratedUserNotice } from "@/components/MigratedUserNotice";
@@ -1520,6 +1521,23 @@ export default function Home() {
                                 <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm text-xs" data-testid={`bonus-badge-${evidence.id}`}>
                                   Bonus
                                 </Badge>
+                              )}
+                              {(evidence as any)?.submitter?.isAdmin && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <div 
+                                        className="w-6 h-6 bg-white/90 border-2 border-[hsl(178,100%,37%)] rounded-full flex items-center justify-center shadow-md cursor-help"
+                                        data-testid={`admin-submitted-badge-${evidence.id}`}
+                                      >
+                                        <Shield className="h-3.5 w-3.5 text-[hsl(178,100%,37%)]" />
+                                      </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Submitted by admin on behalf of school</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
                               )}
                             </div>
                             <p className="text-sm text-gray-600 flex items-center gap-2">

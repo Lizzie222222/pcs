@@ -982,6 +982,23 @@ export default function ProgressTracker({
                                     >
                                       {t('progress.status.pending')}
                                     </Badge>
+                                    {(evidence as any)?.submitter?.isAdmin && (
+                                      <TooltipProvider>
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <div 
+                                              className="w-5 h-5 bg-white/90 border-2 border-[hsl(178,100%,37%)] rounded-full flex items-center justify-center shadow-md cursor-help"
+                                              data-testid={`admin-shield-${requirement.id}`}
+                                            >
+                                              <Shield className="h-3 w-3 text-[hsl(178,100%,37%)]" />
+                                            </div>
+                                          </TooltipTrigger>
+                                          <TooltipContent>
+                                            <p>Submitted by admin on behalf of school</p>
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      </TooltipProvider>
+                                    )}
                                   </>
                                 )}
                                 {isRequirementSatisfied(requirement.id) && evidence && (
@@ -995,6 +1012,23 @@ export default function ProgressTracker({
                                     >
                                       {t('progress.status.approved')}
                                     </Badge>
+                                    {(evidence as any)?.submitter?.isAdmin && (
+                                      <TooltipProvider>
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <div 
+                                              className="w-5 h-5 bg-white/90 border-2 border-[hsl(178,100%,37%)] rounded-full flex items-center justify-center shadow-md cursor-help"
+                                              data-testid={`admin-shield-${requirement.id}`}
+                                            >
+                                              <Shield className="h-3 w-3 text-[hsl(178,100%,37%)]" />
+                                            </div>
+                                          </TooltipTrigger>
+                                          <TooltipContent>
+                                            <p>Submitted by admin on behalf of school</p>
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      </TooltipProvider>
+                                    )}
                                   </>
                                 )}
                                 {isRequirementSatisfied(requirement.id) && !evidence && (
