@@ -337,7 +337,7 @@ export default function AnalyticsPage() {
                 <div className="text-2xl font-bold" data-testid="metric-completed-awards">
                   {overviewQuery.data.completedAwards.toLocaleString()}
                 </div>
-                <p className="text-xs text-gray-500">Schools with completed programs</p>
+                <p className="text-xs text-gray-500">Total rounds completed across all schools</p>
               </CardContent>
             </Card>
 

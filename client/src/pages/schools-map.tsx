@@ -121,7 +121,7 @@ export default function SchoolsMap() {
           <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">${countryData.countryName}</h3>
           <div style="font-size: 14px; color: #4b5563;">
             <div style="margin: 4px 0;"><strong>Total schools:</strong> ${countryData.totalSchools}</div>
-            <div style="margin: 4px 0;"><strong>Awards completed:</strong> ${countryData.completedAwards}</div>
+            <div style="margin: 4px 0;"><strong>Schools with awards:</strong> ${countryData.completedAwards}</div>
           </div>
         </div>
       `;
@@ -287,7 +287,7 @@ export default function SchoolsMap() {
               <div className="text-2xl font-bold text-navy" data-testid="stat-completed-awards">
                 {totalStats.completed}
               </div>
-              <div className="text-gray-600 text-sm">Awards completed</div>
+              <div className="text-gray-600 text-sm">Schools with awards</div>
             </CardContent>
           </Card>
         </div>
@@ -328,7 +328,7 @@ export default function SchoolsMap() {
                           </div>
                           <div className="flex items-center gap-1.5">
                             <Award className="h-4 w-4 sm:h-3 sm:w-3 flex-shrink-0" />
-                            <span>{country.completedAwards} completed</span>
+                            <span>{country.completedAwards} with awards</span>
                           </div>
                         </div>
                       </div>

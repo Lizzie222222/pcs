@@ -693,7 +693,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-pcs_teal" data-testid="metric-awards-completed">{overviewQuery.data.completedAwards.toLocaleString()}</div>
-                    <p className="text-xs text-gray-500 mt-1">Schools that completed at least one round</p>
+                    <p className="text-xs text-gray-500 mt-1">Total rounds completed across all schools</p>
                   </CardContent>
                 </Card>
 

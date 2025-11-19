@@ -581,7 +581,7 @@ export function generateHTMLReport(data: ReportData): string {
         <div class="metric-card">
           <div class="metric-label">Awards Completed</div>
           <div class="metric-value">${data.overview.completedAwards.toLocaleString()}</div>
-          <div class="metric-description">Programmes finished</div>
+          <div class="metric-description">Total rounds completed</div>
         </div>
         
         <div class="metric-card">
