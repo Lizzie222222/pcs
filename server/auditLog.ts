@@ -1,7 +1,8 @@
 import type { Request } from "express";
 import { db } from "./db";
-import { userActivityLogs } from "@shared/schema";
+import { userActivityLogs, schools, schoolUsers } from "@shared/schema";
 import { nanoid } from 'nanoid';
+import { eq, sql, inArray } from 'drizzle-orm';
 
 /**
  * @description Helper function to log user activities to the userActivityLogs table
@@ -43,6 +44,29 @@ export async function logUserActivity(
       ipAddress,
       userAgent,
     });
+
+    // Update school's lastActiveAt if user belongs to a school
+    if (userId) {
+      try {
+        // Find all schools this user belongs to
+        const userSchools = await db
+          .select({ schoolId: schoolUsers.schoolId })
+          .from(schoolUsers)
+          .where(eq(schoolUsers.userId, userId));
+        
+        // Update lastActiveAt for all schools
+        if (userSchools.length > 0) {
+          const schoolIds = userSchools.map(s => s.schoolId);
+          await db
+            .update(schools)
+            .set({ lastActiveAt: sql`NOW()` })
+            .where(inArray(schools.id, schoolIds));
+        }
+      } catch (error) {
+        // Non-blocking: log error but don't throw
+        console.error('[Audit Log] Failed to update school lastActiveAt:', error);
+      }
+    }
   } catch (error) {
     // Non-blocking: log error but don't throw
     console.error('[Audit Log] Failed to log user activity:', error);
