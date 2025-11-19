@@ -1089,7 +1089,9 @@ export class SchoolStorage {
       
       const totalEvidence = totalNewApproved;
       
-      const totalRequired = inspireRequirements + investigateRequirements + actRequirements + 2;
+      // CRITICAL FIX: Don't add +2 because audit and action plan are already in investigateRequirements
+      // The evidence_requirements table has "Plastic Waste Audit" and "Action Plan Development" entries
+      const totalRequired = inspireRequirements + investigateRequirements + actRequirements;
       
       if (totalRequired > 0) {
         currentRoundProgress = Math.min(100, Math.round((totalEvidence / totalRequired) * 100));
@@ -1121,7 +1123,9 @@ export class SchoolStorage {
         (freshCounts.investigate.hasActionPlan ? 1 : 0) +
         freshCounts.act.approved;
       
-      const totalRequired = inspireRequirements + investigateRequirements + actRequirements + 2;
+      // CRITICAL FIX: Don't add +2 because audit and action plan are already in investigateRequirements
+      // The evidence_requirements table has "Plastic Waste Audit" and "Action Plan Development" entries
+      const totalRequired = inspireRequirements + investigateRequirements + actRequirements;
       
       if (totalRequired > 0) {
         currentRoundProgress = Math.round((totalApproved / totalRequired) * 100);
