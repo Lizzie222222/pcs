@@ -129,6 +129,21 @@ interface AdminPromiseMetrics {
   };
 }
 
+interface SchoolActivityAging {
+  ranges: Array<{
+    range: string;
+    count: number;
+    schools: Array<{
+      id: string;
+      name: string;
+      country: string;
+      lastActiveAt: Date | null;
+      currentStage: string;
+      progressPercentage: number;
+    }>;
+  }>;
+}
+
 // Color palette for charts
 const ANALYTICS_COLORS = ['#0B3D5D', '#019ADE', '#02BBB4', '#FFC557', '#FF595A', '#6B7280', '#10B981', '#8B5CF6'];
 
@@ -198,7 +213,14 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
     enabled: activeTab === 'overview'
   });
 
+  const schoolActivityAgingQuery = useQuery<SchoolActivityAging>({
+    queryKey: ['/api/admin/analytics/school-activity-aging'],
+    enabled: activeTab === 'overview' // Loads when overview tab is active, displayed in schools-evidence tab
+  });
+
   const [analyticsSubTab, setAnalyticsSubTab] = useState("overview");
+  const [activityDialogOpen, setActivityDialogOpen] = useState(false);
+  const [selectedActivityRange, setSelectedActivityRange] = useState<{ range: string; count: number; schools: Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number }> } | null>(null);
   const [includeAIInsights, setIncludeAIInsights] = useState(true);
   const [showExportDialog, setShowExportDialog] = useState(false);
   
@@ -232,6 +254,41 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
     } catch (error) {
       console.error('Export failed:', error);
     }
+  };
+
+  const handleActivityBarClick = (data: any) => {
+    if (!schoolActivityAgingQuery.data) return;
+    const rangeData = schoolActivityAgingQuery.data.ranges.find(r => r.range === data.range);
+    if (rangeData) {
+      setSelectedActivityRange(rangeData);
+      setActivityDialogOpen(true);
+    }
+  };
+
+  const exportActivityRangeCSV = () => {
+    if (!selectedActivityRange) return;
+    
+    const headers = ['School Name', 'Country', 'Last Active', 'Current Stage', 'Progress %'];
+    const rows = selectedActivityRange.schools.map(school => [
+      school.name,
+      school.country,
+      school.lastActiveAt ? new Date(school.lastActiveAt).toLocaleDateString() : 'Never',
+      school.currentStage,
+      `${school.progressPercentage}%`
+    ]);
+    
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `schools_${selectedActivityRange.range.replace(/ /g, '_')}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   const exportPDFMutation = useMutation({
@@ -771,6 +828,36 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
             </div>
           )}
 
+          {/* School Activity Aging */}
+          {schoolActivityAgingQuery.data && (
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Clock className="w-5 h-5 mr-2 text-pcs_blue" />
+                  School Activity Aging
+                </CardTitle>
+                <p className="text-sm text-gray-500 mt-2">Click on a bar to view schools in that date range</p>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={schoolActivityAgingQuery.data.ranges}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="range" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar 
+                      dataKey="count" 
+                      fill="#02BBB4"
+                      onClick={handleActivityBarClick}
+                      cursor="pointer"
+                      data-testid="bar-school-activity-aging"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Evidence Analytics */}
           {evidenceQuery.data && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1284,6 +1371,56 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Activity Aging Dialog */}
+      <Dialog open={activityDialogOpen} onOpenChange={setActivityDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle>Schools - {selectedActivityRange?.range}</DialogTitle>
+            <DialogDescription>
+              {selectedActivityRange?.count} school(s) in this activity range
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedActivityRange && (
+            <div className="space-y-4">
+              <div className="flex justify-end">
+                <Button onClick={exportActivityRangeCSV} size="sm" variant="outline">
+                  <Download className="w-4 h-4 mr-2" />
+                  Export CSV
+                </Button>
+              </div>
+              
+              <div className="border rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">School Name</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Active</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stage</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {selectedActivityRange.schools.map((school, index) => (
+                      <tr key={index}>
+                        <td className="px-4 py-2 text-sm text-gray-900">{school.name}</td>
+                        <td className="px-4 py-2 text-sm text-gray-500">{school.country}</td>
+                        <td className="px-4 py-2 text-sm text-gray-500">
+                          {school.lastActiveAt ? new Date(school.lastActiveAt).toLocaleDateString() : 'Never'}
+                        </td>
+                        <td className="px-4 py-2 text-sm text-gray-500 capitalize">{school.currentStage}</td>
+                        <td className="px-4 py-2 text-sm text-gray-500">{school.progressPercentage}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
