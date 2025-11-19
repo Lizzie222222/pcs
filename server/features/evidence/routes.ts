@@ -295,6 +295,8 @@ export function createEvidenceRouters(storage: IStorage): {
         submittedAt: ev.submittedAt,
         reviewedAt: ev.reviewedAt,
         reviewNotes: ev.reviewNotes,
+        submitter: ev.submitter,
+        reviewer: ev.reviewer,
         fileUrls: Array.isArray(ev.files) 
           ? (ev.files as any[]).filter((f: any) => f.type?.startsWith('image/')).map((f: any) => f.url) 
           : [],
