@@ -332,31 +332,6 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
     }
   });
 
-  const backfillSchoolActivityMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/admin/backfill-school-activity', {});
-      return await response.json();
-    },
-    onSuccess: (data) => {
-      toast({
-        title: "School activity data backfilled successfully",
-        description: `Updated ${data.updated || 0} schools, ${data.noActivity || 0} with no activity`,
-      });
-      
-      // Invalidate analytics queries to refresh the chart
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics/school-activity-aging'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics/overview'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics/school-progress'] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Backfill failed",
-        description: error instanceof Error ? error.message : "Failed to backfill school activity data",
-        variant: "destructive",
-      });
-    }
-  });
-
   return (
     <div className="space-y-4 sm:space-y-6" data-refactor-source="AnalyticsContent">
       {/* Header */}
@@ -852,42 +827,6 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
               </Card>
             </div>
           )}
-
-          {/* Backfill School Activity Data Admin Utility */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Admin Utilities</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div className="flex-1">
-                  <h3 className="text-sm font-medium text-gray-900">Backfill School Activity Data</h3>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Update school activity timestamps from historical logs (one-time setup)
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={() => backfillSchoolActivityMutation.mutate()}
-                  disabled={backfillSchoolActivityMutation.isPending}
-                  data-testid="button-backfill-school-activity"
-                  className="whitespace-nowrap"
-                >
-                  {backfillSchoolActivityMutation.isPending ? (
-                    <>
-                      <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-gray-400 border-t-transparent"></div>
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <Clock className="w-4 h-4 mr-2" />
-                      Backfill School Activity Data
-                    </>
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
 
           {/* School Activity Aging */}
           {schoolActivityAgingQuery.data && (
