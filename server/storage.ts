@@ -2810,14 +2810,14 @@ export class DatabaseStorage implements IStorage {
     pendingActionPlansCount: number;
   }> {
     const [schoolStats] = await db
-      .select({ totalSchools: count() })
+      .select({ totalSchools: sql<number>`count(*)` })
       .from(schools);
     
     // CRITICAL: Exclude "Action Plan Development" evidence from count
     // Action plans are reviewed separately in the Action Plan Review Queue
     const ACTION_PLAN_REQUIREMENT_ID = '5cfb26b9-76f3-408d-8514-d892ae30d061';
     const [evidenceStats] = await db
-      .select({ pendingEvidence: count() })
+      .select({ pendingEvidence: sql<number>`count(*)` })
       .from(evidence)
       .where(
         and(
@@ -2841,7 +2841,7 @@ export class DatabaseStorage implements IStorage {
     const featuredCaseStudies = await caseStudyStorage.getFeaturedCaseStudiesCount();
     
     const [userStats] = await db
-      .select({ activeUsers: count() })
+      .select({ activeUsers: sql<number>`count(*)` })
       .from(users);
     
     // Count pending action plans for admin review
