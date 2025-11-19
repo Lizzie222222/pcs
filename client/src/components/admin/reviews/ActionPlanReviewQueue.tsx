@@ -192,6 +192,23 @@ export default function ActionPlanReviewQueue({
     setActionPlanSortBy('newest');
   };
 
+  // Group action plans by school
+  const groupedActionPlans = useMemo(() => {
+    if (!actionPlansPending) return [];
+    
+    const grouped = new Map<string, PendingActionPlan[]>();
+    
+    actionPlansPending.forEach(plan => {
+      const schoolKey = `${plan.schoolId}-${plan.roundNumber}`;
+      if (!grouped.has(schoolKey)) {
+        grouped.set(schoolKey, []);
+      }
+      grouped.get(schoolKey)!.push(plan);
+    });
+    
+    return Array.from(grouped.values());
+  }, [actionPlansPending]);
+
   // Table View Component
   const ActionPlanTableView = ({ actionPlans }: { actionPlans: PendingActionPlan[] }) => (
     <div className="border rounded-lg overflow-hidden">
@@ -323,143 +340,199 @@ export default function ActionPlanReviewQueue({
     </div>
   );
 
-  // Card View Component
-  const ActionPlanCardView = ({ actionPlans }: { actionPlans: PendingActionPlan[] }) => (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      {actionPlans.map((plan) => (
-        <div
-          key={plan.id}
-          className={`border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer ${
-            selectedActionPlans.includes(plan.id) ? 'ring-2 ring-pcs_blue bg-blue-50' : ''
-          }`}
-          onClick={() => setPreviewActionPlan(plan)}
-          data-testid={`card-action-plan-${plan.id}`}
-        >
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <input
-                  type="checkbox"
-                  checked={selectedActionPlans.includes(plan.id)}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    toggleActionPlanSelection(plan.id);
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  className="rounded border-gray-300"
-                  data-testid={`checkbox-card-action-plan-${plan.id}`}
-                />
-                <button
-                  onClick={(e) => handleSchoolClick(e, plan.school)}
-                  className="font-semibold text-navy hover:text-pcs_blue transition-colors"
-                  data-testid={`text-school-name-${plan.id}`}
-                >
-                  {plan.school?.name || 'Unknown School'}
-                </button>
-              </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge className="bg-navy text-white">
-                  Round {plan.roundNumber}
-                </Badge>
-                <Badge 
-                  variant="outline"
-                  className={
-                    plan.reviewStatus === 'approved' ? 'bg-green-50 text-green-700 border-green-200' :
-                    plan.reviewStatus === 'rejected' ? 'bg-red-50 text-red-700 border-red-200' :
-                    'bg-yellow-50 text-yellow-700 border-yellow-200'
-                  }
-                >
-                  {plan.reviewStatus}
-                </Badge>
-              </div>
-            </div>
-          </div>
+  // Card View Component - Grouped by School
+  const ActionPlanCardView = ({ actionPlans }: { actionPlans: PendingActionPlan[] }) => {
+    // Group by school for card view
+    const schoolGroups = useMemo(() => {
+      const grouped = new Map<string, PendingActionPlan[]>();
+      
+      actionPlans.forEach(plan => {
+        const schoolKey = `${plan.schoolId}-${plan.roundNumber}`;
+        if (!grouped.has(schoolKey)) {
+          grouped.set(schoolKey, []);
+        }
+        grouped.get(schoolKey)!.push(plan);
+      });
+      
+      return Array.from(grouped.values());
+    }, [actionPlans]);
 
-          <div className="space-y-3">
-            <div>
-              <div className="text-sm font-medium text-gray-700">Plastic Item</div>
-              <div className="font-semibold">{plan.plasticItemType}</div>
-              <div className="text-sm text-gray-600">{plan.plasticItemLabel}</div>
-            </div>
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {schoolGroups.map((schoolPlans) => {
+          const firstPlan = schoolPlans[0];
+          const allSelected = schoolPlans.every(p => selectedActionPlans.includes(p.id));
+          const someSelected = schoolPlans.some(p => selectedActionPlans.includes(p.id));
+          
+          const toggleSchoolSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
+            e.stopPropagation();
+            if (allSelected) {
+              setSelectedActionPlans(selectedActionPlans.filter(id => !schoolPlans.map(p => p.id).includes(id)));
+            } else {
+              const combined = [...selectedActionPlans, ...schoolPlans.map(p => p.id)];
+              setSelectedActionPlans(Array.from(new Set(combined)));
+            }
+          };
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="text-sm text-gray-600">Baseline</div>
-                <div className="text-lg font-semibold">{plan.baselineQuantity}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-600">Target</div>
-                <div className="text-lg font-semibold text-green-600">{plan.targetQuantity}</div>
-              </div>
-            </div>
+          const approveAllSchoolPlans = (e: React.MouseEvent) => {
+            e.stopPropagation();
+            const planIds = schoolPlans.map(p => p.id);
+            // Add all school plans to selection (don't clear other selections)
+            const combined = [...selectedActionPlans, ...planIds];
+            setSelectedActionPlans(Array.from(new Set(combined)));
+            setBulkAction({ type: 'approve', notes: '' });
+            setBulkActionPlanDialogOpen(true);
+          };
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="text-sm text-gray-600">Reduction</div>
-                <div className="flex items-center gap-1 text-lg font-semibold text-green-600">
-                  <TrendingUp className="h-4 w-4" />
-                  {plan.reductionAmount}
+          const rejectAllSchoolPlans = (e: React.MouseEvent) => {
+            e.stopPropagation();
+            const planIds = schoolPlans.map(p => p.id);
+            // Add all school plans to selection (don't clear other selections)
+            const combined = [...selectedActionPlans, ...planIds];
+            setSelectedActionPlans(Array.from(new Set(combined)));
+            setBulkAction({ type: 'reject', notes: '' });
+            setBulkActionPlanDialogOpen(true);
+          };
+
+          return (
+            <div
+              key={`${firstPlan.schoolId}-${firstPlan.roundNumber}`}
+              className={`border rounded-lg p-4 hover:shadow-md transition-shadow ${
+                someSelected ? 'ring-2 ring-pcs_blue bg-blue-50' : ''
+              }`}
+              data-testid={`card-action-plan-group-${firstPlan.schoolId}`}
+            >
+              {/* School Header */}
+              <div className="flex items-start justify-between mb-4 pb-3 border-b">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      ref={(el) => {
+                        if (el) el.indeterminate = someSelected && !allSelected;
+                      }}
+                      onChange={toggleSchoolSelection}
+                      className="rounded border-gray-300"
+                      data-testid={`checkbox-school-${firstPlan.schoolId}`}
+                    />
+                    <button
+                      onClick={(e) => handleSchoolClick(e, firstPlan.school)}
+                      className="font-semibold text-lg text-navy hover:text-pcs_blue transition-colors"
+                      data-testid={`text-school-name-${firstPlan.schoolId}`}
+                    >
+                      {firstPlan.school?.name || 'Unknown School'}
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge className="bg-navy text-white">
+                      Round {firstPlan.roundNumber}
+                    </Badge>
+                    <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                      {schoolPlans.length} {schoolPlans.length === 1 ? 'item' : 'items'}
+                    </Badge>
+                  </div>
                 </div>
               </div>
-              <div>
-                <div className="text-sm text-gray-600">Timeframe</div>
-                <div className="text-lg font-semibold capitalize">{plan.timeframeUnit}</div>
+
+              {/* Action Plan Items */}
+              <div className="space-y-3 mb-4">
+                {schoolPlans.map((plan, index) => (
+                  <div
+                    key={plan.id}
+                    className={`p-3 rounded-md border ${
+                      selectedActionPlans.includes(plan.id) ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'
+                    }`}
+                    data-testid={`action-plan-item-${plan.id}`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedActionPlans.includes(plan.id)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          toggleActionPlanSelection(plan.id);
+                        }}
+                        className="rounded border-gray-300 mt-1"
+                        data-testid={`checkbox-item-${plan.id}`}
+                      />
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="font-semibold text-navy">{plan.plasticItemType}</div>
+                            <div className="text-sm text-gray-600">{plan.plasticItemLabel}</div>
+                          </div>
+                          <Badge 
+                            variant="outline"
+                            className={
+                              plan.reviewStatus === 'approved' ? 'bg-green-50 text-green-700 border-green-200' :
+                              plan.reviewStatus === 'rejected' ? 'bg-red-50 text-red-700 border-red-200' :
+                              'bg-yellow-50 text-yellow-700 border-yellow-200'
+                            }
+                          >
+                            {plan.reviewStatus}
+                          </Badge>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3 text-sm">
+                          <div>
+                            <div className="text-gray-600">Baseline</div>
+                            <div className="font-semibold">{plan.baselineQuantity}</div>
+                          </div>
+                          <div>
+                            <div className="text-gray-600">Target</div>
+                            <div className="font-semibold text-green-600">{plan.targetQuantity}</div>
+                          </div>
+                          <div>
+                            <div className="text-gray-600">Reduction</div>
+                            <div className="flex items-center gap-1 font-semibold text-green-600">
+                              <TrendingUp className="h-3 w-3" />
+                              {plan.reductionAmount}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-xs text-gray-500 capitalize">
+                          Timeframe: {plan.timeframeUnit}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Bulk Actions for this School */}
+              <div className="flex items-center justify-between pt-3 border-t">
+                <div className="text-xs text-gray-500">
+                  <Calendar className="h-3 w-3 inline mr-1" />
+                  {format(new Date(firstPlan.createdAt), 'dd/MM/yyyy')}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="bg-green-500 hover:bg-green-600 h-8"
+                    onClick={approveAllSchoolPlans}
+                    data-testid={`button-approve-all-${firstPlan.schoolId}`}
+                  >
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    Approve All
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="h-8"
+                    onClick={rejectAllSchoolPlans}
+                    data-testid={`button-reject-all-${firstPlan.schoolId}`}
+                  >
+                    <XCircle className="h-3 w-3 mr-1" />
+                    Reject All
+                  </Button>
+                </div>
               </div>
             </div>
-
-            {plan.notes && (
-              <div>
-                <div className="text-sm text-gray-600">Notes</div>
-                <div className="text-sm mt-1 line-clamp-2">{plan.notes}</div>
-              </div>
-            )}
-
-            <div className="flex items-center justify-between pt-3 border-t">
-              <div className="text-xs text-gray-500">
-                <Calendar className="h-3 w-3 inline mr-1" />
-                {format(new Date(plan.createdAt), 'dd/MM/yyyy')}
-              </div>
-              <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                <Button
-                  size="sm"
-                  className="bg-green-500 hover:bg-green-600 h-7"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setReviewData({
-                      actionPlanId: plan.id,
-                      action: 'approved',
-                      notes: ''
-                    });
-                  }}
-                  data-testid={`button-card-approve-${plan.id}`}
-                >
-                  <CheckCircle className="h-3 w-3 mr-1" />
-                  Approve
-                </Button>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  className="h-7"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setReviewData({
-                      actionPlanId: plan.id,
-                      action: 'rejected',
-                      notes: ''
-                    });
-                  }}
-                  data-testid={`button-card-reject-${plan.id}`}
-                >
-                  <XCircle className="h-3 w-3 mr-1" />
-                  Reject
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <>

@@ -647,7 +647,7 @@ export interface IStorage {
     sortBy?: 'newest' | 'oldest' | 'schoolName';
     limit?: number;
     offset?: number;
-  }): Promise<Array<ReductionPromise & { schoolName: string; schoolCountry: string; creatorName: string }>>;
+  }): Promise<Array<ReductionPromise & { school: School | null; creatorName: string }>>;
   reviewActionPlan(
     id: string,
     reviewStatus: 'approved' | 'rejected',
@@ -2811,10 +2811,18 @@ export class DatabaseStorage implements IStorage {
       .select({ totalSchools: count() })
       .from(schools);
     
+    // CRITICAL: Exclude "Action Plan Development" evidence from count
+    // Action plans are reviewed separately in the Action Plan Review Queue
+    const ACTION_PLAN_REQUIREMENT_ID = '5cfb26b9-76f3-408d-8514-d892ae30d061';
     const [evidenceStats] = await db
       .select({ pendingEvidence: count() })
       .from(evidence)
-      .where(eq(evidence.status, 'pending'));
+      .where(
+        and(
+          eq(evidence.status, 'pending'),
+          sql`${evidence.evidenceRequirementId} != ${ACTION_PLAN_REQUIREMENT_ID}`
+        )
+      );
     
     const [approvedEvidenceStats] = await db
       .select({
@@ -4981,30 +4989,11 @@ export class DatabaseStorage implements IStorage {
     sortBy?: 'newest' | 'oldest' | 'schoolName';
     limit?: number;
     offset?: number;
-  }): Promise<Array<ReductionPromise & { schoolName: string; schoolCountry: string; creatorName: string }>> {
+  }): Promise<Array<ReductionPromise & { school: School | null; creatorName: string }>> {
     let query = db
       .select({
-        id: reductionPromises.id,
-        schoolId: reductionPromises.schoolId,
-        auditId: reductionPromises.auditId,
-        roundNumber: reductionPromises.roundNumber,
-        plasticItemType: reductionPromises.plasticItemType,
-        plasticItemLabel: reductionPromises.plasticItemLabel,
-        baselineQuantity: reductionPromises.baselineQuantity,
-        targetQuantity: reductionPromises.targetQuantity,
-        reductionAmount: reductionPromises.reductionAmount,
-        timeframeUnit: reductionPromises.timeframeUnit,
-        status: reductionPromises.status,
-        notes: reductionPromises.notes,
-        createdBy: reductionPromises.createdBy,
-        reviewStatus: reductionPromises.reviewStatus,
-        reviewedBy: reductionPromises.reviewedBy,
-        reviewedAt: reductionPromises.reviewedAt,
-        reviewNotes: reductionPromises.reviewNotes,
-        createdAt: reductionPromises.createdAt,
-        updatedAt: reductionPromises.updatedAt,
-        schoolName: schools.name,
-        schoolCountry: schools.country,
+        reductionPromise: reductionPromises,
+        school: schools,
         creatorName: sql<string>`CONCAT(${users.firstName}, ' ', ${users.lastName})`,
       })
       .from(reductionPromises)
@@ -5062,7 +5051,14 @@ export class DatabaseStorage implements IStorage {
       query = query.offset(filters.offset);
     }
 
-    return await query as any;
+    const results = await query;
+    
+    // Map results to include nested school object
+    return results.map(row => ({
+      ...row.reductionPromise,
+      school: row.school as School,
+      creatorName: row.creatorName,
+    })) as any;
   }
 
   async reviewActionPlan(
