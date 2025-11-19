@@ -926,7 +926,14 @@ export class SchoolStorage {
       )
       .limit(1);
 
-    const hasActionPlan = approvedActionPlans.length > 0;
+    // CRITICAL FIX: Also check for admin override on "Action Plan Development" requirement
+    // Action Plan Development requirement ID: 5cfb26b9-76f3-408d-8514-d892ae30d061
+    const ACTION_PLAN_REQUIREMENT_ID = '5cfb26b9-76f3-408d-8514-d892ae30d061';
+    const hasActionPlanOverride = adminOverrides.some(
+      override => override.evidenceRequirementId === ACTION_PLAN_REQUIREMENT_ID && override.stage === 'investigate'
+    );
+
+    const hasActionPlan = approvedActionPlans.length > 0 || hasActionPlanOverride;
 
     const inspireCounts = getApprovedRequirementsCount(inspireEvidence, 'inspire');
     const investigateCounts = getApprovedRequirementsCount(investigateEvidence, 'investigate');
