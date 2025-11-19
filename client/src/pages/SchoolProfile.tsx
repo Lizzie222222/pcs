@@ -10,6 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -902,9 +905,10 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState('');
+  const [selectedUser, setSelectedUser] = useState<{id: string; email: string; name: string} | null>(null);
   const [role, setRole] = useState<'head_teacher' | 'teacher'>('teacher');
   const [searchQuery, setSearchQuery] = useState('');
+  const [comboboxOpen, setComboboxOpen] = useState(false);
   const [emailUpdateDialogOpen, setEmailUpdateDialogOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<SchoolTeacher | null>(null);
   const [newEmail, setNewEmail] = useState('');
@@ -912,17 +916,22 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
 
-  // Fetch users for assignment
-  const { data: usersWithSchools = [], isLoading: usersLoading } = useQuery<any[]>({
-    queryKey: ['/api/admin/users'],
-    enabled: assignDialogOpen,
+  // Search users for assignment (using new optimized endpoint)
+  const { data: searchResults = [], isLoading: usersLoading } = useQuery<Array<{id: string; email: string; name: string}>>({
+    queryKey: ['/api/admin/schools', schoolId, 'search-users', searchQuery],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/schools/${schoolId}/search-users?q=${encodeURIComponent(searchQuery)}`);
+      if (!response.ok) throw new Error('Failed to search users');
+      return response.json();
+    },
+    enabled: assignDialogOpen && searchQuery.length >= 2,
   });
 
   // Assign teacher mutation
   const assignTeacherMutation = useMutation({
-    mutationFn: async ({ userEmail, role }: { userEmail: string; role: string }) => {
+    mutationFn: async ({ email, role }: { email: string; role: string }) => {
       await apiRequest('POST', `/api/admin/schools/${schoolId}/assign-teacher`, {
-        userEmail,
+        email,
         role,
       });
     },
@@ -933,7 +942,7 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/schools', schoolId, 'teachers'] });
       setAssignDialogOpen(false);
-      setSelectedUserId('');
+      setSelectedUser(null);
       setRole('teacher');
       setSearchQuery('');
     },
@@ -1000,9 +1009,8 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
 
   const handleAssignSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const selectedUser = usersWithSchools.find(u => u && u.user && u.user.id === selectedUserId);
     
-    if (!selectedUserId || !selectedUser?.user?.email) {
+    if (!selectedUser?.email) {
       toast({
         title: "Missing Information",
         description: "Please select a user.",
@@ -1011,7 +1019,7 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
       return;
     }
 
-    assignTeacherMutation.mutate({ userEmail: selectedUser.user.email, role });
+    assignTeacherMutation.mutate({ email: selectedUser.email, role });
   };
 
   const handleOpenEmailUpdate = (teacher: SchoolTeacher) => {
@@ -1050,14 +1058,6 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
 
     inviteTeacherMutation.mutate(inviteEmail);
   };
-
-  const filteredUsers = usersWithSchools
-    .filter(item => item && item.user)
-    .filter(item => {
-      const fullName = `${item.user.firstName || ''} ${item.user.lastName || ''}`.toLowerCase();
-      const email = item.user.email?.toLowerCase() || '';
-      return fullName.includes(searchQuery.toLowerCase()) || email.includes(searchQuery.toLowerCase());
-    });
 
   if (isLoading) {
     return <LoadingSpinner message="Loading teachers..." />;
@@ -1170,7 +1170,14 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
       </Card>
 
       {/* Assign Teacher Dialog */}
-      <AlertDialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
+      <AlertDialog open={assignDialogOpen} onOpenChange={(open) => {
+        setAssignDialogOpen(open);
+        if (!open) {
+          setSearchQuery('');
+          setSelectedUser(null);
+          setRole('teacher');
+        }
+      }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Assign Teacher to School</AlertDialogTitle>
@@ -1183,33 +1190,66 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 User *
               </label>
-              <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                <SelectTrigger data-testid="select-user">
-                  <SelectValue placeholder="Select user" />
-                </SelectTrigger>
-                <SelectContent>
-                  <div className="px-2 pb-2">
-                    <Input
-                      placeholder="Search users..."
+              <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={comboboxOpen}
+                    className="w-full justify-between"
+                    data-testid="select-user"
+                  >
+                    {selectedUser
+                      ? `${selectedUser.name} (${selectedUser.email})`
+                      : "Type to search users..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" align="start">
+                  <Command shouldFilter={false}>
+                    <CommandInput 
+                      placeholder="Search by name or email..." 
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="h-8"
+                      onValueChange={setSearchQuery}
                       data-testid="input-search-users"
                     />
-                  </div>
-                  {usersLoading ? (
-                    <div className="px-2 py-4 text-sm text-gray-500 text-center">Loading users...</div>
-                  ) : filteredUsers.length === 0 ? (
-                    <div className="px-2 py-4 text-sm text-gray-500 text-center">No users found</div>
-                  ) : (
-                    filteredUsers.map((item) => (
-                      <SelectItem key={item.user.id} value={item.user.id}>
-                        {item.user.firstName || ''} {item.user.lastName || ''} ({item.user.email})
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
+                    <CommandList>
+                      <CommandEmpty>
+                        {searchQuery.length < 2 
+                          ? "Type at least 2 characters to search" 
+                          : usersLoading 
+                          ? "Searching..." 
+                          : "No users found"}
+                      </CommandEmpty>
+                      {searchResults.length > 0 && (
+                        <CommandGroup>
+                          {searchResults.map((user) => (
+                            <CommandItem
+                              key={user.id}
+                              value={user.email}
+                              onSelect={() => {
+                                setSelectedUser(user);
+                                setComboboxOpen(false);
+                              }}
+                              data-testid={`user-option-${user.id}`}
+                            >
+                              <Check
+                                className={`mr-2 h-4 w-4 ${
+                                  selectedUser?.email === user.email ? "opacity-100" : "opacity-0"
+                                }`}
+                              />
+                              <div className="flex flex-col">
+                                <span>{user.name}</span>
+                                <span className="text-xs text-gray-500">{user.email}</span>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      )}
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div>
@@ -1246,8 +1286,9 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <Button
                 type="submit"
-                disabled={assignTeacherMutation.isPending || !selectedUserId}
+                disabled={assignTeacherMutation.isPending || !selectedUser}
                 className="bg-pcs_blue hover:bg-blue-600"
+                data-testid="button-submit-assign"
               >
                 {assignTeacherMutation.isPending ? 'Assigning...' : 'Assign Teacher'}
               </Button>

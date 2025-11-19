@@ -21,7 +21,8 @@ import {
   schools,
   schoolUsers,
   certificates,
-  evidence
+  evidence,
+  users
 } from '@shared/schema';
 import { nanoid } from 'nanoid';
 import { z } from 'zod';
@@ -1600,6 +1601,50 @@ schoolsRouter.patch('/api/admin/schools/:schoolId/progression', isAuthenticated,
   } catch (error) {
     console.error("[Admin Progression] Error updating school progression:", error);
     res.status(500).json({ message: "Failed to update school progression" });
+  }
+});
+
+// GET /api/admin/schools/:schoolId/search-users - Search users for assignment (optimized for large datasets)
+schoolsRouter.get('/api/admin/schools/:schoolId/search-users', isAuthenticated, requireAdmin, async (req: any, res) => {
+  try {
+    const { q = '' } = req.query;
+    const searchQuery = (q as string).trim();
+    
+    // Return empty array if search query is too short
+    if (searchQuery.length < 2) {
+      return res.json([]);
+    }
+
+    // Use database filtering for better performance with large user tables
+    const searchPattern = `%${searchQuery}%`;
+    const results = await db
+      .select({
+        id: sql<string>`${users.id}`,
+        email: sql<string>`${users.email}`,
+        firstName: sql<string>`${users.firstName}`,
+        lastName: sql<string>`${users.lastName}`,
+      })
+      .from(users)
+      .where(
+        or(
+          ilike(users.email, searchPattern),
+          ilike(users.firstName, searchPattern),
+          ilike(users.lastName, searchPattern),
+          ilike(sql`CONCAT(${users.firstName}, ' ', ${users.lastName})`, searchPattern)
+        )
+      )
+      .limit(50);
+
+    const filteredUsers = results.map(user => ({
+      id: user.id,
+      email: user.email || '',
+      name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || '',
+    }));
+
+    res.json(filteredUsers);
+  } catch (error) {
+    console.error("[Search Users] Error searching users:", error);
+    res.status(500).json({ message: "Failed to search users" });
   }
 });
 
