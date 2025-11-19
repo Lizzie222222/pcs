@@ -2845,8 +2845,12 @@ export class DatabaseStorage implements IStorage {
       .from(users);
     
     // Count pending action plans for admin review
+    // Note: Count distinct (schoolId, roundNumber) combinations, not individual items
+    // An action plan submission with 5 items = 1 notification, not 5
     const [actionPlanStats] = await db
-      .select({ pendingActionPlans: count() })
+      .select({ 
+        pendingActionPlans: sql<number>`count(distinct (${reductionPromises.schoolId}, ${reductionPromises.roundNumber}))`
+      })
       .from(reductionPromises)
       .where(eq(reductionPromises.reviewStatus, 'pending'));
     
