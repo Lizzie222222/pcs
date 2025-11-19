@@ -709,12 +709,17 @@ export class EvidenceStorage {
 
     // CRITICAL: Trigger school progression check if approved
     // This may advance the school to the next stage or complete a round
+    // Pass submitter email so they get the celebration email if this completes the round
     if (status === 'approved' && updated) {
+      // Get submitter email for celebration email
+      const submitter = await this.delegates.context.getUser(evidenceRecord.submittedBy);
+      
       await this.delegates.progression.checkAndUpdateSchoolProgression(
         evidenceRecord.schoolId,
         {
           reason: 'evidence_approved',
-          evidenceId: id
+          evidenceId: id,
+          submitterEmail: submitter?.email ?? undefined
         }
       );
     }

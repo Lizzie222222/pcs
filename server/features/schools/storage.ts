@@ -960,7 +960,7 @@ export class SchoolStorage {
     };
   }
 
-  async checkAndUpdateSchoolProgression(schoolId: string): Promise<School | undefined> {
+  async checkAndUpdateSchoolProgression(schoolId: string, submitterEmail?: string): Promise<School | undefined> {
     const school = await this.getSchool(schoolId);
     if (!school) return undefined;
 
@@ -1223,21 +1223,41 @@ export class SchoolStorage {
           )
           .limit(1);
         
-        const primaryContact = school.primaryContactId 
-          ? await this.getUser(school.primaryContactId)
-          : null;
+        // PRIORITY: Use submitter email if provided (person who submitted final piece)
+        // FALLBACK: Use primary contact if submitter email not provided
+        let recipientEmail: string | undefined;
+        let recipientLanguage: string | undefined;
         
-        if (primaryContact?.email) {
+        if (submitterEmail) {
+          // Submitter completed the round - send to them
+          recipientEmail = submitterEmail;
+          // Try to get their language preference
+          const submitter = await db
+            .select()
+            .from(users)
+            .where(eq(users.email, submitterEmail))
+            .limit(1);
+          recipientLanguage = submitter[0]?.preferredLanguage ?? 'en';
+        } else {
+          // Fallback to primary contact
+          const primaryContact = school.primaryContactId 
+            ? await this.getUser(school.primaryContactId)
+            : null;
+          recipientEmail = primaryContact?.email ?? undefined;
+          recipientLanguage = primaryContact?.preferredLanguage ?? 'en';
+        }
+        
+        if (recipientEmail) {
           const certificateUrl = roundCertificates.length > 0
             ? `${getBaseUrl()}/api/certificates/${roundCertificates[0].id}/download`
             : undefined;
           
           sendCourseCompletionCelebrationEmail(
-            primaryContact.email,
+            recipientEmail,
             school.name,
             currentRound,
             certificateUrl,
-            primaryContact.preferredLanguage ?? undefined
+            recipientLanguage
           ).catch(err => console.error('Failed to send celebration email:', err));
         }
       }

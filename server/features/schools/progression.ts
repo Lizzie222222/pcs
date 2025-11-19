@@ -8,6 +8,7 @@ import type { School } from '@shared/schema';
 export interface ProgressionTrigger {
   reason?: 'evidence_approved' | 'audit_completed' | 'manual_admin';
   evidenceId?: string;
+  submitterEmail?: string; // Email of person who submitted the final piece (for celebration email)
 }
 
 /**
@@ -67,7 +68,7 @@ export function createSchoolProgressionDelegate(schoolStorage: SchoolStorage): S
         console.log(`[Progression Delegate] Triggered by ${opts.reason}${opts.evidenceId ? ` (evidence: ${opts.evidenceId})` : ''}`);
       }
       
-      return schoolStorage.checkAndUpdateSchoolProgression(schoolId);
+      return schoolStorage.checkAndUpdateSchoolProgression(schoolId, opts?.submitterEmail);
     }
   };
 }

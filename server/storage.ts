@@ -414,7 +414,7 @@ export interface IStorage {
   ): Promise<{ created: boolean; override: AdminEvidenceOverride | null }>;
   
   // Progression system operations
-  checkAndUpdateSchoolProgression(schoolId: string): Promise<School | undefined>;
+  checkAndUpdateSchoolProgression(schoolId: string, submitterEmail?: string): Promise<School | undefined>;
   getSchoolEvidenceCounts(schoolId: string): Promise<{
     inspire: { total: number; approved: number; overrideCount: number };
     investigate: { total: number; approved: number; overrideCount: number; hasQuiz: boolean; hasActionPlan: boolean };
@@ -2636,8 +2636,8 @@ export class DatabaseStorage implements IStorage {
     return schoolStorage.getSchoolEvidenceCounts(schoolId);
   }
 
-  async checkAndUpdateSchoolProgression(schoolId: string): Promise<School | undefined> {
-    return schoolStorage.checkAndUpdateSchoolProgression(schoolId);
+  async checkAndUpdateSchoolProgression(schoolId: string, submitterEmail?: string): Promise<School | undefined> {
+    return schoolStorage.checkAndUpdateSchoolProgression(schoolId, submitterEmail);
   }
   async startNewRound(schoolId: string): Promise<School | undefined> {
     return schoolStorage.startNewRound(schoolId);

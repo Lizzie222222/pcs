@@ -6055,8 +6055,10 @@ Return JSON with:
 
       // CRITICAL: Trigger school progression check on approval
       // This ensures schools can advance when their audit is approved
+      // Pass submitter email so they get the celebration email if this completes the round
       if (audit.status === 'approved') {
-        await storage.checkAndUpdateSchoolProgression(audit.schoolId);
+        const submitter = await storage.getUser(audit.submittedBy);
+        await storage.checkAndUpdateSchoolProgression(audit.schoolId, submitter?.email);
       }
 
       res.json(audit);
@@ -6379,8 +6381,10 @@ Return JSON with:
       
       // CRITICAL: Trigger school progression check on approval
       // This ensures schools can advance when their action plan is approved
+      // Pass creator email so they get the celebration email if this completes the round
       if (reviewStatus === 'approved') {
-        await storage.checkAndUpdateSchoolProgression(actionPlan.schoolId);
+        const creator = await storage.getUser(actionPlan.createdBy);
+        await storage.checkAndUpdateSchoolProgression(actionPlan.schoolId, creator?.email);
       }
       
       // Log review activity
