@@ -255,8 +255,8 @@ export default function ProgressTracker({
     // Check for approved audit quiz
     const hasQuiz = auditResponses.some(a => a.status === 'approved');
     
-    // Check for action plan
-    const hasActionPlan = actionPlans.length > 0;
+    // Check for APPROVED action plan (must be approved, not just submitted)
+    const hasActionPlan = actionPlans.some(ap => ap.reviewStatus === 'approved');
 
     const inspireEvidence = allEvidence.filter(e => e.stage === 'inspire');
     const investigateEvidence = allEvidence.filter(e => e.stage === 'investigate');
@@ -375,9 +375,11 @@ export default function ProgressTracker({
         return Math.round((counts.approved / fallbackRequired) * 100);
       }
       
-      // Special handling for investigate stage: count approved audit separately
+      // Special handling for investigate stage: count approved audit and action plan separately
       if (stageId === 'investigate' && 'hasQuiz' in counts) {
-        const approvedItems = counts.approved + (counts.hasQuiz ? 1 : 0);
+        const approvedItems = counts.approved + 
+          (counts.hasQuiz ? 1 : 0) + 
+          ('hasActionPlan' in counts && counts.hasActionPlan ? 1 : 0);
         return Math.round((approvedItems / required) * 100);
       }
       
@@ -424,8 +426,10 @@ export default function ProgressTracker({
     
     // Calculate actual approved items (includes quiz/action plan for investigate)
     let approvedItems = approved;
-    if (stageId === 'investigate' && 'hasQuiz' in counts) {
-      approvedItems += (counts.hasQuiz ? 1 : 0);
+    if (stageId === 'investigate') {
+      if ('hasQuiz' in counts) {
+        approvedItems += (counts.hasQuiz ? 1 : 0);
+      }
       if ('hasActionPlan' in counts) {
         approvedItems += (counts.hasActionPlan ? 1 : 0);
       }
