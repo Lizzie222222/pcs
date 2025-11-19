@@ -59,6 +59,7 @@ Core entities include Users, Schools, Evidence, Audit Logs, Reduction Promises (
 -   **Registration Form**: Redesigned age selection for granular student demographic tracking. School type selection (Kindergarten, Primary, Secondary, High School, International, Other) required during signup to enable targeted filtering and resource recommendations.
 -   **Bonus Evidence System**: Tracks bonus/additional evidence that doesn't count toward stage completion requirements, with admin tools for triage.
 -   **Action Plan Approval Workflow**: Action plans (reduction promises) require admin approval before counting toward progression. New action plans default to 'pending' status. Admin review queue includes filtering, bulk actions, and detail views. Admin overrides for "Action Plan Development" requirement are recognized in progression logic. Manual triggers available for celebration emails and certificate regeneration from school profile.
+-   **Audit & Action Plan Progression**: When admins approve audits or action plans, the system automatically triggers school progression checks to determine if schools should advance rounds, receive certificates, and get celebration emails. Audits are included in the school evidence list and count display, appearing as special evidence items with the `isAuditQuiz` flag.
 
 ## External Dependencies
 -   **Database**: Neon PostgreSQL
