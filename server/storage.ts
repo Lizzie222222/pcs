@@ -497,6 +497,7 @@ export interface IStorage {
     featuredCaseStudies: number;
     activeUsers: number;
     totalActions: number;
+    pendingActionPlansCount: number;
   }>;
   
   getAllUsersWithSchools(): Promise<Array<{ 
@@ -2806,6 +2807,7 @@ export class DatabaseStorage implements IStorage {
     featuredCaseStudies: number;
     activeUsers: number;
     totalActions: number;
+    pendingActionPlansCount: number;
   }> {
     const [schoolStats] = await db
       .select({ totalSchools: count() })
@@ -2842,6 +2844,12 @@ export class DatabaseStorage implements IStorage {
       .select({ activeUsers: count() })
       .from(users);
     
+    // Count pending action plans for admin review
+    const [actionPlanStats] = await db
+      .select({ pendingActionPlans: count() })
+      .from(reductionPromises)
+      .where(eq(reductionPromises.reviewStatus, 'pending'));
+    
     // One-time adjustment: Add historical admin overwrites that weren't counted before
     // The 'historicalAdminOverwrites' setting stores the count of admin overwrites created
     // before the current tracking system was implemented (8 overwrites as of Nov 2024)
@@ -2862,6 +2870,7 @@ export class DatabaseStorage implements IStorage {
       featuredCaseStudies,
       activeUsers: userStats.activeUsers,
       totalActions,
+      pendingActionPlansCount: actionPlanStats.pendingActionPlans,
     };
   }
 

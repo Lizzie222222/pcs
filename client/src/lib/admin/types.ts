@@ -5,6 +5,7 @@ export interface AdminStats {
   pendingEvidence: number;
   featuredCaseStudies: number;
   activeUsers: number;
+  pendingActionPlansCount: number;
 }
 
 export interface PendingEvidence {
