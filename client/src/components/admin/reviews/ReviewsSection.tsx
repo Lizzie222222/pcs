@@ -578,7 +578,7 @@ export default function ReviewsSection({
         evidenceCount={stats?.pendingEvidence || 0}
         auditsCount={pendingAudits.length}
         photoConsentCount={pendingPhotoConsent.length}
-        actionPlansCount={pendingActionPlans?.filter(ap => ap.reviewStatus === 'pending').length || 0}
+        actionPlansCount={stats?.pendingActionPlansCount || 0}
       />
 
       {/* Evidence Review Content */}
