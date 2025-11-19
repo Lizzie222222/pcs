@@ -841,10 +841,18 @@ export const reductionPromises = pgTable("reduction_promises", {
   status: promiseStatusEnum("status").default('active'),
   notes: text("notes"),
   createdBy: varchar("created_by").notNull().references(() => users.id),
+  
+  // Review fields - treating action plans like evidence
+  reviewStatus: submissionStatusEnum("review_status").default('pending'),
+  reviewedBy: varchar("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  reviewNotes: text("review_notes"),
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => [
   index("idx_reduction_promises_school_status").on(table.schoolId, table.status),
+  index("idx_reduction_promises_review_status").on(table.reviewStatus),
 ]);
 
 export const printableFormSubmissions = pgTable("printable_form_submissions", {
