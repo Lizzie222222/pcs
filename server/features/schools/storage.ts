@@ -914,18 +914,19 @@ export class SchoolStorage {
 
     const hasQuiz = approvedAudit.length > 0;
 
-    const actionPlans = await db
+    const approvedActionPlans = await db
       .select()
       .from(reductionPromises)
       .where(
         and(
           eq(reductionPromises.schoolId, schoolId),
-          eq(reductionPromises.roundNumber, currentRound)
+          eq(reductionPromises.roundNumber, currentRound),
+          eq(reductionPromises.reviewStatus, 'approved')
         )
       )
       .limit(1);
 
-    const hasActionPlan = actionPlans.length > 0;
+    const hasActionPlan = approvedActionPlans.length > 0;
 
     const inspireCounts = getApprovedRequirementsCount(inspireEvidence, 'inspire');
     const investigateCounts = getApprovedRequirementsCount(investigateEvidence, 'investigate');
@@ -982,21 +983,32 @@ export class SchoolStorage {
     if (counts.act.approved >= 3 && !school.actCompleted) {
       updates.actCompleted = true;
       hasChanges = true;
-      justCompletedRound = true;
       
-      const roundsCompleted = (school.roundsCompleted || 0) + 1;
-      updates.roundsCompleted = roundsCompleted;
+      // CRITICAL FIX: Only advance round if ALL stages (Inspire, Investigate, Act) are complete
+      // This prevents schools from skipping the action plan requirement
+      const finalInspireCompleted = updates.inspireCompleted ?? school.inspireCompleted;
+      const finalInvestigateCompleted = updates.investigateCompleted ?? school.investigateCompleted;
       
-      const nextRound = (school.currentRound || 1) + 1;
-      updates.currentRound = nextRound;
-      updates.currentStage = 'inspire';
-      updates.inspireCompleted = false;
-      updates.investigateCompleted = false;
-      updates.actCompleted = false;
-      updates.awardCompleted = false;
-      updates.auditQuizCompleted = false;
-      
-      console.log(`[Round Progression] School ${schoolId} completed round ${completedRound}, advancing to round ${nextRound}`);
+      if (finalInspireCompleted && finalInvestigateCompleted) {
+        // All three stages are now complete - advance to next round
+        justCompletedRound = true;
+        
+        const roundsCompleted = (school.roundsCompleted || 0) + 1;
+        updates.roundsCompleted = roundsCompleted;
+        
+        const nextRound = (school.currentRound || 1) + 1;
+        updates.currentRound = nextRound;
+        updates.currentStage = 'inspire';
+        updates.inspireCompleted = false;
+        updates.investigateCompleted = false;
+        updates.actCompleted = false;
+        updates.awardCompleted = false;
+        updates.auditQuizCompleted = false;
+        
+        console.log(`[Round Progression] School ${schoolId} completed round ${completedRound}, advancing to round ${nextRound}`);
+      } else {
+        console.log(`[Round Progression] School ${schoolId} completed Act stage, but Inspire (${finalInspireCompleted}) or Investigate (${finalInvestigateCompleted}) not complete. Not advancing round yet.`);
+      }
     }
 
     if (!justCompletedRound) {
