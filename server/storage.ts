@@ -3058,9 +3058,9 @@ export class DatabaseStorage implements IStorage {
     // Use shared deduplication logic to ensure consistency with landing page
     const totalEvidence = await schoolStorage.getDeduplicatedEvidenceCount();
     
-    // Count schools that have completed at least one round (became "plastic clever")
-    const [completedAwardsCount] = await db.select({ 
-      count: sql<number>`COUNT(*) FILTER (WHERE rounds_completed >= 1)` 
+    // Sum total rounds completed across all schools
+    const [completedAwardsSum] = await db.select({ 
+      sum: sql<number>`COALESCE(SUM(rounds_completed), 0)` 
     }).from(schools).where(schoolDateFilter);
     
     const [pendingCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(evidence).where(and(eq(evidence.status, 'pending'), evidenceDateFilter));
@@ -3072,7 +3072,7 @@ export class DatabaseStorage implements IStorage {
       totalSchools: schoolsCount?.count || 0,
       totalUsers: usersCount?.count || 0,
       totalEvidence,
-      completedAwards: completedAwardsCount?.count || 0,
+      completedAwards: completedAwardsSum?.sum || 0,
       pendingEvidence: pendingCount?.count || 0,
       averageProgress: avgProgress?.avg || 0,
       studentsImpacted: studentsSum?.sum || 0,
@@ -3179,6 +3179,77 @@ export class DatabaseStorage implements IStorage {
       monthlyRegistrations: monthlyRegistrations ?? [],
       schoolsByCountry: schoolsByCountry ?? []
     };
+  }
+
+  async getSchoolActivityAging(): Promise<{
+    ranges: Array<{ range: string; count: number; schools: Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number }> }>;
+  }> {
+    const now = new Date();
+    
+    // Define date thresholds as timestamps for stable comparisons
+    const thirtyDaysAgoTs = now.getTime() - 30 * 24 * 60 * 60 * 1000;
+    const ninetyDaysAgoTs = now.getTime() - 90 * 24 * 60 * 60 * 1000;
+    const sixMonthsAgoTs = now.getTime() - 180 * 24 * 60 * 60 * 1000;
+    const oneYearAgoTs = now.getTime() - 365 * 24 * 60 * 60 * 1000;
+
+    // Get all schools with their activity data
+    const allSchools = await db
+      .select({
+        id: schools.id,
+        name: schools.name,
+        country: schools.country,
+        lastActiveAt: schools.lastActiveAt,
+        currentStage: schools.currentStage,
+        progressPercentage: schools.progressPercentage
+      })
+      .from(schools)
+      .orderBy(desc(schools.lastActiveAt));
+
+    // Categorize schools by activity
+    const ranges = [
+      { range: 'Last 30 days', count: 0, schools: [] as Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number }> },
+      { range: 'Last 90 days', count: 0, schools: [] as Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number }> },
+      { range: 'Last 6 months', count: 0, schools: [] as Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number }> },
+      { range: 'Last year', count: 0, schools: [] as Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number }> },
+      { range: 'Older than 1 year', count: 0, schools: [] as Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number }> }
+    ];
+
+    allSchools.forEach(school => {
+      const schoolData = {
+        id: school.id,
+        name: school.name,
+        country: school.country,
+        lastActiveAt: school.lastActiveAt,
+        currentStage: school.currentStage || 'inspire',
+        progressPercentage: school.progressPercentage || 0
+      };
+
+      // Schools with null lastActiveAt go to "Older than 1 year"
+      if (!school.lastActiveAt) {
+        ranges[4].schools.push(schoolData);
+      } else {
+        const activityTs = new Date(school.lastActiveAt).getTime();
+        // Check from oldest to newest using <= to ensure boundary dates land in older bucket
+        if (activityTs <= oneYearAgoTs) {
+          ranges[4].schools.push(schoolData); // Older than 1 year (365+ days ago)
+        } else if (activityTs <= sixMonthsAgoTs) {
+          ranges[3].schools.push(schoolData); // Last year (180-364 days ago)
+        } else if (activityTs <= ninetyDaysAgoTs) {
+          ranges[2].schools.push(schoolData); // Last 6 months (90-179 days ago)
+        } else if (activityTs <= thirtyDaysAgoTs) {
+          ranges[1].schools.push(schoolData); // Last 90 days (30-89 days ago)
+        } else {
+          ranges[0].schools.push(schoolData); // Last 30 days (0-29 days ago)
+        }
+      }
+    });
+
+    // Update counts
+    ranges.forEach(range => {
+      range.count = range.schools.length;
+    });
+
+    return { ranges };
   }
 
   async getEvidenceAnalytics(startDate?: string, endDate?: string): Promise<{

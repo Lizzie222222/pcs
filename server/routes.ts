@@ -4380,6 +4380,16 @@ Return JSON with:
     }
   });
 
+  app.get('/api/admin/analytics/school-activity-aging', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const analytics = await storage.getSchoolActivityAging();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching school activity aging:", error);
+      res.status(500).json({ message: "Failed to fetch school activity aging" });
+    }
+  });
+
   app.get('/api/admin/analytics/user-engagement', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const { startDate, endDate } = req.query;

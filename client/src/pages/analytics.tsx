@@ -9,10 +9,17 @@ import { useChartAnimation, useChartAnnouncement, chartA11y, getAnimProps } from
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { 
   Users, School, FileText, Award, Mail, Globe,
   TrendingUp, BarChart3, PieChart as PieChartIcon,
-  Download, Eye, MapPin
+  Download, Eye, MapPin, Clock
 } from 'lucide-react';
 
 // Analytics data types
@@ -33,6 +40,21 @@ interface SchoolProgressAnalytics {
   completionRates: Array<{ metric: string; rate: number }>;
   monthlyRegistrations: Array<{ month: string; count: number }>;
   schoolsByCountry: Array<{ country: string; count: number; students: number }>;
+}
+
+interface SchoolActivityAging {
+  ranges: Array<{
+    range: string;
+    count: number;
+    schools: Array<{
+      id: string;
+      name: string;
+      country: string;
+      lastActiveAt: Date | null;
+      currentStage: string;
+      progressPercentage: number;
+    }>;
+  }>;
 }
 
 interface EvidenceAnalytics {
@@ -76,6 +98,8 @@ const COLORS = ['#0B3D5D', '#019ADE', '#02BBB4', '#FFC557', '#FF595A', '#6B7280'
 
 export default function AnalyticsPage() {
   const [selectedTab, setSelectedTab] = useState('overview');
+  const [activityDialogOpen, setActivityDialogOpen] = useState(false);
+  const [selectedActivityRange, setSelectedActivityRange] = useState<{ range: string; count: number; schools: Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number }> } | null>(null);
   
   // Chart animation and accessibility hooks
   const chartAnimation = useChartAnimation();
@@ -89,6 +113,11 @@ export default function AnalyticsPage() {
 
   const schoolProgressQuery = useQuery<SchoolProgressAnalytics>({
     queryKey: ['/api/admin/analytics/school-progress'],
+    enabled: selectedTab === 'schools'
+  });
+
+  const schoolActivityAgingQuery = useQuery<SchoolActivityAging>({
+    queryKey: ['/api/admin/analytics/school-activity-aging'],
     enabled: selectedTab === 'schools'
   });
 
@@ -157,6 +186,44 @@ export default function AnalyticsPage() {
     } catch (error) {
       console.error('Export failed:', error);
     }
+  };
+
+  const handleActivityBarClick = (data: any) => {
+    if (!schoolActivityAgingQuery.data) return;
+    const rangeData = schoolActivityAgingQuery.data.ranges.find(r => r.range === data.range);
+    if (rangeData) {
+      setSelectedActivityRange(rangeData);
+      setActivityDialogOpen(true);
+    }
+  };
+
+  const exportActivityRangeCSV = () => {
+    if (!selectedActivityRange) return;
+    
+    const schools = selectedActivityRange.schools;
+    const csvHeaders = ['School Name', 'Country', 'Current Stage', 'Progress %', 'Last Active'];
+    const csvRows = schools.map(school => [
+      school.name,
+      school.country,
+      school.currentStage,
+      school.progressPercentage.toString(),
+      school.lastActiveAt ? new Date(school.lastActiveAt).toLocaleDateString() : 'Never'
+    ]);
+    
+    const csvContent = [
+      csvHeaders.join(','),
+      ...csvRows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = `school_activity_${selectedActivityRange.range.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   return (
@@ -419,6 +486,39 @@ export default function AnalyticsPage() {
                     </ResponsiveContainer>
                   </CardContent>
                 </Card>
+
+                {/* School Activity Aging */}
+                {schoolActivityAgingQuery.data && (
+                  <Card className="lg:col-span-2">
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <Clock className="w-5 h-5 mr-2 text-pcs_blue" />
+                        School Activity Aging
+                      </CardTitle>
+                      <p className="text-sm text-gray-500 mt-2">Click on a bar to view schools in that date range</p>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={schoolActivityAgingQuery.data.ranges}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="range" />
+                          <YAxis />
+                          <Tooltip />
+                          <Bar 
+                            dataKey="count" 
+                            fill="#02BBB4"
+                            onClick={handleActivityBarClick}
+                            cursor="pointer"
+                            isAnimationActive={chartAnimation.isAnimationActive}
+                            animationBegin={chartAnimation.animationBegin}
+                            animationDuration={chartAnimation.animationDuration}
+                            data-testid="bar-school-activity-aging"
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Monthly Registrations */}
                 <Card>
@@ -805,6 +905,60 @@ export default function AnalyticsPage() {
             )}
           </TabsContent>
         </Tabs>
+
+        {/* Activity Range Dialog */}
+        <Dialog open={activityDialogOpen} onOpenChange={setActivityDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center justify-between">
+                <span>Schools Active in {selectedActivityRange?.range}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={exportActivityRangeCSV}
+                  data-testid="button-export-activity-csv"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export CSV
+                </Button>
+              </DialogTitle>
+              <DialogDescription>
+                {selectedActivityRange?.count} school{selectedActivityRange?.count !== 1 ? 's' : ''} found in this activity range
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4">
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse" data-testid="table-activity-schools">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border p-2 text-left">School Name</th>
+                      <th className="border p-2 text-left">Country</th>
+                      <th className="border p-2 text-left">Stage</th>
+                      <th className="border p-2 text-left">Progress</th>
+                      <th className="border p-2 text-left">Last Active</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedActivityRange?.schools.map((school, index) => (
+                      <tr key={school.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} data-testid={`row-school-${school.id}`}>
+                        <td className="border p-2">{school.name}</td>
+                        <td className="border p-2">{school.country}</td>
+                        <td className="border p-2 capitalize">{school.currentStage}</td>
+                        <td className="border p-2">{school.progressPercentage}%</td>
+                        <td className="border p-2">
+                          {school.lastActiveAt 
+                            ? new Date(school.lastActiveAt).toLocaleDateString()
+                            : 'Never'
+                          }
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
