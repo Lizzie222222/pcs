@@ -536,14 +536,6 @@ export default function ReviewsSection({
         reviewNotes,
       });
     },
-    onMutate: async (variables) => {
-      await queryClient.cancelQueries({ queryKey: ['/api/admin/action-plans'] });
-      const previousActionPlans = queryClient.getQueryData<PendingActionPlan[]>(['/api/admin/action-plans']);
-      queryClient.setQueryData<PendingActionPlan[]>(['/api/admin/action-plans'], (old = []) => {
-        return old.filter(ap => !variables.actionPlanIds.includes(ap.id));
-      });
-      return { previousActionPlans };
-    },
     onSuccess: () => {
       setBulkActionPlanDialogOpen(false);
       setBulkActionPlanAction(null);
@@ -553,10 +545,7 @@ export default function ReviewsSection({
         description: "Bulk action plan review completed successfully.",
       });
     },
-    onError: (error: any, variables, context) => {
-      if (context?.previousActionPlans) {
-        queryClient.setQueryData(['/api/admin/action-plans'], context.previousActionPlans);
-      }
+    onError: (error: any) => {
       toast({
         title: "Bulk Review Failed",
         description: error.message || "Failed to review action plans in bulk.",

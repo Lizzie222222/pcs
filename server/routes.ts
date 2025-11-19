@@ -6419,6 +6419,98 @@ Return JSON with:
     }
   });
 
+  // Bulk review action plans (approve/reject multiple)
+  app.post('/api/admin/action-plans/bulk-review', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
+    try {
+      const { actionPlanIds, reviewStatus, reviewNotes } = req.body;
+      const reviewerId = req.user.id;
+      
+      if (!Array.isArray(actionPlanIds) || actionPlanIds.length === 0) {
+        return res.status(400).json({ message: "actionPlanIds must be a non-empty array" });
+      }
+      
+      if (!['approved', 'rejected'].includes(reviewStatus)) {
+        return res.status(400).json({ message: "Invalid review status. Must be 'approved' or 'rejected'" });
+      }
+      
+      const results = [];
+      const errors = [];
+      
+      // Process each action plan
+      for (const actionPlanId of actionPlanIds) {
+        try {
+          // Get the action plan first to check if it exists and get school info
+          const actionPlan = await storage.getActionPlanById(actionPlanId);
+          
+          if (!actionPlan) {
+            errors.push({ id: actionPlanId, error: "Action plan not found" });
+            continue;
+          }
+          
+          // Update review status
+          const reviewed = await storage.reviewActionPlan(
+            actionPlanId,
+            reviewStatus,
+            reviewerId,
+            reviewNotes
+          );
+          
+          if (!reviewed) {
+            errors.push({ id: actionPlanId, error: "Failed to review action plan" });
+            continue;
+          }
+          
+          // CRITICAL: Trigger school progression check on approval
+          if (reviewStatus === 'approved') {
+            const creator = await storage.getUser(actionPlan.createdBy);
+            await storage.checkAndUpdateSchoolProgression(actionPlan.schoolId, creator?.email);
+          }
+          
+          // Log review activity
+          await logUserActivity(
+            reviewerId,
+            req.user.email,
+            reviewStatus === 'approved' ? 'promise_update' : 'promise_update',
+            {
+              actionPlanId: reviewed.id,
+              schoolId: reviewed.schoolId,
+              reviewStatus,
+              reviewNotes,
+            },
+            reviewed.id,
+            'reduction_promise',
+            req
+          );
+          
+          // Log audit action
+          await logAuditAction(
+            reviewerId,
+            reviewStatus === 'approved' ? 'approved' : 'rejected',
+            'action_plan',
+            reviewed.id,
+            { reason: reviewNotes }
+          );
+          
+          results.push(reviewed);
+        } catch (error) {
+          console.error(`Error reviewing action plan ${actionPlanId}:`, error);
+          errors.push({ id: actionPlanId, error: error instanceof Error ? error.message : "Unknown error" });
+        }
+      }
+      
+      res.json({
+        success: true,
+        reviewed: results.length,
+        errors: errors.length,
+        results,
+        errors: errors.length > 0 ? errors : undefined
+      });
+    } catch (error) {
+      console.error("Error bulk reviewing action plans:", error);
+      res.status(500).json({ message: "Failed to bulk review action plans" });
+    }
+  });
+
   // Get aggregated metrics for reduction promises (admin only)
   app.get('/api/admin/reduction-promises/metrics', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
