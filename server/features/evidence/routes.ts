@@ -715,6 +715,9 @@ export function createEvidenceRouters(storage: IStorage): {
         roundNumber: req.query.roundNumber ? parseInt(req.query.roundNumber as string) : undefined,
         dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
         dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined,
+        // CRITICAL: Exclude "Action Plan Development" evidence from review queue
+        // Action plans are reviewed separately in the Action Plan Review Queue
+        excludeActionPlanEvidence: true,
       };
       
       // Remove undefined values

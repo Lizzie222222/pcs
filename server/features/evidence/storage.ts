@@ -163,6 +163,7 @@ export class EvidenceStorage {
     sortBy?: 'newest' | 'oldest' | 'schoolName' | 'stage';
     dateFrom?: Date;
     dateTo?: Date;
+    excludeActionPlanEvidence?: boolean; // Exclude "Action Plan Development" evidence from review queue
   }): Promise<EvidenceWithSchool[]> {
     // Build WHERE conditions
     const conditions = [];
@@ -196,6 +197,14 @@ export class EvidenceStorage {
     }
     if (filters?.dateTo) {
       conditions.push(sql`${evidence.submittedAt} <= ${filters.dateTo}`);
+    }
+    
+    // CRITICAL: Exclude "Action Plan Development" evidence from admin review queue
+    // Action plans are reviewed separately in the Action Plan Review Queue
+    // This prevents double work for admins
+    if (filters?.excludeActionPlanEvidence) {
+      const ACTION_PLAN_REQUIREMENT_ID = '5cfb26b9-76f3-408d-8514-d892ae30d061';
+      conditions.push(sql`${evidence.evidenceRequirementId} != ${ACTION_PLAN_REQUIREMENT_ID}`);
     }
     
     // Add search filter for school name, title, and description
