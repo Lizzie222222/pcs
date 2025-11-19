@@ -1248,8 +1248,68 @@ schoolsRouter.get('/api/admin/schools/:id/evidence', isAuthenticated, requireAdm
   try {
     const schoolId = req.params.id;
     const roundNumber = req.query.roundNumber ? parseInt(req.query.roundNumber as string, 10) : undefined;
+    
+    // Get regular evidence
     const evidence = await storage.getSchoolEvidence(schoolId, roundNumber);
-    res.json(evidence);
+    
+    // Get audits
+    const allAudits = await storage.getSchoolAudits(schoolId);
+    
+    // Filter audits by roundNumber if provided
+    const audits = roundNumber 
+      ? allAudits.filter(audit => audit.roundNumber === roundNumber)
+      : allAudits;
+    
+    // Get evidence requirements to find the Plastic Waste Audit requirement ID
+    const requirements = await storage.getEvidenceRequirements('investigate');
+    const plasticWasteAuditRequirement = requirements.find(req => 
+      req.title === 'Plastic Waste Audit' || req.title.includes('Plastic Waste Audit')
+    );
+    
+    // Convert audits to evidence-like format
+    const auditEvidence = audits.map(audit => {
+      // Map audit status to evidence status
+      let evidenceStatus: 'pending' | 'approved' | 'rejected' = 'pending';
+      if (audit.status === 'approved') {
+        evidenceStatus = 'approved';
+      } else if (audit.status === 'rejected') {
+        evidenceStatus = 'rejected';
+      }
+      
+      return {
+        id: audit.id,
+        schoolId: audit.schoolId,
+        submittedBy: audit.submittedBy,
+        evidenceRequirementId: plasticWasteAuditRequirement?.id || null,
+        isBonus: false,
+        title: 'Plastic Waste Audit',
+        description: null,
+        stage: 'investigate' as 'investigate',
+        status: evidenceStatus,
+        visibility: 'registered' as 'registered',
+        files: [],
+        videoLinks: null,
+        reviewedBy: audit.reviewedBy,
+        reviewedAt: audit.reviewedAt,
+        reviewNotes: audit.reviewNotes,
+        assignedTo: null,
+        isFeatured: false,
+        isAuditQuiz: true,
+        roundNumber: audit.roundNumber,
+        hasChildren: false,
+        parentalConsentFiles: [],
+        submittedAt: audit.submittedAt,
+        updatedAt: audit.updatedAt,
+        // Include user info from the audit
+        submittedByUser: audit.submittedByUser,
+        reviewedByUser: audit.reviewedByUser,
+      };
+    });
+    
+    // Merge audits with evidence and return combined array
+    const combinedEvidence = [...evidence, ...auditEvidence];
+    
+    res.json(combinedEvidence);
   } catch (error) {
     console.error("Error fetching school evidence:", error);
     res.status(500).json({ message: "Failed to fetch evidence" });
