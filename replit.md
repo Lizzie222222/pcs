@@ -58,6 +58,7 @@ Core entities include Users, Schools, Evidence, Audit Logs, Reduction Promises (
 -   **Program Stages**: All program stages (Inspire, Investigate, Act) are fully unlocked and simultaneously accessible.
 -   **Registration Form**: Redesigned age selection for granular student demographic tracking. School type selection (Kindergarten, Primary, Secondary, High School, International, Other) required during signup to enable targeted filtering and resource recommendations.
 -   **Bonus Evidence System**: Tracks bonus/additional evidence that doesn't count toward stage completion requirements, with admin tools for triage.
+-   **Action Plan Approval Workflow**: Action plans (reduction promises) require admin approval before counting toward progression. New action plans default to 'pending' status. Admin review queue includes filtering, bulk actions, and detail views. Admin overrides for "Action Plan Development" requirement are recognized in progression logic. Manual triggers available for celebration emails and certificate regeneration from school profile.
 
 ## External Dependencies
 -   **Database**: Neon PostgreSQL

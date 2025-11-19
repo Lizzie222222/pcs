@@ -366,7 +366,7 @@ export default function SchoolProgressOverride({ schoolId, onUpdate }: SchoolPro
                           
                           {isOverridden && (
                             <Badge variant="outline" className="border-blue-600 text-blue-600">
-                              Admin Override
+                              Requirement approved by admin
                             </Badge>
                           )}
                         </div>
@@ -384,7 +384,7 @@ export default function SchoolProgressOverride({ schoolId, onUpdate }: SchoolPro
             <ul className="space-y-1 text-xs">
               <li>• <strong>Approved badge:</strong> School has submitted and admin approved this evidence</li>
               <li>• <strong>Submitted badge:</strong> School has submitted evidence (pending review)</li>
-              <li>• <strong>Admin Override badge:</strong> You've manually marked this as complete</li>
+              <li>• <strong>Requirement approved by admin badge:</strong> You've manually marked this as complete</li>
               <li>• <strong>Checkbox (Ticked):</strong> Either approved by admin OR manually overridden</li>
               <li>• <strong>Checkbox (Unticked):</strong> Not yet completed - click to add admin override</li>
             </ul>
