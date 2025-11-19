@@ -930,12 +930,12 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
             data-testid="tab-reviews"
           >
             {t('tabs.reviewQueue')}
-            {((stats && stats.pendingEvidence > 0) || pendingAudits.length > 0 || pendingPhotoConsent.length > 0) && (
+            {((stats && stats.pendingEvidence > 0) || pendingAudits.length > 0 || pendingPhotoConsent.length > 0 || (stats && stats.pendingActionPlansCount > 0)) && (
               <span 
                 className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center"
                 data-testid="badge-reviews-count"
               >
-                {(stats?.pendingEvidence || 0) + pendingAudits.length + pendingPhotoConsent.length}
+                {(stats?.pendingEvidence || 0) + pendingAudits.length + pendingPhotoConsent.length + (stats?.pendingActionPlansCount || 0)}
               </span>
             )}
           </button>

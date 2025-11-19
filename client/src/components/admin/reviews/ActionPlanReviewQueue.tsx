@@ -361,18 +361,6 @@ export default function ActionPlanReviewQueue({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {schoolGroups.map((schoolPlans) => {
           const firstPlan = schoolPlans[0];
-          const allSelected = schoolPlans.every(p => selectedActionPlans.includes(p.id));
-          const someSelected = schoolPlans.some(p => selectedActionPlans.includes(p.id));
-          
-          const toggleSchoolSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
-            e.stopPropagation();
-            if (allSelected) {
-              setSelectedActionPlans(selectedActionPlans.filter(id => !schoolPlans.map(p => p.id).includes(id)));
-            } else {
-              const combined = [...selectedActionPlans, ...schoolPlans.map(p => p.id)];
-              setSelectedActionPlans(Array.from(new Set(combined)));
-            }
-          };
 
           const approveAllSchoolPlans = async (e: React.MouseEvent) => {
             e.stopPropagation();
@@ -423,25 +411,13 @@ export default function ActionPlanReviewQueue({
           return (
             <div
               key={`${firstPlan.schoolId}-${firstPlan.roundNumber}`}
-              className={`border rounded-lg p-4 hover:shadow-md transition-shadow ${
-                someSelected ? 'ring-2 ring-pcs_blue bg-blue-50' : ''
-              }`}
+              className="border rounded-lg p-4 hover:shadow-md transition-shadow"
               data-testid={`card-action-plan-group-${firstPlan.schoolId}`}
             >
               {/* School Header */}
               <div className="flex items-start justify-between mb-4 pb-3 border-b">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <input
-                      type="checkbox"
-                      checked={allSelected}
-                      ref={(el) => {
-                        if (el) el.indeterminate = someSelected && !allSelected;
-                      }}
-                      onChange={toggleSchoolSelection}
-                      className="rounded border-gray-300"
-                      data-testid={`checkbox-school-${firstPlan.schoolId}`}
-                    />
                     <button
                       onClick={(e) => handleSchoolClick(e, firstPlan.school)}
                       className="font-semibold text-lg text-navy hover:text-pcs_blue transition-colors"
@@ -466,22 +442,10 @@ export default function ActionPlanReviewQueue({
                 {schoolPlans.map((plan, index) => (
                   <div
                     key={plan.id}
-                    className={`p-3 rounded-md border ${
-                      selectedActionPlans.includes(plan.id) ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'
-                    }`}
+                    className="p-3 rounded-md border bg-gray-50 border-gray-200"
                     data-testid={`action-plan-item-${plan.id}`}
                   >
                     <div className="flex items-start gap-3">
-                      <input
-                        type="checkbox"
-                        checked={selectedActionPlans.includes(plan.id)}
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          toggleActionPlanSelection(plan.id);
-                        }}
-                        className="rounded border-gray-300 mt-1"
-                        data-testid={`checkbox-item-${plan.id}`}
-                      />
                       <div className="flex-1 space-y-2">
                         <div className="flex items-start justify-between">
                           <div>
