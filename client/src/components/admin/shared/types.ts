@@ -153,3 +153,43 @@ export interface EventRegistrationWithDetails extends EventRegistration {
     country: string;
   };
 }
+
+export interface PendingActionPlan {
+  id: string;
+  schoolId: string;
+  auditId: string | null;
+  roundNumber: number;
+  plasticItemType: string;
+  plasticItemLabel: string;
+  baselineQuantity: number;
+  targetQuantity: number;
+  reductionAmount: number;
+  timeframeUnit: string;
+  status: 'active' | 'completed' | 'abandoned';
+  notes: string | null;
+  createdBy: string;
+  reviewStatus: 'pending' | 'approved' | 'rejected';
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  reviewNotes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  school?: {
+    id: string;
+    name: string;
+    country: string;
+  };
+  submitter?: {
+    id: string | null;
+    email: string | null;
+    firstName: string | null;
+    lastName: string | null;
+    isAdmin: boolean | null;
+  } | null;
+  reviewer?: {
+    id: string | null;
+    email: string | null;
+    firstName: string | null;
+    lastName: string | null;
+  } | null;
+}

@@ -2,11 +2,12 @@ import { Badge } from "@/components/ui/badge";
 import { useTranslation } from 'react-i18next';
 
 interface ReviewsFiltersProps {
-  reviewTab: 'evidence' | 'audits' | 'photo-consent';
-  setReviewTab: (tab: 'evidence' | 'audits' | 'photo-consent') => void;
+  reviewTab: 'evidence' | 'audits' | 'photo-consent' | 'action-plans';
+  setReviewTab: (tab: 'evidence' | 'audits' | 'photo-consent' | 'action-plans') => void;
   evidenceCount: number;
   auditsCount: number;
   photoConsentCount: number;
+  actionPlansCount: number;
 }
 
 export default function ReviewsFilters({
@@ -14,7 +15,8 @@ export default function ReviewsFilters({
   setReviewTab,
   evidenceCount,
   auditsCount,
-  photoConsentCount
+  photoConsentCount,
+  actionPlansCount
 }: ReviewsFiltersProps) {
   const { t } = useTranslation('admin');
 
@@ -65,6 +67,22 @@ export default function ReviewsFilters({
         {photoConsentCount > 0 && (
           <Badge className="ml-2 bg-red-500 text-white">
             {photoConsentCount}
+          </Badge>
+        )}
+      </button>
+      <button
+        className={`px-4 py-2 rounded-md font-medium transition-colors ${
+          reviewTab === 'action-plans'
+            ? 'bg-white text-navy shadow-sm'
+            : 'text-gray-600 hover:text-navy'
+        }`}
+        onClick={() => setReviewTab('action-plans')}
+        data-testid="subtab-action-plans"
+      >
+        Action Plans
+        {actionPlansCount > 0 && (
+          <Badge className="ml-2 bg-red-500 text-white" data-testid="badge-action-plans-count">
+            {actionPlansCount}
           </Badge>
         )}
       </button>

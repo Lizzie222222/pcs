@@ -353,7 +353,7 @@ export default function SchoolProfile() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           {/* Tabs Navigation - Sticky positioned below header (nav 64px + banner 48px + header ~96px = ~208px) */}
           <div className="bg-white rounded-lg shadow-sm border p-1.5 sticky top-52 z-10">
-            <TabsList className="bg-transparent w-full grid grid-cols-7 gap-1">
+            <TabsList className="bg-transparent w-full grid grid-cols-8 gap-1">
               <TabsTrigger 
                 value="overview" 
                 className="gap-2 data-[state=active]:bg-pcs_blue data-[state=active]:text-white" 
@@ -385,6 +385,14 @@ export default function SchoolProfile() {
               >
                 <ClipboardCheck className="h-4 w-4" />
                 <span className="hidden sm:inline">Audits</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="action-plans" 
+                className="gap-2 data-[state=active]:bg-pcs_blue data-[state=active]:text-white" 
+                data-testid="tab-action-plans"
+              >
+                <Target className="h-4 w-4" />
+                <span className="hidden sm:inline">Action Plans</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="analytics" 
@@ -443,6 +451,11 @@ export default function SchoolProfile() {
             <AuditsTab schoolId={id!} />
           </TabsContent>
 
+          {/* Action Plans Tab */}
+          <TabsContent value="action-plans">
+            <ActionPlansTab schoolId={id!} />
+          </TabsContent>
+
           {/* Analytics Tab */}
           <TabsContent value="analytics">
             <AnalyticsTab
@@ -483,6 +496,170 @@ export default function SchoolProfile() {
 }
 
 // Overview Tab Component
+function AdminActionsCard({ schoolId }: { schoolId: string }) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [actionDialogOpen, setActionDialogOpen] = useState(false);
+  const [actionType, setActionType] = useState<'email' | 'certificate'>('email');
+  const [selectedRound, setSelectedRound] = useState<string>('1');
+
+  // Get current user to check if admin
+  const { data: currentUser } = useQuery<{ isAdmin: boolean }>({
+    queryKey: ['/api/user'],
+  });
+
+  // Send celebration email mutation
+  const sendCelebrationEmailMutation = useMutation({
+    mutationFn: async ({ roundNumber }: { roundNumber: number }) => {
+      return await apiRequest('POST', `/api/admin/schools/${schoolId}/send-celebration-email`, {
+        roundNumber,
+      });
+    },
+    onSuccess: () => {
+      setActionDialogOpen(false);
+      toast({
+        title: "Email Sent",
+        description: `Celebration email for Round ${selectedRound} has been sent successfully.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to Send Email",
+        description: error.message || "An error occurred while sending the celebration email.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Regenerate certificate mutation
+  const regenerateCertificateMutation = useMutation({
+    mutationFn: async ({ roundNumber }: { roundNumber: number }) => {
+      return await apiRequest('POST', `/api/admin/schools/${schoolId}/regenerate-certificate`, {
+        roundNumber,
+      });
+    },
+    onSuccess: () => {
+      setActionDialogOpen(false);
+      toast({
+        title: "Certificate Regenerated",
+        description: `Certificate for Round ${selectedRound} has been regenerated successfully.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/schools', schoolId, 'certificates'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools', schoolId] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to Regenerate Certificate",
+        description: error.message || "An error occurred while regenerating the certificate.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAction = (type: 'email' | 'certificate') => {
+    setActionType(type);
+    setSelectedRound('1');
+    setActionDialogOpen(true);
+  };
+
+  const handleConfirm = () => {
+    const roundNumber = parseInt(selectedRound);
+    if (actionType === 'email') {
+      sendCelebrationEmailMutation.mutate({ roundNumber });
+    } else {
+      regenerateCertificateMutation.mutate({ roundNumber });
+    }
+  };
+
+  // Only show for admins
+  if (!currentUser?.isAdmin) {
+    return null;
+  }
+
+  const isPending = sendCelebrationEmailMutation.isPending || regenerateCertificateMutation.isPending;
+
+  return (
+    <>
+      <Card className="lg:col-span-3">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-pcs_blue" />
+            Admin Actions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              onClick={() => handleAction('email')}
+              className="bg-pcs_blue hover:bg-navy"
+              data-testid="button-send-celebration-email"
+            >
+              <Mail className="h-4 w-4 mr-2" />
+              Send Celebration Email
+            </Button>
+            <Button
+              onClick={() => handleAction('certificate')}
+              variant="outline"
+              className="border-green-600 text-green-700 hover:bg-green-50"
+              data-testid="button-regenerate-certificate"
+            >
+              <Award className="h-4 w-4 mr-2" />
+              Regenerate Certificate
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Action Dialog */}
+      <AlertDialog open={actionDialogOpen} onOpenChange={setActionDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {actionType === 'email' ? 'Send Celebration Email' : 'Regenerate Certificate'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {actionType === 'email' 
+                ? 'Select the round number for which to send a celebration email to the school.'
+                : 'Select the round number for which to regenerate the certificate.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <label className="text-sm font-medium text-gray-700 mb-2 block">
+              Round Number
+            </label>
+            <Select value={selectedRound} onValueChange={setSelectedRound}>
+              <SelectTrigger data-testid="select-round-number">
+                <SelectValue placeholder="Select round" />
+              </SelectTrigger>
+              <SelectContent>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(round => (
+                  <SelectItem key={round} value={round.toString()}>
+                    Round {round}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isPending} data-testid="button-cancel-action">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirm}
+              disabled={isPending}
+              className={actionType === 'email' ? 'bg-pcs_blue hover:bg-navy' : 'bg-green-600 hover:bg-green-700'}
+              data-testid="button-confirm-action"
+            >
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {actionType === 'email' ? 'Send Email' : 'Regenerate'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}
+
 function OverviewTab({ school, certificates, certificatesLoading }: { 
   school: SchoolData; 
   certificates: Certificate[];
@@ -681,6 +858,9 @@ function OverviewTab({ school, certificates, certificatesLoading }: {
           )}
         </CardContent>
       </Card>
+
+      {/* Admin Actions */}
+      <AdminActionsCard schoolId={school.id} />
 
       {/* Contact Information */}
       <Card className="lg:col-span-3">
@@ -2377,6 +2557,370 @@ function AuditsTab({ schoolId }: { schoolId: string }) {
           </AlertDialogContent>
         </AlertDialog>
       )}
+    </>
+  );
+}
+
+function ActionPlansTab({ schoolId }: { schoolId: string }) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [selectedPlan, setSelectedPlan] = useState<ReductionPromise | null>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [reviewAction, setReviewAction] = useState<'approved' | 'rejected'>('approved');
+  const [reviewNotes, setReviewNotes] = useState('');
+
+  // Get current user to check if admin
+  const { data: currentUser } = useQuery<{ isAdmin: boolean }>({
+    queryKey: ['/api/user'],
+  });
+
+  const { data: actionPlans = [], isLoading } = useQuery<ReductionPromise[]>({
+    queryKey: ['/api/reduction-promises/school', schoolId],
+    queryFn: async () => {
+      const response = await fetch(`/api/reduction-promises/school/${schoolId}`, { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch action plans');
+      return response.json();
+    },
+  });
+
+  const reviewActionPlanMutation = useMutation({
+    mutationFn: async ({ actionPlanId, reviewStatus, reviewNotes }: {
+      actionPlanId: string;
+      reviewStatus: 'approved' | 'rejected';
+      reviewNotes: string;
+    }) => {
+      return await apiRequest('PATCH', `/api/admin/action-plans/${actionPlanId}/review`, {
+        reviewStatus,
+        reviewNotes,
+      });
+    },
+    onSuccess: () => {
+      setReviewDialogOpen(false);
+      setReviewNotes('');
+      toast({
+        title: "Success",
+        description: `Action plan ${reviewAction === 'approved' ? 'approved' : 'rejected'} successfully.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/school', schoolId] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Review Failed",
+        description: error.message || "Failed to review action plan.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  if (isLoading) {
+    return <LoadingSpinner message="Loading action plans..." />;
+  }
+
+  if (actionPlans.length === 0) {
+    return (
+      <EmptyState
+        icon={Target}
+        title="No Action Plans"
+        description="No action plans have been created for this school yet."
+      />
+    );
+  }
+
+  // Group by round
+  const plansByRound = actionPlans.reduce((acc, plan) => {
+    const round = plan.roundNumber || 1;
+    if (!acc[round]) acc[round] = [];
+    acc[round].push(plan);
+    return acc;
+  }, {} as Record<number, ReductionPromise[]>);
+
+  const handleReview = (plan: ReductionPromise, action: 'approved' | 'rejected') => {
+    setSelectedPlan(plan);
+    setReviewAction(action);
+    setReviewDialogOpen(true);
+  };
+
+  return (
+    <>
+      <div className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5 text-pcs_blue" />
+              Action Plans Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-4 gap-4">
+              <div>
+                <p className="text-sm text-gray-600">Total Plans</p>
+                <p className="text-2xl font-bold text-navy">{actionPlans.length}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Approved</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {actionPlans.filter(p => p.reviewStatus === 'approved').length}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Pending</p>
+                <p className="text-2xl font-bold text-yellow-600">
+                  {actionPlans.filter(p => p.reviewStatus === 'pending').length}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Rejected</p>
+                <p className="text-2xl font-bold text-red-600">
+                  {actionPlans.filter(p => p.reviewStatus === 'rejected').length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Action Plans by Round */}
+        {Object.keys(plansByRound).sort((a, b) => Number(b) - Number(a)).map(round => (
+          <Card key={round}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Round {round} ({plansByRound[Number(round)].length} plan(s))
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {plansByRound[Number(round)].map(plan => (
+                  <div
+                    key={plan.id}
+                    className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                    onClick={() => {
+                      setSelectedPlan(plan);
+                      setViewDialogOpen(true);
+                    }}
+                    data-testid={`action-plan-${plan.id}`}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-navy mb-1">{plan.plasticItemType}</h3>
+                        <p className="text-sm text-gray-600">{plan.plasticItemLabel}</p>
+                      </div>
+                      <Badge
+                        className={
+                          plan.reviewStatus === 'approved' ? 'bg-green-500 text-white' :
+                          plan.reviewStatus === 'rejected' ? 'bg-red-500 text-white' :
+                          'bg-yellow-500 text-white'
+                        }
+                        data-testid={`badge-status-${plan.id}`}
+                      >
+                        {plan.reviewStatus || 'pending'}
+                      </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4 mb-3">
+                      <div>
+                        <p className="text-sm text-gray-600">Baseline</p>
+                        <p className="text-lg font-semibold">{plan.baselineQuantity}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Target</p>
+                        <p className="text-lg font-semibold text-green-600">{plan.targetQuantity}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Reduction</p>
+                        <p className="text-lg font-semibold text-green-600">{plan.reductionAmount}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-3 border-t">
+                      <div className="text-sm text-gray-600">
+                        Timeframe: <span className="font-medium capitalize">{plan.timeframeUnit}</span>
+                      </div>
+                      {currentUser?.isAdmin && plan.reviewStatus === 'pending' && (
+                        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            size="sm"
+                            className="bg-green-500 hover:bg-green-600"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleReview(plan, 'approved');
+                            }}
+                            data-testid={`button-approve-${plan.id}`}
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Approve
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleReview(plan, 'rejected');
+                            }}
+                            data-testid={`button-reject-${plan.id}`}
+                          >
+                            <XCircle className="h-4 w-4 mr-1" />
+                            Reject
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* View Details Dialog */}
+      <AlertDialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+        <AlertDialogContent className="max-w-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Action Plan Details</AlertDialogTitle>
+          </AlertDialogHeader>
+          {selectedPlan && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Round Number</p>
+                  <p className="text-base">Round {selectedPlan.roundNumber}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Status</p>
+                  <Badge
+                    className={
+                      selectedPlan.reviewStatus === 'approved' ? 'bg-green-500 text-white' :
+                      selectedPlan.reviewStatus === 'rejected' ? 'bg-red-500 text-white' :
+                      'bg-yellow-500 text-white'
+                    }
+                  >
+                    {selectedPlan.reviewStatus || 'pending'}
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="border-t pt-4">
+                <p className="text-sm font-medium text-gray-700 mb-2">Plastic Item</p>
+                <p className="text-lg font-semibold">{selectedPlan.plasticItemType}</p>
+                <p className="text-gray-600">{selectedPlan.plasticItemLabel}</p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4 border-t pt-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Baseline Quantity</p>
+                  <p className="text-2xl font-bold">{selectedPlan.baselineQuantity}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Target Quantity</p>
+                  <p className="text-2xl font-bold text-green-600">{selectedPlan.targetQuantity}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Reduction</p>
+                  <p className="text-2xl font-bold text-green-600">{selectedPlan.reductionAmount}</p>
+                </div>
+              </div>
+
+              <div className="border-t pt-4">
+                <p className="text-sm font-medium text-gray-700">Timeframe</p>
+                <p className="text-lg capitalize">{selectedPlan.timeframeUnit}</p>
+              </div>
+
+              {selectedPlan.notes && (
+                <div className="border-t pt-4">
+                  <p className="text-sm font-medium text-gray-700 mb-2">Notes</p>
+                  <p className="text-sm bg-gray-50 p-3 rounded">{selectedPlan.notes}</p>
+                </div>
+              )}
+
+              {selectedPlan.reviewNotes && (
+                <div className="border-t pt-4">
+                  <p className="text-sm font-medium text-gray-700 mb-2">Review Notes</p>
+                  <p className="text-sm bg-gray-50 p-3 rounded">{selectedPlan.reviewNotes}</p>
+                </div>
+              )}
+
+              {currentUser?.isAdmin && selectedPlan.reviewStatus === 'pending' && (
+                <div className="border-t pt-4 flex gap-2">
+                  <Button
+                    className="flex-1 bg-green-500 hover:bg-green-600"
+                    onClick={() => {
+                      setViewDialogOpen(false);
+                      handleReview(selectedPlan, 'approved');
+                    }}
+                    data-testid="button-view-approve"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Approve
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    className="flex-1"
+                    onClick={() => {
+                      setViewDialogOpen(false);
+                      handleReview(selectedPlan, 'rejected');
+                    }}
+                    data-testid="button-view-reject"
+                  >
+                    <XCircle className="h-4 w-4 mr-2" />
+                    Reject
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setViewDialogOpen(false)}>
+              Close
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Review Dialog */}
+      <AlertDialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {reviewAction === 'approved' ? 'Approve' : 'Reject'} Action Plan
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to {reviewAction === 'approved' ? 'approve' : 'reject'} this action plan?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <label className="text-sm font-medium text-gray-700 mb-2 block">
+              Review Notes {reviewAction === 'rejected' && <span className="text-red-500">*</span>}
+            </label>
+            <Textarea
+              placeholder="Add notes about your decision..."
+              value={reviewNotes}
+              onChange={(e) => setReviewNotes(e.target.value)}
+              rows={4}
+              data-testid="textarea-review-notes"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-review">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (selectedPlan) {
+                  reviewActionPlanMutation.mutate({
+                    actionPlanId: selectedPlan.id,
+                    reviewStatus: reviewAction,
+                    reviewNotes: reviewNotes,
+                  });
+                }
+              }}
+              disabled={reviewActionPlanMutation.isPending}
+              className={reviewAction === 'approved' ? 'bg-green-500 hover:bg-green-600' : ''}
+              data-testid="button-confirm-review"
+            >
+              {reviewActionPlanMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {reviewAction === 'approved' ? 'Approve' : 'Reject'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
