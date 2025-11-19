@@ -522,7 +522,7 @@ export default function ProgressTracker({
 
   // Check if requirement is Action Plan Development
   const isActionPlanDevelopment = (requirement: EvidenceRequirement) => {
-    return requirement.title.includes("Action Plan Development");
+    return requirement.id === '5cfb26b9-76f3-408d-8514-d892ae30d061';
   };
 
   // Get audit status for display
