@@ -3081,6 +3081,174 @@ Return JSON with:
     }
   });
 
+  // Manual triggers for celebration emails and certificates (admin only)
+  app.post('/api/admin/schools/:schoolId/send-celebration-email', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { schoolId } = req.params;
+      const { roundNumber } = req.body;
+      
+      if (!roundNumber || roundNumber < 1 || roundNumber > 10) {
+        return res.status(400).json({ message: "Invalid round number. Must be between 1 and 10." });
+      }
+      
+      const school = await storage.getSchool(schoolId);
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+      
+      // Get primary contact
+      const primaryContact = school.primaryContactId 
+        ? await storage.getUser(school.primaryContactId)
+        : null;
+      
+      if (!primaryContact?.email) {
+        return res.status(400).json({ message: "School has no primary contact email" });
+      }
+      
+      // Get certificate for this round (if exists)
+      const roundCertificates = await db
+        .select()
+        .from(certificates)
+        .where(
+          and(
+            eq(certificates.schoolId, schoolId),
+            eq(certificates.stage, 'act'),
+            sql`(${certificates.metadata}->>'round')::int = ${roundNumber}`
+          )
+        )
+        .limit(1);
+      
+      const certificateUrl = roundCertificates.length > 0
+        ? `${getBaseUrl()}/api/certificates/${roundCertificates[0].id}/download`
+        : undefined;
+      
+      // Send celebration email
+      await sendCourseCompletionCelebrationEmail(
+        primaryContact.email,
+        school.name,
+        roundNumber,
+        certificateUrl,
+        primaryContact.preferredLanguage ?? undefined
+      );
+      
+      // Log activity
+      await logUserActivity(
+        req.user.id,
+        req.user.email,
+        'manual_email',
+        {
+          schoolId,
+          roundNumber,
+          emailType: 'celebration',
+          recipientEmail: primaryContact.email,
+        },
+        schoolId,
+        'school',
+        req
+      );
+      
+      res.json({ 
+        message: "Celebration email sent successfully",
+        recipient: primaryContact.email,
+        roundNumber,
+        includedCertificate: !!certificateUrl
+      });
+    } catch (error) {
+      console.error("Error sending celebration email:", error);
+      res.status(500).json({ message: "Failed to send celebration email" });
+    }
+  });
+
+  app.post('/api/admin/schools/:schoolId/regenerate-certificate', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { schoolId } = req.params;
+      const { roundNumber } = req.body;
+      
+      if (!roundNumber || roundNumber < 1 || roundNumber > 10) {
+        return res.status(400).json({ message: "Invalid round number. Must be between 1 and 10." });
+      }
+      
+      const school = await storage.getSchool(schoolId);
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+      
+      // Check if certificate already exists for this round
+      const existingCertificates = await db
+        .select()
+        .from(certificates)
+        .where(
+          and(
+            eq(certificates.schoolId, schoolId),
+            eq(certificates.stage, 'act'),
+            sql`(${certificates.metadata}->>'round')::int = ${roundNumber}`
+          )
+        );
+      
+      let certificate;
+      
+      if (existingCertificates.length > 0) {
+        // Certificate exists, return it
+        certificate = existingCertificates[0];
+        console.log(`[Certificate] Certificate already exists for school ${schoolId}, round ${roundNumber}`);
+      } else {
+        // Create new certificate
+        const certificateNumber = `PCSR${roundNumber}-${Date.now()}-${schoolId.substring(0, 8)}`;
+        
+        // Get evidence counts for this round
+        const counts = await storage.getSchoolEvidenceCounts(schoolId, roundNumber);
+        
+        const [newCertificate] = await db.insert(certificates).values({
+          schoolId,
+          stage: 'act',
+          issuedBy: req.user.id,
+          certificateNumber,
+          completedDate: new Date(),
+          title: `Round ${roundNumber} Completion Certificate`,
+          description: `Successfully completed all three stages (Inspire, Investigate, Act) in Round ${roundNumber}`,
+          metadata: {
+            round: roundNumber,
+            achievements: {
+              inspire: counts.inspire.approved,
+              investigate: counts.investigate.approved,
+              act: counts.act.approved
+            },
+            manuallyRegenerated: true,
+            regeneratedBy: req.user.email,
+            regeneratedAt: new Date().toISOString()
+          }
+        }).returning();
+        
+        certificate = newCertificate;
+        console.log(`[Certificate] Created new certificate for school ${schoolId}, round ${roundNumber}`);
+      }
+      
+      // Log activity
+      await logUserActivity(
+        req.user.id,
+        req.user.email,
+        'certificate_regenerated',
+        {
+          schoolId,
+          roundNumber,
+          certificateId: certificate.id,
+        },
+        schoolId,
+        'school',
+        req
+      );
+      
+      res.json({
+        message: existingCertificates.length > 0 ? "Certificate already exists" : "Certificate created successfully",
+        certificate,
+        downloadUrl: `${getBaseUrl()}/api/certificates/${certificate.id}/download`
+      });
+    } catch (error) {
+      console.error("Error regenerating certificate:", error);
+      res.status(500).json({ message: "Failed to regenerate certificate" });
+    }
+  });
+
   // Public certificate background setting (no authentication required for public certificate verification page)
   app.get('/api/settings/certificate-background', async (req: any, res) => {
     try {
