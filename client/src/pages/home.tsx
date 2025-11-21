@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import i18n from "@/lib/i18n";
+import { getRequirementTitle } from "@/lib/evidenceRequirements";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -801,29 +802,6 @@ export default function Home() {
     }
   };
 
-  // Helper function to get translated requirement title
-  const getRequirementTitle = (evidenceRequirementId: string | undefined | null) => {
-    if (!evidenceRequirementId || !evidenceRequirements) return null;
-    
-    const requirement = evidenceRequirements.find((req: any) => req.id === evidenceRequirementId);
-    if (!requirement) return null;
-    
-    const currentLang = i18n.language;
-    
-    // Try exact match first (e.g., 'en-GB')
-    if (requirement.translations && requirement.translations[currentLang]) {
-      return requirement.translations[currentLang].title;
-    }
-    
-    // Try base language code (e.g., 'en' from 'en-GB')
-    const baseLang = currentLang.split('-')[0];
-    if (baseLang !== currentLang && requirement.translations && requirement.translations[baseLang]) {
-      return requirement.translations[baseLang].title;
-    }
-    
-    // Fall back to default (English) title
-    return requirement.title;
-  };
 
   // Determine resource URLs based on school type and current language
   const isPrimary = !school.type || school.type === 'primary';
@@ -1543,7 +1521,7 @@ export default function Home() {
                                 Round {evidence.roundNumber}
                               </Badge>
                               {(() => {
-                                const requirementTitle = getRequirementTitle((evidence as any).evidenceRequirementId);
+                                const requirementTitle = getRequirementTitle((evidence as any).evidenceRequirementId, evidenceRequirements, i18n.language);
                                 return requirementTitle ? (
                                   <Badge className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-sm text-xs" data-testid={`requirement-badge-${evidence.id}`}>
                                     {requirementTitle}
