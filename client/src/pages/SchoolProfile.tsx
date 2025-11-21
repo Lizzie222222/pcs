@@ -156,6 +156,7 @@ interface AuditData {
     email: string;
     firstName: string | null;
     lastName: string | null;
+    isAdmin: boolean;
   };
   reviewedByUser: {
     id: string;
@@ -2325,6 +2326,23 @@ function AuditsTab({ schoolId }: { schoolId: string }) {
                           <Badge variant="outline" className="text-coral" data-testid={`badge-total-items-${audit.id}`}>
                             {audit.totalPlasticItems} items
                           </Badge>
+                        )}
+                        {audit.submittedByUser.isAdmin && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div 
+                                  className="w-6 h-6 bg-white/90 border-2 border-[hsl(178,100%,37%)] rounded-full flex items-center justify-center shadow-md cursor-help"
+                                  data-testid={`admin-submitted-audit-badge-${audit.id}`}
+                                >
+                                  <Shield className="h-3 w-3 text-[hsl(178,100%,37%)]" />
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Submitted by admin on behalf of school</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )}
                       </div>
 

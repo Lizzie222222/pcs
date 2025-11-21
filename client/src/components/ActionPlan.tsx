@@ -42,6 +42,7 @@ export function ActionPlan({ schoolId, evidenceRequirementId, currentRound, onCl
   const { t } = useTranslation('audit');
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isManualMode, setIsManualMode] = useState(false);
 
   // Create schemas with translation support
   const actionPlanSchema = createActionPlanSchema(t);
@@ -55,10 +56,10 @@ export function ActionPlan({ schoolId, evidenceRequirementId, currentRound, onCl
 
   // Use smart fallback to find latest audit if currentRound is not available
   const effectiveRound = currentRound ?? 
-    (auditResponses?.length > 0 
+    (auditResponses && auditResponses.length > 0 
       ? Math.max(...auditResponses.map(a => a.roundNumber ?? 1))
       : 1);
-  const auditResponse = auditResponses?.find(
+  const auditResponse = auditResponses && auditResponses.find(
     audit => audit.roundNumber === effectiveRound
   );
 
@@ -86,7 +87,7 @@ export function ActionPlan({ schoolId, evidenceRequirementId, currentRound, onCl
         {
           plasticItemType: "",
           plasticItemLabel: "",
-          baselineQuantity: 0,
+          baselineQuantity: 1,
           targetQuantity: 0,
           timeframeUnit: "month" as const,
           notes: "",
@@ -94,7 +95,7 @@ export function ActionPlan({ schoolId, evidenceRequirementId, currentRound, onCl
         {
           plasticItemType: "",
           plasticItemLabel: "",
-          baselineQuantity: 0,
+          baselineQuantity: 1,
           targetQuantity: 0,
           timeframeUnit: "month" as const,
           notes: "",
@@ -269,8 +270,8 @@ export function ActionPlan({ schoolId, evidenceRequirementId, currentRound, onCl
 
   const availableItems = extractAuditItems();
 
-  // If audit doesn't exist, show message
-  if (!auditResponse) {
+  // If audit doesn't exist, show message (unless in manual mode)
+  if (!auditResponse && !isManualMode) {
     return (
       <Card className="border-2 border-yellow-300 bg-yellow-50">
         <CardHeader>
@@ -283,16 +284,28 @@ export function ActionPlan({ schoolId, evidenceRequirementId, currentRound, onCl
           <p className="text-gray-700 mb-4">
             {t('actionPlan.status.auditRequired.description')}
           </p>
-          <Button onClick={onClose} data-testid="button-close">
-            {t('actionPlan.actions.close')}
-          </Button>
+          <p className="text-sm text-gray-600 mb-4">
+            If an admin completed the audit for you, or if you'd like to create an action plan without audit data, you can use manual mode.
+          </p>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => setIsManualMode(true)} 
+              variant="default"
+              data-testid="button-manual-mode"
+            >
+              Create Manual Action Plan
+            </Button>
+            <Button onClick={onClose} variant="outline" data-testid="button-close">
+              {t('actionPlan.actions.close')}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );
   }
 
-  // If audit is not approved, show message
-  if (auditResponse.status !== 'approved') {
+  // If audit is not approved, show message (unless in manual mode)
+  if (auditResponse && auditResponse.status !== 'approved' && !isManualMode) {
     return (
       <Card className="border-2 border-yellow-300 bg-yellow-50">
         <CardHeader>
@@ -305,9 +318,21 @@ export function ActionPlan({ schoolId, evidenceRequirementId, currentRound, onCl
           <p className="text-gray-700 mb-4">
             {t('actionPlan.status.auditApprovalRequired.description')} <strong>{auditResponse.status}</strong>
           </p>
-          <Button onClick={onClose} data-testid="button-close">
-            {t('actionPlan.actions.close')}
-          </Button>
+          <p className="text-sm text-gray-600 mb-4">
+            You can wait for admin approval, or create a manual action plan without using audit data.
+          </p>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => setIsManualMode(true)} 
+              variant="default"
+              data-testid="button-manual-mode"
+            >
+              Create Manual Action Plan
+            </Button>
+            <Button onClick={onClose} variant="outline" data-testid="button-close">
+              {t('actionPlan.actions.close')}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );
@@ -527,9 +552,37 @@ export function ActionPlan({ schoolId, evidenceRequirementId, currentRound, onCl
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Mode toggle - show when in manual mode OR when audit data is available */}
+        {(isManualMode || (auditResponse && auditResponse.status === 'approved' && availableItems.length > 0)) && (
+          <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div>
+              <h4 className="font-semibold text-navy">Entry Mode</h4>
+              <p className="text-sm text-gray-600">
+                {isManualMode 
+                  ? "Manually enter plastic items and quantities" 
+                  : "Use data from your approved audit"}
+              </p>
+            </div>
+            {auditResponse && auditResponse.status === 'approved' && availableItems.length > 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsManualMode(!isManualMode);
+                  // Reset form to defaults when switching modes
+                  form.reset();
+                }}
+                data-testid="button-toggle-mode"
+              >
+                {isManualMode ? "Use Audit Data" : "Switch to Manual Entry"}
+              </Button>
+            )}
+          </div>
+        )}
+
         <Form {...form}>
           <div className="space-y-6">
-            {availableItems.length === 0 && (
+            {!isManualMode && availableItems.length === 0 && (
               <div className="bg-yellow-50 border border-yellow-200 rounded p-4">
                 <p className="text-sm text-gray-700">
                   {t('actionPlan.notifications.noPlasticItems')}
@@ -561,42 +614,84 @@ export function ActionPlan({ schoolId, evidenceRequirementId, currentRound, onCl
                   </div>
 
                   <div className="grid gap-4">
-                    <FormField
-                      control={form.control}
-                      name={`promises.${index}.plasticItemType`}
-                      render={({ field: formField }) => (
-                        <FormItem>
-                          <FormLabel>{t('actionPlan.form.labels.plasticItemType')}</FormLabel>
-                          <Select
-                            onValueChange={(value) => {
-                              formField.onChange(value);
-                              const item = availableItems.find(i => i.type === value);
-                              if (item) {
-                                form.setValue(`promises.${index}.plasticItemLabel`, item.label);
-                                form.setValue(`promises.${index}.baselineQuantity`, item.quantity);
-                              }
-                            }}
-                            value={formField.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger data-testid={`select-promise-type-${index}`}>
-                                <SelectValue placeholder={t('actionPlan.form.placeholders.selectPlasticItem')} />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {availableItems.map((item) => (
-                                <SelectItem key={item.type + item.label} value={item.type}>
-                                  {item.label} ({item.quantity.toLocaleString()} {t('actionPlan.display.itemsYear')})
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    {/* Plastic Item Type - dropdown for audit mode, text input for manual mode */}
+                    {isManualMode ? (
+                      <>
+                        <FormField
+                          control={form.control}
+                          name={`promises.${index}.plasticItemType`}
+                          render={({ field: formField }) => (
+                            <FormItem>
+                              <FormLabel>Plastic Item Type (e.g., plastic_bottles, plastic_cups)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...formField}
+                                  placeholder="Enter plastic item type"
+                                  data-testid={`input-promise-type-${index}`}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                    {selectedItemData && (
+                        <FormField
+                          control={form.control}
+                          name={`promises.${index}.plasticItemLabel`}
+                          render={({ field: formField }) => (
+                            <FormItem>
+                              <FormLabel>Plastic Item Name (display name)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...formField}
+                                  placeholder="e.g., Plastic Water Bottles"
+                                  data-testid={`input-promise-label-${index}`}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </>
+                    ) : (
+                      <FormField
+                        control={form.control}
+                        name={`promises.${index}.plasticItemType`}
+                        render={({ field: formField }) => (
+                          <FormItem>
+                            <FormLabel>{t('actionPlan.form.labels.plasticItemType')}</FormLabel>
+                            <Select
+                              onValueChange={(value) => {
+                                formField.onChange(value);
+                                const item = availableItems.find(i => i.type === value);
+                                if (item) {
+                                  form.setValue(`promises.${index}.plasticItemLabel`, item.label);
+                                  form.setValue(`promises.${index}.baselineQuantity`, item.quantity);
+                                }
+                              }}
+                              value={formField.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger data-testid={`select-promise-type-${index}`}>
+                                  <SelectValue placeholder={t('actionPlan.form.placeholders.selectPlasticItem')} />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {availableItems.map((item) => (
+                                  <SelectItem key={item.type + item.label} value={item.type}>
+                                    {item.label} ({item.quantity.toLocaleString()} {t('actionPlan.display.itemsYear')})
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+
+                    {/* Show baseline/target fields in manual mode or when item is selected in audit mode */}
+                    {(isManualMode || selectedItemData) && (
                       <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
@@ -706,7 +801,7 @@ export function ActionPlan({ schoolId, evidenceRequirementId, currentRound, onCl
               onClick={() => append({
                 plasticItemType: "",
                 plasticItemLabel: "",
-                baselineQuantity: 0,
+                baselineQuantity: 1,
                 targetQuantity: 0,
                 timeframeUnit: "month" as const,
                 notes: "",
