@@ -258,6 +258,7 @@ export const schools = pgTable("schools", {
   legacyEvidenceCount: integer("legacy_evidence_count").default(0),
   migratedAt: timestamp("migrated_at"),
   lastActiveAt: timestamp("last_active_at"),
+  lastActiveBy: varchar("last_active_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

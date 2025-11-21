@@ -140,6 +140,9 @@ interface SchoolActivityAging {
       lastActiveAt: Date | null;
       currentStage: string;
       progressPercentage: number;
+      lastActiveByName: string | null;
+      lastActiveByRole: string | null;
+      lastActiveByEmail: string | null;
     }>;
   }>;
 }
@@ -220,7 +223,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
 
   const [analyticsSubTab, setAnalyticsSubTab] = useState("overview");
   const [activityDialogOpen, setActivityDialogOpen] = useState(false);
-  const [selectedActivityRange, setSelectedActivityRange] = useState<{ range: string; count: number; schools: Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number }> } | null>(null);
+  const [selectedActivityRange, setSelectedActivityRange] = useState<{ range: string; count: number; schools: Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number; lastActiveByName: string | null; lastActiveByRole: string | null; lastActiveByEmail: string | null }> } | null>(null);
   const [includeAIInsights, setIncludeAIInsights] = useState(true);
   const [showExportDialog, setShowExportDialog] = useState(false);
   
@@ -268,13 +271,16 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
   const exportActivityRangeCSV = () => {
     if (!selectedActivityRange) return;
     
-    const headers = ['School Name', 'Country', 'Last Active', 'Current Stage', 'Progress %'];
+    const headers = ['School Name', 'Country', 'Last Active', 'Current Stage', 'Progress %', 'Last Active By Name', 'User Role', 'User Email'];
     const rows = selectedActivityRange.schools.map(school => [
       school.name,
       school.country,
       school.lastActiveAt ? new Date(school.lastActiveAt).toLocaleDateString() : 'Never',
       school.currentStage,
-      `${school.progressPercentage}%`
+      `${school.progressPercentage}%`,
+      school.lastActiveByName || 'N/A',
+      school.lastActiveByRole || 'N/A',
+      school.lastActiveByEmail || 'N/A'
     ]);
     
     const csvContent = [
@@ -1391,7 +1397,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                 </Button>
               </div>
               
-              <div className="border rounded-lg overflow-hidden">
+              <div className="border rounded-lg overflow-hidden overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
@@ -1400,6 +1406,9 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                       <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Active</th>
                       <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stage</th>
                       <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Active By</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Role</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Email</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -1412,6 +1421,9 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                         </td>
                         <td className="px-4 py-2 text-sm text-gray-500 capitalize">{school.currentStage}</td>
                         <td className="px-4 py-2 text-sm text-gray-500">{school.progressPercentage}%</td>
+                        <td className="px-4 py-2 text-sm text-gray-500">{school.lastActiveByName || 'N/A'}</td>
+                        <td className="px-4 py-2 text-sm text-gray-500 capitalize">{school.lastActiveByRole || 'N/A'}</td>
+                        <td className="px-4 py-2 text-sm text-gray-500">{school.lastActiveByEmail || 'N/A'}</td>
                       </tr>
                     ))}
                   </tbody>

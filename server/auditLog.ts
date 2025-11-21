@@ -54,12 +54,12 @@ export async function logUserActivity(
           .from(schoolUsers)
           .where(eq(schoolUsers.userId, userId));
         
-        // Update lastActiveAt for all schools
+        // Update lastActiveAt and lastActiveBy for all schools
         if (userSchools.length > 0) {
           const schoolIds = userSchools.map(s => s.schoolId);
           await db
             .update(schools)
-            .set({ lastActiveAt: sql`NOW()` })
+            .set({ lastActiveAt: sql`NOW()`, lastActiveBy: userId })
             .where(inArray(schools.id, schoolIds));
         }
       } catch (error) {
