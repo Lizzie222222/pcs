@@ -47,6 +47,22 @@ export async function runMigration(): Promise<void> {
       }
     }
     
+    // Add lastActionType column to track what action was performed
+    console.log('\nStep 3: Adding last_action_type column to schools table...');
+    try {
+      await pool.query(`
+        ALTER TABLE schools 
+        ADD COLUMN last_action_type VARCHAR
+      `);
+      console.log('  ✓ Added column: last_action_type');
+    } catch (error: any) {
+      if (error.code === '42701') {
+        console.log('  ✓ Column last_action_type already exists (skipping)');
+      } else {
+        throw error;
+      }
+    }
+    
     console.log('\n✓ Migration completed successfully!');
     
   } catch (error) {

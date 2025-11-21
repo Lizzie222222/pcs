@@ -259,6 +259,7 @@ export const schools = pgTable("schools", {
   migratedAt: timestamp("migrated_at"),
   lastActiveAt: timestamp("last_active_at"),
   lastActiveBy: varchar("last_active_by").references(() => users.id),
+  lastActionType: varchar("last_action_type"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

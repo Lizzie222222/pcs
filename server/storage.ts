@@ -3182,7 +3182,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSchoolActivityAging(): Promise<{
-    ranges: Array<{ range: string; count: number; schools: Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number; lastActiveByName: string | null; lastActiveByRole: string | null; lastActiveByEmail: string | null }> }>;
+    ranges: Array<{ range: string; count: number; schools: Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number; lastActiveByName: string | null; lastActiveByRole: string | null; lastActiveByEmail: string | null; lastActionType: string | null }> }>;
   }> {
     const now = new Date();
     
@@ -3204,7 +3204,8 @@ export class DatabaseStorage implements IStorage {
         lastActiveByFirstName: users.firstName,
         lastActiveByLastName: users.lastName,
         lastActiveByRole: users.role,
-        lastActiveByEmail: users.email
+        lastActiveByEmail: users.email,
+        lastActionType: schools.lastActionType
       })
       .from(schools)
       .leftJoin(users, eq(schools.lastActiveBy, users.id))
@@ -3212,11 +3213,11 @@ export class DatabaseStorage implements IStorage {
 
     // Categorize schools by activity
     const ranges = [
-      { range: 'Last 30 days', count: 0, schools: [] as Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number; lastActiveByName: string | null; lastActiveByRole: string | null; lastActiveByEmail: string | null }> },
-      { range: 'Last 90 days', count: 0, schools: [] as Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number; lastActiveByName: string | null; lastActiveByRole: string | null; lastActiveByEmail: string | null }> },
-      { range: 'Last 6 months', count: 0, schools: [] as Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number; lastActiveByName: string | null; lastActiveByRole: string | null; lastActiveByEmail: string | null }> },
-      { range: 'Last year', count: 0, schools: [] as Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number; lastActiveByName: string | null; lastActiveByRole: string | null; lastActiveByEmail: string | null }> },
-      { range: 'Older than 1 year', count: 0, schools: [] as Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number; lastActiveByName: string | null; lastActiveByRole: string | null; lastActiveByEmail: string | null }> }
+      { range: 'Last 30 days', count: 0, schools: [] as Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number; lastActiveByName: string | null; lastActiveByRole: string | null; lastActiveByEmail: string | null; lastActionType: string | null }> },
+      { range: 'Last 90 days', count: 0, schools: [] as Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number; lastActiveByName: string | null; lastActiveByRole: string | null; lastActiveByEmail: string | null; lastActionType: string | null }> },
+      { range: 'Last 6 months', count: 0, schools: [] as Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number; lastActiveByName: string | null; lastActiveByRole: string | null; lastActiveByEmail: string | null; lastActionType: string | null }> },
+      { range: 'Last year', count: 0, schools: [] as Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number; lastActiveByName: string | null; lastActiveByRole: string | null; lastActiveByEmail: string | null; lastActionType: string | null }> },
+      { range: 'Older than 1 year', count: 0, schools: [] as Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number; lastActiveByName: string | null; lastActiveByRole: string | null; lastActiveByEmail: string | null; lastActionType: string | null }> }
     ];
 
     allSchools.forEach(school => {
@@ -3234,7 +3235,8 @@ export class DatabaseStorage implements IStorage {
         progressPercentage: school.progressPercentage || 0,
         lastActiveByName,
         lastActiveByRole: school.lastActiveByRole,
-        lastActiveByEmail: school.lastActiveByEmail
+        lastActiveByEmail: school.lastActiveByEmail,
+        lastActionType: school.lastActionType
       };
 
       // Schools with null lastActiveAt go to "Older than 1 year"

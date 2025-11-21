@@ -143,6 +143,7 @@ interface SchoolActivityAging {
       lastActiveByName: string | null;
       lastActiveByRole: string | null;
       lastActiveByEmail: string | null;
+      lastActionType: string | null;
     }>;
   }>;
 }
@@ -223,7 +224,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
 
   const [analyticsSubTab, setAnalyticsSubTab] = useState("overview");
   const [activityDialogOpen, setActivityDialogOpen] = useState(false);
-  const [selectedActivityRange, setSelectedActivityRange] = useState<{ range: string; count: number; schools: Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number; lastActiveByName: string | null; lastActiveByRole: string | null; lastActiveByEmail: string | null }> } | null>(null);
+  const [selectedActivityRange, setSelectedActivityRange] = useState<{ range: string; count: number; schools: Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number; lastActiveByName: string | null; lastActiveByRole: string | null; lastActiveByEmail: string | null; lastActionType: string | null }> } | null>(null);
   const [includeAIInsights, setIncludeAIInsights] = useState(true);
   const [showExportDialog, setShowExportDialog] = useState(false);
   
@@ -271,7 +272,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
   const exportActivityRangeCSV = () => {
     if (!selectedActivityRange) return;
     
-    const headers = ['School Name', 'Country', 'Last Active', 'Current Stage', 'Progress %', 'Last Active By Name', 'User Role', 'User Email'];
+    const headers = ['School Name', 'Country', 'Last Active', 'Current Stage', 'Progress %', 'Last Active By Name', 'User Role', 'User Email', 'Action Type'];
     const rows = selectedActivityRange.schools.map(school => [
       school.name,
       school.country,
@@ -280,7 +281,8 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
       `${school.progressPercentage}%`,
       school.lastActiveByName || 'N/A',
       school.lastActiveByRole || 'N/A',
-      school.lastActiveByEmail || 'N/A'
+      school.lastActiveByEmail || 'N/A',
+      school.lastActionType || 'N/A'
     ]);
     
     const csvContent = [
@@ -1409,6 +1411,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                       <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Active By</th>
                       <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Role</th>
                       <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Email</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action Type</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -1424,6 +1427,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                         <td className="px-4 py-2 text-sm text-gray-500">{school.lastActiveByName || 'N/A'}</td>
                         <td className="px-4 py-2 text-sm text-gray-500 capitalize">{school.lastActiveByRole || 'N/A'}</td>
                         <td className="px-4 py-2 text-sm text-gray-500">{school.lastActiveByEmail || 'N/A'}</td>
+                        <td className="px-4 py-2 text-sm text-gray-500">{school.lastActionType || 'N/A'}</td>
                       </tr>
                     ))}
                   </tbody>

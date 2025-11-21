@@ -45,21 +45,37 @@ export async function logUserActivity(
       userAgent,
     });
 
-    // Update school's lastActiveAt if user belongs to a school
+    // Update school's lastActiveAt, lastActiveBy, and lastActionType
     if (userId) {
       try {
-        // Find all schools this user belongs to
+        // If this action directly targets a specific school, update that school
+        // This captures admin/partner activity on schools they're not members of
+        if (targetType === 'school' && targetId) {
+          await db
+            .update(schools)
+            .set({ 
+              lastActiveAt: sql`NOW()`, 
+              lastActiveBy: userId,
+              lastActionType: actionType 
+            })
+            .where(eq(schools.id, targetId));
+        }
+        
+        // Also update all schools this user belongs to (for teacher activity)
         const userSchools = await db
           .select({ schoolId: schoolUsers.schoolId })
           .from(schoolUsers)
           .where(eq(schoolUsers.userId, userId));
         
-        // Update lastActiveAt and lastActiveBy for all schools
         if (userSchools.length > 0) {
           const schoolIds = userSchools.map(s => s.schoolId);
           await db
             .update(schools)
-            .set({ lastActiveAt: sql`NOW()`, lastActiveBy: userId })
+            .set({ 
+              lastActiveAt: sql`NOW()`, 
+              lastActiveBy: userId,
+              lastActionType: actionType 
+            })
             .where(inArray(schools.id, schoolIds));
         }
       } catch (error) {

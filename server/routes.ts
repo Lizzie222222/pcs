@@ -7787,6 +7787,24 @@ Return JSON with:
         progressPercentage: updatedSchool?.progressPercentage || school.progressPercentage
       });
 
+      // Log admin activity for analytics tracking
+      console.log('[Admin Progression] About to call logUserActivity with:', {
+        userId: req.user?.id,
+        email: req.user?.email,
+        schoolId,
+        actionType: 'school_progression_update'
+      });
+      await logUserActivity(
+        req.user?.id,
+        req.user?.email || undefined,
+        'school_progression_update',
+        { updates, schoolId, schoolName: school.name },
+        schoolId,
+        'school',
+        req
+      );
+      console.log('[Admin Progression] logUserActivity completed successfully');
+
       res.json(updatedSchool || school);
     } catch (error) {
       console.error("[Admin Progression] Error updating school progression:", error);
