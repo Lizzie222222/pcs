@@ -84,6 +84,8 @@ import SchoolQuickViewDialog from "../SchoolQuickViewDialog";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation, Trans } from 'react-i18next';
+import i18n from "@/lib/i18n";
+import { getRequirementTitle } from "@/lib/evidenceRequirements";
 import { useCountries } from "@/hooks/useCountries";
 import { useDebounce } from "@/hooks/useDebounce";
 import type { PendingEvidence } from "@/components/admin/shared/types";
@@ -427,6 +429,14 @@ export default function EvidenceReviewQueue({
                   <Badge className="bg-navy text-white" data-testid={`badge-table-round-${item.id}`}>
                     Round {item.roundNumber}
                   </Badge>
+                  {(() => {
+                    const requirementTitle = getRequirementTitle(item.evidenceRequirementId, evidenceRequirements, i18n.language);
+                    return requirementTitle ? (
+                      <Badge className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-sm text-xs" data-testid={`requirement-badge-table-${item.id}`}>
+                        {requirementTitle}
+                      </Badge>
+                    ) : null;
+                  })()}
                   {item.submitter?.isAdmin && (
                     <TooltipProvider>
                       <Tooltip>
@@ -1014,6 +1024,14 @@ export default function EvidenceReviewQueue({
                         <Badge className="bg-navy text-white" data-testid={`badge-evidence-round-${evidence.id}`}>
                           Round {evidence.roundNumber}
                         </Badge>
+                        {(() => {
+                          const requirementTitle = getRequirementTitle(evidence.evidenceRequirementId, evidenceRequirements, i18n.language);
+                          return requirementTitle ? (
+                            <Badge className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-sm text-xs" data-testid={`requirement-badge-${evidence.id}`}>
+                              {requirementTitle}
+                            </Badge>
+                          ) : null;
+                        })()}
                         {evidence.submitter?.isAdmin && (
                           <TooltipProvider>
                             <Tooltip>

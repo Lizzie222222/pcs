@@ -1521,7 +1521,7 @@ export default function Home() {
                                 Round {evidence.roundNumber}
                               </Badge>
                               {(() => {
-                                const requirementTitle = getRequirementTitle((evidence as any).evidenceRequirementId, evidenceRequirements, i18n.language);
+                                const requirementTitle = getRequirementTitle(evidence.evidenceRequirementId, evidenceRequirements, i18n.language);
                                 return requirementTitle ? (
                                   <Badge className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-sm text-xs" data-testid={`requirement-badge-${evidence.id}`}>
                                     {requirementTitle}

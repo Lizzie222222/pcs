@@ -21,6 +21,8 @@ export interface PendingEvidence {
   submittedBy: string;
   assignedTo: string | null;
   roundNumber: number;
+  evidenceRequirementId?: string | null;
+  isBonus?: boolean;
   files: any[];
   videoLinks: string | null;
   school?: {
