@@ -614,45 +614,30 @@ export function ActionPlan({ schoolId, evidenceRequirementId, currentRound, onCl
                   </div>
 
                   <div className="grid gap-4">
-                    {/* Plastic Item Type - dropdown for audit mode, text input for manual mode */}
+                    {/* Plastic Item - text input for manual mode, dropdown for audit mode */}
                     {isManualMode ? (
-                      <>
-                        <FormField
-                          control={form.control}
-                          name={`promises.${index}.plasticItemType`}
-                          render={({ field: formField }) => (
-                            <FormItem>
-                              <FormLabel>Plastic Item Type (e.g., plastic_bottles, plastic_cups)</FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...formField}
-                                  placeholder="Enter plastic item type"
-                                  data-testid={`input-promise-type-${index}`}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`promises.${index}.plasticItemLabel`}
-                          render={({ field: formField }) => (
-                            <FormItem>
-                              <FormLabel>Plastic Item Name (display name)</FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...formField}
-                                  placeholder="e.g., Plastic Water Bottles"
-                                  data-testid={`input-promise-label-${index}`}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </>
+                      <FormField
+                        control={form.control}
+                        name={`promises.${index}.plasticItemLabel`}
+                        render={({ field: formField }) => (
+                          <FormItem>
+                            <FormLabel>Plastic Item to Reduce</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...formField}
+                                placeholder="e.g., Plastic Water Bottles, Single-Use Cutlery, Plastic Straws"
+                                data-testid={`input-promise-label-${index}`}
+                                onChange={(e) => {
+                                  formField.onChange(e);
+                                  // Auto-populate type with the same value for consistency
+                                  form.setValue(`promises.${index}.plasticItemType`, e.target.value);
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     ) : (
                       <FormField
                         control={form.control}
