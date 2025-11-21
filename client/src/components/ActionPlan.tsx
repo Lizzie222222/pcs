@@ -838,7 +838,7 @@ export function ActionPlan({ schoolId, evidenceRequirementId, currentRound, onCl
               <Button
                 type="button"
                 onClick={() => form.handleSubmit((data) => submitMutation.mutate(data))()}
-                disabled={isSubmitting || submitMutation.isPending || availableItems.length === 0}
+                disabled={isSubmitting || submitMutation.isPending || (!isManualMode && availableItems.length === 0)}
                 data-testid="button-submit-action-plan"
               >
                 <Send className="h-4 w-4 mr-1" />
