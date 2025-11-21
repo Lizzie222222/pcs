@@ -6391,6 +6391,36 @@ Return JSON with:
         return res.status(404).json({ message: "Action plan not found" });
       }
       
+      // CRITICAL: Also update the associated evidence status
+      // When an action plan is approved/rejected, the evidence should match
+      // This ensures "View Plan" works and progression counts are accurate
+      try {
+        const school = await storage.getSchool(actionPlan.schoolId);
+        const evidenceRequirementId = '5cfb26b9-76f3-408d-8514-d892ae30d061'; // Action Plan Development
+        
+        // Find evidence for this school, requirement, and round
+        const evidenceFilters = {
+          schoolId: actionPlan.schoolId,
+          evidenceRequirementId,
+          roundNumber: school?.currentRound || actionPlan.roundNumber || 1,
+        };
+        
+        const evidence = await storage.getAllEvidence(evidenceFilters);
+        
+        // Update the first matching evidence (there should only be one per round)
+        if (evidence && evidence.length > 0) {
+          await storage.updateEvidenceStatus(
+            evidence[0].id,
+            reviewStatus,
+            reviewerId,
+            reviewNotes
+          );
+        }
+      } catch (evidenceUpdateError) {
+        console.error("[Action Plan Review] Failed to update evidence status:", evidenceUpdateError);
+        // Don't fail the request if evidence update fails - action plan is still approved
+      }
+      
       // CRITICAL: Trigger school progression check on approval
       // This ensures schools can advance when their action plan is approved
       // Pass creator email so they get the celebration email if this completes the round
@@ -6470,6 +6500,31 @@ Return JSON with:
           if (!reviewed) {
             errors.push({ id: actionPlanId, error: "Failed to review action plan" });
             continue;
+          }
+          
+          // CRITICAL: Also update the associated evidence status
+          try {
+            const school = await storage.getSchool(actionPlan.schoolId);
+            const evidenceRequirementId = '5cfb26b9-76f3-408d-8514-d892ae30d061'; // Action Plan Development
+            
+            const evidenceFilters = {
+              schoolId: actionPlan.schoolId,
+              evidenceRequirementId,
+              roundNumber: school?.currentRound || actionPlan.roundNumber || 1,
+            };
+            
+            const evidence = await storage.getAllEvidence(evidenceFilters);
+            
+            if (evidence && evidence.length > 0) {
+              await storage.updateEvidenceStatus(
+                evidence[0].id,
+                reviewStatus,
+                reviewerId,
+                reviewNotes
+              );
+            }
+          } catch (evidenceUpdateError) {
+            console.error("[Bulk Action Plan Review] Failed to update evidence status:", evidenceUpdateError);
           }
           
           // CRITICAL: Trigger school progression check on approval

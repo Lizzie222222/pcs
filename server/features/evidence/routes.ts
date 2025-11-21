@@ -73,6 +73,53 @@ export function createEvidenceRouters(storage: IStorage): {
   // ============================================================================
 
   /**
+   * GET /api/evidence/requirement/:requirementId/school/:schoolId
+   * 
+   * Get evidence for a specific requirement and school
+   * - Used by ActionPlan component to check if action plan already exists
+   * - Filters by evidenceRequirementId, schoolId, and school's current round
+   * - Requires authentication and school membership
+   * 
+   * IMPORTANT: Must be defined BEFORE GET /:id to avoid route collision
+   */
+  evidenceRouter.get('/requirement/:requirementId/school/:schoolId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { requirementId, schoolId } = req.params;
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      // Get school to determine current round and validate access
+      const school = await schoolStorage.getSchool(schoolId);
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+      
+      // Verify user has access to this school (admin or school member)
+      if (!user?.isAdmin) {
+        const schoolUser = await schoolStorage.getSchoolUser(schoolId, userId);
+        if (!schoolUser) {
+          return res.status(403).json({ 
+            message: "You don't have permission to view evidence for this school" 
+          });
+        }
+      }
+      
+      // Fetch evidence filtered by requirement, school, and current round
+      const filters = {
+        schoolId,
+        evidenceRequirementId: requirementId,
+        roundNumber: school.currentRound || 1,
+      };
+      
+      const evidence = await evidenceStorage.getAllEvidence(filters);
+      res.json(evidence);
+    } catch (error) {
+      console.error("Error fetching evidence by requirement:", error);
+      res.status(500).json({ message: "Failed to fetch evidence" });
+    }
+  });
+
+  /**
    * GET /api/evidence/:id
    * 
    * View single evidence by ID (public endpoint for approved evidence)
