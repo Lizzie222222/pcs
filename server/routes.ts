@@ -2531,6 +2531,8 @@ Return JSON with:
         reviewedAt: ev.reviewedAt,
         reviewNotes: ev.reviewNotes,
         roundNumber: ev.roundNumber || 1, // Include round number, default to 1 if not set
+        isBonus: ev.isBonus || false,
+        evidenceRequirementId: ev.evidenceRequirementId,
         reviewer: ev.reviewer,
       }));
       

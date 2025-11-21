@@ -190,6 +190,7 @@ interface DashboardData {
     reviewNotes?: string;
     roundNumber: number;
     isBonus?: boolean;
+    evidenceRequirementId?: string | null;
     reviewer?: {
       id: string | null;
       email: string | null;
@@ -798,6 +799,30 @@ export default function Home() {
       case 2: return 'bg-purple-500';
       default: return 'bg-green-600'; // Round 3+
     }
+  };
+
+  // Helper function to get translated requirement title
+  const getRequirementTitle = (evidenceRequirementId: string | undefined | null) => {
+    if (!evidenceRequirementId || !evidenceRequirements) return null;
+    
+    const requirement = evidenceRequirements.find((req: any) => req.id === evidenceRequirementId);
+    if (!requirement) return null;
+    
+    const currentLang = i18n.language;
+    
+    // Try exact match first (e.g., 'en-GB')
+    if (requirement.translations && requirement.translations[currentLang]) {
+      return requirement.translations[currentLang].title;
+    }
+    
+    // Try base language code (e.g., 'en' from 'en-GB')
+    const baseLang = currentLang.split('-')[0];
+    if (baseLang !== currentLang && requirement.translations && requirement.translations[baseLang]) {
+      return requirement.translations[baseLang].title;
+    }
+    
+    // Fall back to default (English) title
+    return requirement.title;
   };
 
   // Determine resource URLs based on school type and current language
@@ -1517,6 +1542,14 @@ export default function Home() {
                               <Badge className={`${getRoundBadgeColor(evidence.roundNumber)} text-white shadow-sm text-xs`}>
                                 Round {evidence.roundNumber}
                               </Badge>
+                              {(() => {
+                                const requirementTitle = getRequirementTitle((evidence as any).evidenceRequirementId);
+                                return requirementTitle ? (
+                                  <Badge className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-sm text-xs" data-testid={`requirement-badge-${evidence.id}`}>
+                                    {requirementTitle}
+                                  </Badge>
+                                ) : null;
+                              })()}
                               {evidence.isBonus && (
                                 <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm text-xs" data-testid={`bonus-badge-${evidence.id}`}>
                                   Bonus
