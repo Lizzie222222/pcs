@@ -101,3 +101,8 @@ externalPort = 3000
 [[ports]]
 localPort = 46481
 externalPort = 5173
+
+[userenv]
+
+[userenv.shared]
+ADMIN_EMAIL = "education@commonseas.com"

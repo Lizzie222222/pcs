@@ -242,7 +242,7 @@ export default function Contact() {
                   <div>
                     <h3 className="font-semibold mb-1">{t('contact.email_heading')}</h3>
                     <a 
-                      href="mailto:info@plasticcleverschools.org"
+                      href="mailto:education@commonseas.com"
                       className="text-white/90 hover:text-white underline"
                       data-testid="link-email"
                     >

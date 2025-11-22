@@ -2634,7 +2634,7 @@ export async function sendContactFormEmail(
   subject: string,
   message: string
 ): Promise<boolean> {
-  const adminEmail = process.env.ADMIN_EMAIL || 'info@plasticcleverschools.org';
+  const adminEmail = process.env.ADMIN_EMAIL || 'education@commonseas.com';
   
   const html = `
     <!DOCTYPE html>
