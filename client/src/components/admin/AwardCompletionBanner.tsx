@@ -34,7 +34,7 @@ export default function AwardCompletionBanner({ activeTab }: AwardCompletionBann
   const { data: readyData, isLoading } = useQuery<{ count: number; schools: School[] }>({
     queryKey: ['/api/admin/schools/award-completion-ready'],
     enabled: activeTab === 'schools',
-    refetchInterval: 60000, // Refetch every minute
+    refetchInterval: 300000, // Refetch every 5 minutes (reduced from 1 minute for compute optimization)
   });
 
   // Mutation to process bulk award completion
