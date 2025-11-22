@@ -11152,7 +11152,20 @@ Return JSON with:
   // Get active banner (public)
   app.get('/api/banners/active', async (req, res) => {
     try {
+      const cacheKey = 'banners:active';
+      
+      // Check cache first
+      const cached = apiCache.get(cacheKey);
+      if (cached !== null) {
+        return res.json(cached);
+      }
+      
+      // Fetch from database if not cached
       const banner = await storage.getActiveEventBanner();
+      
+      // Cache for 5 minutes (banners change rarely)
+      apiCache.set(cacheKey, banner, CACHE_TTL.SHORT);
+      
       res.json(banner);
     } catch (error: any) {
       console.error("Error fetching active banner:", error);
@@ -11170,6 +11183,10 @@ Return JSON with:
         ...req.body,
         createdBy: req.user.id,
       });
+      
+      // Clear banner cache when a new banner is created
+      apiCache.clear('banners:active');
+      
       res.json(newBanner);
     } catch (error: any) {
       console.error("Error creating event banner:", error);
@@ -11184,6 +11201,10 @@ Return JSON with:
       if (!updatedBanner) {
         return res.status(404).json({ message: "Banner not found" });
       }
+      
+      // Clear banner cache when a banner is updated
+      apiCache.clear('banners:active');
+      
       res.json(updatedBanner);
     } catch (error: any) {
       console.error("Error updating event banner:", error);
@@ -11195,6 +11216,10 @@ Return JSON with:
   app.delete('/api/admin/banners/:id', isAuthenticated, requireAdmin, async (req, res) => {
     try {
       await storage.deleteEventBanner(req.params.id);
+      
+      // Clear banner cache when a banner is deleted
+      apiCache.clear('banners:active');
+      
       res.json({ message: "Banner deleted successfully" });
     } catch (error: any) {
       console.error("Error deleting event banner:", error);
