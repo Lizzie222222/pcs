@@ -815,56 +815,6 @@ export interface IStorage {
     limit?: number;
   }): Promise<Array<AuditLog & { user: { firstName: string | null, lastName: string | null } }>>;
 
-  // Health Monitoring operations
-  createHealthCheck(check: {
-    endpoint: string;
-    status: 'healthy' | 'degraded' | 'down';
-    responseTime?: number;
-    errorMessage?: string;
-  }): Promise<void>;
-  getRecentHealthChecks(endpoint: string, limit?: number): Promise<any[]>;
-  getLatestHealthStatus(): Promise<Array<{
-    endpoint: string;
-    status: string;
-    responseTime: number | null;
-    checkedAt: Date;
-  }>>;
-  getHealthIncidents(hours?: number): Promise<Array<{
-    endpoint: string;
-    status: string;
-    errorMessage: string | null;
-    checkedAt: Date;
-  }>>;
-  updateUptimeMetric(metric: {
-    date: Date;
-    endpoint: string;
-    totalChecks: number;
-    successfulChecks: number;
-    failedChecks: number;
-    avgResponseTime: string;
-    uptimePercentage: string;
-  }): Promise<void>;
-  getUptimeMetrics(filters?: {
-    endpoint?: string;
-    startDate?: Date;
-    endDate?: Date;
-  }): Promise<any[]>;
-  getUptimeStats(days?: number): Promise<{
-    overall: {
-      uptimePercentage: number;
-      avgResponseTime: number;
-      totalChecks: number;
-      successfulChecks: number;
-      failedChecks: number;
-    };
-    byEndpoint: Array<{
-      endpoint: string;
-      uptimePercentage: number;
-      avgResponseTime: number;
-      totalChecks: number;
-    }>;
-  }>;
-
   // Settings operations
   getSetting(key: string): Promise<string | null>;
   setSetting(key: string, value: string): Promise<void>;
@@ -1480,67 +1430,36 @@ export class DatabaseStorage implements IStorage {
     teacherInvitations: number;
     adminInvitations: number;
   } | null> {
-    // Check if user exists
-    const [user] = await db
-      .select()
+    // Single query with correlated COUNT subqueries for all content types
+    const [result] = await db
+      .select({
+        userId: users.id,
+        evidence: sql<number>`(SELECT COUNT(*) FROM ${evidence} WHERE ${evidence.submittedBy} = ${userId})`,
+        caseStudies: sql<number>`(SELECT COUNT(*) FROM ${caseStudies} WHERE ${caseStudies.createdBy} = ${userId})`,
+        reductionPromises: sql<number>`(SELECT COUNT(*) FROM ${reductionPromises} WHERE ${reductionPromises.createdBy} = ${userId})`,
+        mediaAssets: sql<number>`(SELECT COUNT(*) FROM ${mediaAssets} WHERE ${mediaAssets.uploadedBy} = ${userId})`,
+        certificates: sql<number>`(SELECT COUNT(*) FROM ${certificates} WHERE ${certificates.issuedBy} = ${userId})`,
+        importBatches: sql<number>`(SELECT COUNT(*) FROM ${importBatches} WHERE ${importBatches.importedBy} = ${userId})`,
+        teacherInvitations: sql<number>`(SELECT COUNT(*) FROM ${teacherInvitations} WHERE ${teacherInvitations.invitedBy} = ${userId})`,
+        adminInvitations: sql<number>`(SELECT COUNT(*) FROM ${adminInvitations} WHERE ${adminInvitations.invitedBy} = ${userId})`,
+      })
       .from(users)
       .where(eq(users.id, userId))
       .limit(1);
 
-    if (!user) {
+    if (!result) {
       return null;
     }
 
-    // Get counts of all content types
-    const [evidenceCount] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(evidence)
-      .where(eq(evidence.submittedBy, userId));
-
-    const [caseStudiesCount] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(caseStudies)
-      .where(eq(caseStudies.createdBy, userId));
-
-    const [reductionPromisesCount] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(reductionPromises)
-      .where(eq(reductionPromises.createdBy, userId));
-
-    const [mediaAssetsCount] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(mediaAssets)
-      .where(eq(mediaAssets.uploadedBy, userId));
-
-    const [certificatesCount] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(certificates)
-      .where(eq(certificates.issuedBy, userId));
-
-    const [importBatchesCount] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(importBatches)
-      .where(eq(importBatches.importedBy, userId));
-
-    const [teacherInvitationsCount] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(teacherInvitations)
-      .where(eq(teacherInvitations.invitedBy, userId));
-
-    const [adminInvitationsCount] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(adminInvitations)
-      .where(eq(adminInvitations.invitedBy, userId));
-
     return {
-      evidence: Number(evidenceCount?.count || 0),
-      caseStudies: Number(caseStudiesCount?.count || 0),
-      reductionPromises: Number(reductionPromisesCount?.count || 0),
-      mediaAssets: Number(mediaAssetsCount?.count || 0),
-      certificates: Number(certificatesCount?.count || 0),
-      importBatches: Number(importBatchesCount?.count || 0),
-      teacherInvitations: Number(teacherInvitationsCount?.count || 0),
-      adminInvitations: Number(adminInvitationsCount?.count || 0),
+      evidence: Number(result.evidence || 0),
+      caseStudies: Number(result.caseStudies || 0),
+      reductionPromises: Number(result.reductionPromises || 0),
+      mediaAssets: Number(result.mediaAssets || 0),
+      certificates: Number(result.certificates || 0),
+      importBatches: Number(result.importBatches || 0),
+      teacherInvitations: Number(result.teacherInvitations || 0),
+      adminInvitations: Number(result.adminInvitations || 0),
     };
   }
 
@@ -2997,27 +2916,40 @@ export class DatabaseStorage implements IStorage {
       .limit(limit)
       .offset(offset);
 
-    // Get schools for each user
-    const usersWithSchools = await Promise.all(
-      paginatedUsers.map(async (user) => {
-        const userSchools = await db
+    // Extract user IDs from paginated results
+    const userIds = paginatedUsers.map(u => u.id);
+
+    // Fetch ALL schools for these users in ONE query (fixes N+1 problem)
+    const allSchoolsForUsers = userIds.length > 0
+      ? await db
           .select({
             ...getTableColumns(schools),
             role: schoolUsers.role,
+            userId: schoolUsers.userId,
           })
           .from(schools)
           .innerJoin(schoolUsers, eq(schoolUsers.schoolId, schools.id))
-          .where(eq(schoolUsers.userId, user.id));
+          .where(inArray(schoolUsers.userId, userIds))
+      : [];
 
-        return {
-          user,
-          schools: userSchools.map(s => ({
-            ...s,
-            role: s.role || 'teacher',
-          })),
-        };
-      })
-    );
+    // Group schools by userId in application code
+    const schoolsByUserId = new Map<string, Array<School & { role: string }>>();
+    for (const schoolData of allSchoolsForUsers) {
+      const { userId, role, ...school } = schoolData;
+      if (!schoolsByUserId.has(userId)) {
+        schoolsByUserId.set(userId, []);
+      }
+      schoolsByUserId.get(userId)!.push({
+        ...school,
+        role: role || 'teacher',
+      });
+    }
+
+    // Map users to their schools
+    const usersWithSchools = paginatedUsers.map(user => ({
+      user,
+      schools: schoolsByUserId.get(user.id) || [],
+    }));
 
     return {
       users: usersWithSchools,
@@ -6341,251 +6273,6 @@ export class DatabaseStorage implements IStorage {
       ...r,
       user: r.user || { firstName: null, lastName: null }
     }));
-  }
-
-  // Health Monitoring implementation
-  async createHealthCheck(check: {
-    endpoint: string;
-    status: 'healthy' | 'degraded' | 'down';
-    responseTime?: number;
-    errorMessage?: string;
-  }): Promise<void> {
-    const { nanoid } = await import('nanoid');
-    await db.insert(healthChecks).values({
-      id: nanoid(),
-      endpoint: check.endpoint,
-      status: check.status,
-      responseTime: check.responseTime,
-      errorMessage: check.errorMessage,
-    });
-  }
-
-  async getRecentHealthChecks(endpoint: string, limit: number = 100): Promise<any[]> {
-    return await db
-      .select()
-      .from(healthChecks)
-      .where(eq(healthChecks.endpoint, endpoint))
-      .orderBy(desc(healthChecks.checkedAt))
-      .limit(limit);
-  }
-
-  async getLatestHealthStatus(): Promise<Array<{
-    endpoint: string;
-    status: string;
-    responseTime: number | null;
-    checkedAt: Date;
-  }>> {
-    const latestChecks = await db
-      .select({
-        endpoint: healthChecks.endpoint,
-        status: healthChecks.status,
-        responseTime: healthChecks.responseTime,
-        checkedAt: healthChecks.checkedAt,
-      })
-      .from(healthChecks)
-      .orderBy(desc(healthChecks.checkedAt))
-      .limit(100);
-
-    const endpointMap = new Map<string, any>();
-    for (const check of latestChecks) {
-      if (!endpointMap.has(check.endpoint)) {
-        endpointMap.set(check.endpoint, check);
-      }
-    }
-
-    return Array.from(endpointMap.values());
-  }
-
-  async getHealthIncidents(hours: number = 24): Promise<Array<{
-    endpoint: string;
-    status: string;
-    errorMessage: string | null;
-    checkedAt: Date;
-  }>> {
-    const cutoffTime = new Date();
-    cutoffTime.setHours(cutoffTime.getHours() - hours);
-
-    return await db
-      .select({
-        endpoint: healthChecks.endpoint,
-        status: healthChecks.status,
-        errorMessage: healthChecks.errorMessage,
-        checkedAt: healthChecks.checkedAt,
-      })
-      .from(healthChecks)
-      .where(
-        and(
-          gte(healthChecks.checkedAt, cutoffTime),
-          or(
-            eq(healthChecks.status, 'degraded'),
-            eq(healthChecks.status, 'down')
-          )
-        )
-      )
-      .orderBy(desc(healthChecks.checkedAt));
-  }
-
-  async updateUptimeMetric(metric: {
-    date: Date;
-    endpoint: string;
-    totalChecks: number;
-    successfulChecks: number;
-    failedChecks: number;
-    avgResponseTime: string;
-    uptimePercentage: string;
-  }): Promise<void> {
-    const { nanoid } = await import('nanoid');
-    
-    const existing = await db
-      .select()
-      .from(uptimeMetrics)
-      .where(
-        and(
-          eq(uptimeMetrics.date, metric.date),
-          eq(uptimeMetrics.endpoint, metric.endpoint)
-        )
-      )
-      .limit(1);
-
-    if (existing.length > 0) {
-      await db
-        .update(uptimeMetrics)
-        .set({
-          totalChecks: metric.totalChecks,
-          successfulChecks: metric.successfulChecks,
-          failedChecks: metric.failedChecks,
-          avgResponseTime: metric.avgResponseTime,
-          uptimePercentage: metric.uptimePercentage,
-        })
-        .where(eq(uptimeMetrics.id, existing[0].id));
-    } else {
-      await db.insert(uptimeMetrics).values({
-        id: nanoid(),
-        date: metric.date,
-        endpoint: metric.endpoint,
-        totalChecks: metric.totalChecks,
-        successfulChecks: metric.successfulChecks,
-        failedChecks: metric.failedChecks,
-        avgResponseTime: metric.avgResponseTime,
-        uptimePercentage: metric.uptimePercentage,
-      });
-    }
-  }
-
-  async getUptimeMetrics(filters?: {
-    endpoint?: string;
-    startDate?: Date;
-    endDate?: Date;
-  }): Promise<any[]> {
-    let query = db.select().from(uptimeMetrics).$dynamic();
-
-    const conditions = [];
-    if (filters?.endpoint) {
-      conditions.push(eq(uptimeMetrics.endpoint, filters.endpoint));
-    }
-    if (filters?.startDate) {
-      conditions.push(gte(uptimeMetrics.date, filters.startDate));
-    }
-    if (filters?.endDate) {
-      conditions.push(sql`${uptimeMetrics.date} <= ${filters.endDate}`);
-    }
-
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    }
-
-    return await query.orderBy(desc(uptimeMetrics.date));
-  }
-
-  async getUptimeStats(days: number = 7): Promise<{
-    overall: {
-      uptimePercentage: number;
-      avgResponseTime: number;
-      totalChecks: number;
-      successfulChecks: number;
-      failedChecks: number;
-    };
-    byEndpoint: Array<{
-      endpoint: string;
-      uptimePercentage: number;
-      avgResponseTime: number;
-      totalChecks: number;
-    }>;
-  }> {
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-
-    // Query health_checks directly instead of uptime_metrics
-    const checks = await db
-      .select()
-      .from(healthChecks)
-      .where(gte(healthChecks.checkedAt, startDate));
-
-    let totalChecks = 0;
-    let totalSuccessful = 0;
-    let totalFailed = 0;
-    let totalResponseTime = 0;
-    let responseTimeCount = 0;
-
-    const endpointStats = new Map<string, {
-      totalChecks: number;
-      successfulChecks: number;
-      totalResponseTime: number;
-      responseTimeCount: number;
-    }>();
-
-    for (const check of checks) {
-      totalChecks++;
-      
-      if (check.status === 'healthy') {
-        totalSuccessful++;
-      } else if (check.status === 'down') {
-        totalFailed++;
-      }
-
-      if (check.responseTime !== null && check.responseTime !== undefined) {
-        totalResponseTime += check.responseTime;
-        responseTimeCount++;
-      }
-
-      if (!endpointStats.has(check.endpoint)) {
-        endpointStats.set(check.endpoint, {
-          totalChecks: 0,
-          successfulChecks: 0,
-          totalResponseTime: 0,
-          responseTimeCount: 0,
-        });
-      }
-
-      const epStats = endpointStats.get(check.endpoint)!;
-      epStats.totalChecks++;
-      
-      if (check.status === 'healthy') {
-        epStats.successfulChecks++;
-      }
-
-      if (check.responseTime !== null && check.responseTime !== undefined) {
-        epStats.totalResponseTime += check.responseTime;
-        epStats.responseTimeCount++;
-      }
-    }
-
-    const overall = {
-      uptimePercentage: totalChecks > 0 ? (totalSuccessful / totalChecks) * 100 : 0,
-      avgResponseTime: responseTimeCount > 0 ? totalResponseTime / responseTimeCount : 0,
-      totalChecks,
-      successfulChecks: totalSuccessful,
-      failedChecks: totalFailed,
-    };
-
-    const byEndpoint = Array.from(endpointStats.entries()).map(([endpoint, stats]) => ({
-      endpoint,
-      uptimePercentage: stats.totalChecks > 0 ? (stats.successfulChecks / stats.totalChecks) * 100 : 0,
-      avgResponseTime: stats.responseTimeCount > 0 ? stats.totalResponseTime / stats.responseTimeCount : 0,
-      totalChecks: stats.totalChecks,
-    }));
-
-    return { overall, byEndpoint };
   }
 
   // Settings operations

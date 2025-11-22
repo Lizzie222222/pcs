@@ -12677,61 +12677,6 @@ Return JSON with:
     }
   });
 
-  // Health Monitoring Routes (Admin only)
-  app.get('/api/admin/health/status', isAuthenticated, requireAdmin, async (req, res) => {
-    try {
-      const latestStatus = await storage.getLatestHealthStatus();
-      res.json(latestStatus);
-    } catch (error) {
-      console.error('Error fetching health status:', error);
-      res.status(500).json({ message: 'Failed to fetch health status' });
-    }
-  });
-
-  app.get('/api/admin/health/incidents', isAuthenticated, requireAdmin, async (req, res) => {
-    try {
-      const hours = req.query.hours ? parseInt(req.query.hours as string) : 24;
-      const incidents = await storage.getHealthIncidents(hours);
-      res.json(incidents);
-    } catch (error) {
-      console.error('Error fetching health incidents:', error);
-      res.status(500).json({ message: 'Failed to fetch health incidents' });
-    }
-  });
-
-  app.get('/api/admin/health/stats', isAuthenticated, requireAdmin, async (req, res) => {
-    try {
-      const days = req.query.days ? parseInt(req.query.days as string) : 7;
-      const stats = await storage.getUptimeStats(days);
-      res.json(stats);
-    } catch (error) {
-      console.error('Error fetching uptime stats:', error);
-      res.status(500).json({ message: 'Failed to fetch uptime stats' });
-    }
-  });
-
-  app.get('/api/admin/health/metrics', isAuthenticated, requireAdmin, async (req, res) => {
-    try {
-      const filters: any = {};
-      
-      if (req.query.endpoint) {
-        filters.endpoint = req.query.endpoint as string;
-      }
-      if (req.query.startDate) {
-        filters.startDate = new Date(req.query.startDate as string);
-      }
-      if (req.query.endDate) {
-        filters.endDate = new Date(req.query.endDate as string);
-      }
-
-      const metrics = await storage.getUptimeMetrics(filters);
-      res.json(metrics);
-    } catch (error) {
-      console.error('Error fetching uptime metrics:', error);
-      res.status(500).json({ message: 'Failed to fetch uptime metrics' });
-    }
-  });
-
   // Clear API cache (admin only)
   app.post('/api/admin/cache/clear', isAuthenticated, requireAdmin, async (req, res) => {
     try {

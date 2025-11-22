@@ -5,7 +5,6 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeWebSocket } from "./websocket";
 import { initScheduler } from "./scheduler";
-import { startHealthMonitoring } from "./healthMonitor";
 import { botBlocker } from "./middleware/rateLimiting";
 import { requestTimeout } from "./middleware/timeout";
 
@@ -160,8 +159,5 @@ app.use((req, res, next) => {
     
     // Initialize automated weekly digest scheduler
     initScheduler();
-    
-    // Initialize health monitoring service
-    startHealthMonitoring();
   });
 })();
