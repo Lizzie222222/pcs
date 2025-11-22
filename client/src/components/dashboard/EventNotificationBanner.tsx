@@ -17,7 +17,7 @@ export default function EventNotificationBanner({ isAuthenticated }: EventNotifi
     queryKey: ['/api/my-events'],
     enabled: isAuthenticated,
     retry: false,
-    refetchInterval: 60000, // Refetch every minute to keep notifications fresh
+    refetchInterval: 300000, // Refetch every 5 minutes (reduced from 1 minute for compute optimization)
   });
 
   // Find events that are starting soon (within 30 minutes) or live now
