@@ -33,12 +33,12 @@ export default function ResourceNotificationBanner({ isAuthenticated }: Resource
     queryKey: ['/api/notifications'],
     enabled: isAuthenticated,
     retry: false,
-    // Use WebSocket for real-time updates when connected
-    // Fall back to 10-minute polling when disconnected (reduced from 2 minutes)
-    refetchInterval: connectionState === 'connected' ? false : 600000,
+    // Use WebSocket for real-time updates when connected (admins only)
+    // Fall back to 2-minute polling for non-admin users and when disconnected
+    refetchInterval: connectionState === 'connected' ? false : 120000,
   });
 
-  // Subscribe to WebSocket notification updates for real-time refresh
+  // Subscribe to WebSocket notification updates for real-time refresh (admin users only)
   useEffect(() => {
     if (connectionState === 'connected' && isAuthenticated) {
       const unsubscribe = onNotificationUpdate(() => {
