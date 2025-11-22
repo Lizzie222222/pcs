@@ -3,9 +3,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Bell, BookOpen, X } from "lucide-react";
 import { format } from "date-fns";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useCollaboration } from "@/contexts/CollaborationContext";
 
 interface Notification {
   id: string;
@@ -26,13 +27,27 @@ interface ResourceNotificationBannerProps {
 export default function ResourceNotificationBanner({ isAuthenticated }: ResourceNotificationBannerProps) {
   const [, setLocation] = useLocation();
   const [dismissed, setDismissed] = useState<string[]>([]);
+  const { connectionState, onNotificationUpdate } = useCollaboration();
 
   const { data: notifications = [] } = useQuery<Notification[]>({
     queryKey: ['/api/notifications'],
     enabled: isAuthenticated,
     retry: false,
-    refetchInterval: 120000, // Refetch every 2 minutes
+    // Use WebSocket for real-time updates when connected
+    // Fall back to 10-minute polling when disconnected (reduced from 2 minutes)
+    refetchInterval: connectionState === 'connected' ? false : 600000,
   });
+
+  // Subscribe to WebSocket notification updates for real-time refresh
+  useEffect(() => {
+    if (connectionState === 'connected' && isAuthenticated) {
+      const unsubscribe = onNotificationUpdate(() => {
+        // Refetch notifications when WebSocket sends update
+        queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
+      });
+      return unsubscribe;
+    }
+  }, [connectionState, isAuthenticated, onNotificationUpdate]);
 
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId: string) => {
