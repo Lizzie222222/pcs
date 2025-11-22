@@ -106,17 +106,17 @@ export default function SystemHealthTab() {
 
   const { data: endpointStatuses, isLoading: statusLoading, error: statusError } = useQuery<EndpointStatus[]>({
     queryKey: ['/api/admin/health/status'],
-    refetchInterval: 30000,
+    refetchInterval: 300000, // 5 minutes (reduced from 30s for compute optimization)
   });
 
   const { data: healthStats, isLoading: statsLoading, error: statsError } = useQuery<HealthStats>({
     queryKey: ['/api/admin/health/stats', { days: uptimeRange }],
-    refetchInterval: 60000,
+    refetchInterval: 300000, // 5 minutes (reduced from 60s for compute optimization)
   });
 
   const { data: metrics, isLoading: metricsLoading, error: metricsError } = useQuery<MetricDataPoint[]>({
     queryKey: ['/api/admin/health/metrics'],
-    refetchInterval: 60000,
+    refetchInterval: 300000, // 5 minutes (reduced from 60s for compute optimization)
   });
 
   const clearCacheMutation = useMutation({
