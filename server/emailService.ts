@@ -1172,24 +1172,34 @@ export async function sendEvidenceSubmissionEmail(
   schoolName: string, 
   evidenceTitle: string,
   stage: string,
-  userLanguage?: string
+  userLanguage?: string,
+  isResubmission?: boolean
 ): Promise<boolean> {
   const baseUrl = getBaseUrl();
   
+  const submissionType = isResubmission ? 'Resubmitted' : 'Submitted';
+  const emoji = isResubmission ? '🔄' : '📤';
+  
   const englishContent: EmailContent = {
-    subject: `✅ Evidence Submitted: ${evidenceTitle}`,
-    title: `Evidence Submitted Successfully!`,
+    subject: `✅ Evidence ${submissionType}: ${evidenceTitle}`,
+    title: `Evidence ${submissionType} Successfully!`,
     preTitle: `${schoolName}`,
     messageContent: `
-      <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 20px; margin: 0 0 25px 0; border-radius: 8px;">
-        <p style="margin: 0; color: #1e40af; font-size: 18px; font-weight: 700;">
-          📤 Submission Confirmed
+      <div style="background: ${isResubmission ? '#fef3c7' : '#eff6ff'}; border-left: 4px solid ${isResubmission ? '#f59e0b' : '#3b82f6'}; padding: 20px; margin: 0 0 25px 0; border-radius: 8px;">
+        <p style="margin: 0; color: ${isResubmission ? '#92400e' : '#1e40af'}; font-size: 18px; font-weight: 700;">
+          ${emoji} ${isResubmission ? 'Resubmission' : 'Submission'} Confirmed
         </p>
       </div>
       
+      ${isResubmission ? `
+      <p style="margin: 0 0 20px 0; font-size: 16px;">
+        Thank you for addressing the feedback and resubmitting your evidence! Your updated submission is now awaiting review.
+      </p>
+      ` : `
       <p style="margin: 0 0 20px 0; font-size: 16px;">
         Your evidence has been successfully submitted and is now awaiting review!
       </p>
+      `}
       
       <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 0 0 25px 0;">
         <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Evidence:</p>
@@ -1208,7 +1218,7 @@ export async function sendEvidenceSubmissionEmail(
       </p>
     `,
     callToActionText: 'View Dashboard',
-    footerText: 'You received this email because you submitted evidence for your school.'
+    footerText: `You received this email because you ${isResubmission ? 'resubmitted' : 'submitted'} evidence for your school.`
   };
   
   return await sendTranslatedEmail({
@@ -1279,27 +1289,34 @@ export async function sendAdminNewEvidenceEmail(
 export async function sendAuditSubmissionEmail(
   userEmail: string,
   schoolName: string,
-  userLanguage?: string
+  userLanguage?: string,
+  isResubmission?: boolean
 ): Promise<boolean> {
   const baseUrl = getBaseUrl();
   
+  const submissionType = isResubmission ? 'Resubmitted' : 'Submitted';
+  const submissionAction = isResubmission ? 'resubmitted' : 'submitted';
+  
   const englishContent: EmailContent = {
-    subject: `✅ Plastic Waste Audit Submitted`,
-    title: `Audit Submitted Successfully!`,
+    subject: `✅ Plastic Waste Audit ${submissionType}`,
+    title: `Audit ${submissionType} Successfully!`,
     preTitle: `${schoolName}`,
     messageContent: `
       <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 20px; margin: 0 0 25px 0; border-radius: 8px;">
         <p style="margin: 0; color: #1e40af; font-size: 18px; font-weight: 700;">
-          📊 Submission Confirmed
+          📊 ${isResubmission ? 'Resubmission' : 'Submission'} Confirmed
         </p>
       </div>
       
       <p style="margin: 0 0 20px 0; font-size: 16px;">
-        Your plastic waste audit has been successfully submitted and is now awaiting review!
+        Your plastic waste audit has been successfully ${submissionAction} and is now awaiting review!
       </p>
       
       <p style="margin: 0 0 20px 0;">
-        Thank you for taking the time to audit your school's plastic waste. This important data helps us understand and reduce plastic pollution in schools worldwide. 🌍
+        ${isResubmission 
+          ? 'Thank you for addressing the feedback and resubmitting your audit. Our team will review the updates shortly.' 
+          : 'Thank you for taking the time to audit your school\'s plastic waste. This important data helps us understand and reduce plastic pollution in schools worldwide. 🌍'
+        }
       </p>
       
       <p style="margin: 0 0 20px 0;">
@@ -1326,14 +1343,17 @@ export async function sendAdminNewAuditEmail(
   adminEmail: string,
   schoolName: string,
   submitterName: string,
-  userLanguage?: string
+  userLanguage?: string,
+  isResubmission?: boolean
 ): Promise<boolean> {
   const baseUrl = getBaseUrl();
   const adminUrl = `${baseUrl}/admin`;
   
+  const submissionType = isResubmission ? 'Resubmitted Audit' : 'New Audit Submission';
+  
   const englishContent: EmailContent = {
-    subject: `🔔 New Audit Submission: ${schoolName}`,
-    title: `New Audit Awaiting Review`,
+    subject: `🔔 ${submissionType}: ${schoolName}`,
+    title: `${isResubmission ? 'Audit Resubmitted - ' : ''}Awaiting Review`,
     preTitle: `Platform Administration`,
     messageContent: `
       <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 20px; margin: 0 0 25px 0; border-radius: 8px;">
@@ -1343,7 +1363,10 @@ export async function sendAdminNewAuditEmail(
       </div>
       
       <p style="margin: 0 0 20px 0; font-size: 16px;">
-        A new plastic waste audit submission requires your review.
+        ${isResubmission 
+          ? 'A previously rejected plastic waste audit has been resubmitted and requires your review.' 
+          : 'A new plastic waste audit submission requires your review.'
+        }
       </p>
       
       <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 0 0 25px 0;">
@@ -1352,6 +1375,10 @@ export async function sendAdminNewAuditEmail(
         
         <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Submitted by:</p>
         <p style="margin: 0; color: #333;">${submitterName}</p>
+        
+        ${isResubmission ? `<p style="margin: 15px 0 0 0; padding: 10px; background: #fef3c7; border-radius: 6px; color: #92400e;">
+          🔄 This is a resubmission
+        </p>` : ''}
       </div>
       
       <p style="margin: 0;">

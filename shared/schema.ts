@@ -418,6 +418,8 @@ export const evidence = pgTable("evidence", {
   roundNumber: integer("round_number").default(1),
   hasChildren: boolean("has_children").default(false),
   parentalConsentFiles: jsonb("parental_consent_files").default('[]'),
+  isResubmission: boolean("is_resubmission").default(false),
+  previousReviewNotes: text("previous_review_notes"),
   submittedAt: timestamp("submitted_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -816,6 +818,8 @@ export const auditResponses = pgTable("audit_responses", {
   reviewedBy: varchar("reviewed_by").references(() => users.id),
   reviewedAt: timestamp("reviewed_at"),
   reviewNotes: text("review_notes"),
+  isResubmission: boolean("is_resubmission").default(false),
+  previousReviewNotes: text("previous_review_notes"),
   
   currentPart: integer("current_part").default(1),
   completedAt: timestamp("completed_at"),
@@ -849,6 +853,8 @@ export const reductionPromises = pgTable("reduction_promises", {
   reviewedBy: varchar("reviewed_by").references(() => users.id),
   reviewedAt: timestamp("reviewed_at"),
   reviewNotes: text("review_notes"),
+  isResubmission: boolean("is_resubmission").default(false),
+  previousReviewNotes: text("previous_review_notes"),
   
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

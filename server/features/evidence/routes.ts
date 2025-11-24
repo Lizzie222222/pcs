@@ -8,7 +8,7 @@ import { createSchoolProgressionDelegate } from '../schools/progression';
 import { schoolStorage } from '../schools/storage';
 import type { IStorage } from '../../storage';
 import { insertEvidenceSchema, insertEvidenceRequirementSchema, evidence } from '@shared/schema';
-import { sendEvidenceSubmissionEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail } from '../../emailService';
+import { sendEvidenceSubmissionEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendAdminNewEvidenceEmail } from '../../emailService';
 import { mailchimpService } from '../../mailchimpService';
 import { translateEvidenceRequirement } from '../../translationService';
 import { requireAdmin, requireAdminOrPartner } from '../../routes/utils/middleware';
@@ -18,6 +18,25 @@ import { ObjectStorageService } from '../../objectStorage';
 import { z } from 'zod';
 import { db } from '../../db';
 import { sql, and, eq } from 'drizzle-orm';
+
+// Validation schemas for resubmission
+// Proper file validation schema matching NormalizedFile structure
+const fileSchema = z.object({
+  id: z.string().optional(),
+  originalName: z.string(),
+  url: z.string(),
+  size: z.number(),
+  mimeType: z.string(),
+  storagePath: z.string(),
+});
+
+const resubmitEvidenceSchema = z.object({
+  title: z.string().min(1).max(200).optional(),
+  description: z.string().min(10).optional(),
+  videoLinks: z.string().optional(),
+  files: z.array(fileSchema).optional(),
+  visibility: z.enum(['public', 'private']).optional(),
+});
 
 /**
  * Create Evidence Routers (Quad Router Structure)
@@ -361,12 +380,13 @@ export function createEvidenceRouters(storage: IStorage): {
   /**
    * DELETE /api/evidence/:id
    * 
-   * Delete pending evidence
-   * - Only pending evidence can be deleted
+   * Delete pending or rejected evidence
+   * - Only pending or rejected evidence can be deleted
    * - Verifies user is a member of the school
    * - Logs deletion activity
    * 
    * Migrated from server/routes.ts:3036-3088
+   * Updated to allow deletion of rejected evidence for resubmission workflow
    */
   evidenceRouter.delete('/:id', isAuthenticated, async (req: any, res) => {
     try {
@@ -379,9 +399,9 @@ export function createEvidenceRouters(storage: IStorage): {
         return res.status(404).json({ message: "Evidence not found" });
       }
 
-      // Check if evidence status is 'pending'
-      if (evidence.status !== 'pending') {
-        return res.status(403).json({ message: "Only pending evidence can be deleted" });
+      // Check if evidence status is 'pending' or 'rejected'
+      if (evidence.status !== 'pending' && evidence.status !== 'rejected') {
+        return res.status(403).json({ message: "Only pending or rejected evidence can be deleted" });
       }
 
       // Verify user is a member of the school that submitted the evidence
@@ -409,6 +429,7 @@ export function createEvidenceRouters(storage: IStorage): {
           title: evidence.title,
           stage: evidence.stage,
           schoolId: evidence.schoolId,
+          wasRejected: evidence.status === 'rejected',
         },
         id,
         'evidence',
@@ -419,6 +440,127 @@ export function createEvidenceRouters(storage: IStorage): {
     } catch (error) {
       console.error("Error deleting evidence:", error);
       res.status(500).json({ message: "Failed to delete evidence" });
+    }
+  });
+
+  /**
+   * PATCH /api/evidence/:id/resubmit
+   * 
+   * Resubmit rejected evidence with updates
+   * - Only rejected evidence can be resubmitted
+   * - Verifies user is a member of the school
+   * - Stores previous rejection reason for context
+   * - Resets status to pending for admin review
+   * - Sends notification to admins
+   */
+  evidenceRouter.patch('/:id/resubmit', isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+
+      // Validate input - only allow whitelisted fields
+      const validatedUpdates = resubmitEvidenceSchema.parse(req.body);
+
+      // Get evidence by ID
+      const evidence = await evidenceStorage.getEvidence(id);
+      if (!evidence) {
+        return res.status(404).json({ message: "Evidence not found" });
+      }
+
+      // Check if evidence status is 'rejected'
+      if (evidence.status !== 'rejected') {
+        return res.status(403).json({ message: "Only rejected evidence can be resubmitted" });
+      }
+
+      // Verify user is a member of the school that submitted the evidence
+      const userSchools = await schoolStorage.getUserSchools(userId);
+      const hasPermission = userSchools.some((school: { id: string }) => school.id === evidence.schoolId);
+      
+      if (!hasPermission) {
+        return res.status(403).json({ message: "You don't have permission to resubmit this evidence" });
+      }
+
+      // Prepare update data: only use validated fields, preserve previous review notes, reset status to pending
+      // CRITICAL: DO NOT include files from validatedUpdates - preserve existing files
+      // Files require separate upload flow to maintain storagePath and other metadata
+      const updateData = {
+        title: validatedUpdates.title,
+        description: validatedUpdates.description,
+        videoLinks: validatedUpdates.videoLinks,
+        visibility: validatedUpdates.visibility,
+        status: 'pending' as const,
+        isResubmission: true,
+        previousReviewNotes: evidence.reviewNotes || null,
+        reviewedBy: null,
+        reviewedAt: null,
+        reviewNotes: null,
+        updatedAt: new Date(),
+      };
+
+      // Update the evidence
+      const updatedEvidence = await evidenceStorage.updateEvidence(id, updateData);
+      if (!updatedEvidence) {
+        return res.status(500).json({ message: "Failed to resubmit evidence" });
+      }
+
+      // Send email notifications
+      try {
+        const user = await storage.getUser(userId);
+        const school = await schoolStorage.getSchool(evidence.schoolId);
+        
+        if (user?.email && school) {
+          // Send confirmation email to teacher
+          await sendEvidenceSubmissionEmail(
+            user.email,
+            school.name,
+            updatedEvidence.title,
+            updatedEvidence.stage,
+            user.preferredLanguage || 'en',
+            true // isResubmission flag
+          );
+
+          // Send notification to admins
+          const adminUsers = await storage.getAllUsers();
+          const admins = adminUsers.filter(u => u.isAdmin && u.email);
+          
+          for (const admin of admins) {
+            await sendAdminNewEvidenceEmail(
+              admin.email!,
+              school.name,
+              updatedEvidence.title,
+              updatedEvidence.stage,
+              `${user.firstName} ${user.lastName}`,
+              admin.preferredLanguage || 'en'
+            );
+          }
+        }
+      } catch (emailError) {
+        console.warn('Email notification failed for evidence resubmission:', emailError);
+      }
+
+      // Log evidence resubmission
+      const user = await storage.getUser(userId);
+      await logUserActivity(
+        userId,
+        user?.email || undefined,
+        'evidence_submit',
+        {
+          evidenceId: updatedEvidence.id,
+          title: updatedEvidence.title,
+          stage: updatedEvidence.stage,
+          schoolId: updatedEvidence.schoolId,
+          isResubmission: true,
+          previousReviewNotes: evidence.reviewNotes,
+        },
+        updatedEvidence.id,
+        'evidence',
+        req
+      );
+
+      res.json(updatedEvidence);
+    } catch (error) {
+      console.error("Error resubmitting evidence:", error);
+      res.status(500).json({ message: "Failed to resubmit evidence" });
     }
   });
 

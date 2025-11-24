@@ -9,13 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Alert } from "@/components/ui/alert";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ClipboardCheck, ChevronRight, ChevronLeft, Save, Send, CheckCircle, Download, Upload } from "lucide-react";
+import { ClipboardCheck, ChevronRight, ChevronLeft, Save, Send, CheckCircle, Download, Upload, AlertCircle, RefreshCw } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 import type { AuditResponse } from "@shared/schema";
 
@@ -450,6 +451,28 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     },
   });
 
+  // Resubmit mutation for rejected audits
+  const resubmitMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      return apiRequest('PATCH', `/api/audits/${id}/resubmit`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/audits/school/${schoolId}`] });
+      toast({
+        title: 'Audit Resubmitted',
+        description: 'Your audit has been resubmitted for review.',
+      });
+      onClose?.();
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Resubmission Failed',
+        description: error?.message || 'Failed to resubmit audit. Please try again.',
+        variant: "destructive",
+      });
+    },
+  });
+
   // Calculate results (multiplied by 190 for annual figures)
   const calculateResults = () => {
     const part2Values = form2.getValues();
@@ -624,9 +647,32 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       return;
     }
 
+    const results = calculateResults();
+    const isRejectedAudit = existingAudit?.status === 'rejected';
+
+    // If this is a rejected audit being resubmitted
+    if (isRejectedAudit && auditId) {
+      const resubmitData = {
+        part1Data: form1.getValues(),
+        part2Data: form2.getValues(),
+        part3Data: form3.getValues(),
+        part4Data: form4.getValues(),
+        resultsData: results,
+        totalPlasticItems: results.totalPlasticItems,
+        topProblemPlastics: results.topProblemPlastics,
+      };
+
+      setIsSubmitting(true);
+      try {
+        await resubmitMutation.mutateAsync({ id: auditId, data: resubmitData });
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
     // Save first if no audit ID exists
     if (!auditId) {
-      const results = calculateResults();
       const auditData = {
         schoolId,
         currentPart: 5,
@@ -716,6 +762,18 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       </CardHeader>
       
       <CardContent className="space-y-6">
+        {/* Show rejection reason if audit is rejected */}
+        {existingAudit && existingAudit.status === 'rejected' && existingAudit.reviewNotes && (
+          <Alert className="border-orange bg-orange/5" data-testid="alert-audit-rejection-reason">
+            <AlertCircle className="h-4 w-4 text-orange" />
+            <div className="ml-2">
+              <h4 className="font-semibold text-orange mb-1">Audit Rejected - Please Review and Resubmit</h4>
+              <p className="text-sm text-gray-700 mb-2"><strong>Rejection Reason:</strong> {existingAudit.reviewNotes}</p>
+              <p className="text-sm text-gray-600">Please review the feedback above, make the necessary changes, and resubmit your audit.</p>
+            </div>
+          </Alert>
+        )}
+
         {/* Step 1: General Information */}
         {currentStep === 1 && (
           <Form {...form1}>
@@ -2186,11 +2244,20 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   <Button
                     onClick={handleSubmitAuditOnly}
                     disabled={isSubmitting}
-                    className="flex-1 bg-green-600 hover:bg-green-700"
+                    className={`flex-1 ${existingAudit?.status === 'rejected' ? 'bg-pcs_blue hover:bg-pcs_blue/90' : 'bg-green-600 hover:bg-green-700'}`}
                     data-testid="button-submit-audit-now"
                   >
-                    <Send className="h-4 w-4 mr-2" />
-                    {isSubmitting ? t('audit.actions.submitting') : t('audit.actions.submitAudit')}
+                    {existingAudit?.status === 'rejected' ? (
+                      <>
+                        <RefreshCw className={`h-4 w-4 mr-2 ${isSubmitting ? 'animate-spin' : ''}`} />
+                        {isSubmitting ? 'Resubmitting...' : 'Resubmit Audit for Review'}
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4 mr-2" />
+                        {isSubmitting ? t('audit.actions.submitting') : t('audit.actions.submitAudit')}
+                      </>
+                    )}
                   </Button>
                 </div>
                 <div>

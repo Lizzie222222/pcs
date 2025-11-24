@@ -81,7 +81,8 @@ import {
   Download,
   FileText,
   Video,
-  Shield
+  Shield,
+  RefreshCw
 } from "lucide-react";
 import { PDFThumbnail } from "@/components/PDFThumbnail";
 import { MigratedUserNotice } from "@/components/MigratedUserNotice";
@@ -269,6 +270,8 @@ export default function Home() {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [evidenceToDelete, setEvidenceToDelete] = useState<string | null>(null);
+  const [resubmitDialogOpen, setResubmitDialogOpen] = useState(false);
+  const [evidenceToResubmit, setEvidenceToResubmit] = useState<any | null>(null);
   const [dismissedNotifications, setDismissedNotifications] = useState<string[]>(() => {
     const stored = localStorage.getItem('dismissedEvidenceNotifications');
     return stored ? JSON.parse(stored) : [];
@@ -282,6 +285,8 @@ export default function Home() {
   const [promiseToDelete, setPromiseToDelete] = useState<string | null>(null);
   const [editPromiseDialogOpen, setEditPromiseDialogOpen] = useState(false);
   const [editingPromise, setEditingPromise] = useState<ReductionPromise | null>(null);
+  const [resubmitPromiseDialogOpen, setResubmitPromiseDialogOpen] = useState(false);
+  const [promiseToResubmit, setPromiseToResubmit] = useState<ReductionPromise | null>(null);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showTour, setShowTour] = useState(false);
   const [hasAttemptedOnboarding, setHasAttemptedOnboarding] = useState<boolean>(() => {
@@ -512,6 +517,39 @@ export default function Home() {
     }
   };
 
+  // Evidence resubmission mutation
+  const evidenceResubmitMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      return apiRequest('PATCH', `/api/evidence/${id}/resubmit`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/evidence'] });
+      toast({
+        title: 'Evidence Resubmitted',
+        description: 'Your evidence has been resubmitted for review.',
+      });
+      handleResubmitClose();
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Resubmission Failed',
+        description: error?.message || 'Failed to resubmit evidence. Please try again.',
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleResubmitClick = (evidence: any) => {
+    setEvidenceToResubmit(evidence);
+    setResubmitDialogOpen(true);
+  };
+
+  const handleResubmitClose = () => {
+    setResubmitDialogOpen(false);
+    setEvidenceToResubmit(null);
+  };
+
   const dismissNotification = (evidenceId: string) => {
     const updated = [...dismissedNotifications, evidenceId];
     setDismissedNotifications(updated);
@@ -571,6 +609,31 @@ export default function Home() {
       });
       setDeletePromiseDialogOpen(false);
       setPromiseToDelete(null);
+    },
+  });
+
+  // Resubmit promise mutation
+  const resubmitPromiseMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      return apiRequest('PATCH', `/api/reduction-promises/${id}/resubmit`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/audit', schoolAudit?.id] });
+      queryClient.invalidateQueries({ queryKey: ['/api/schools', dashboardData?.school?.id, 'analytics'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/schools', dashboardData?.school?.id, 'audit-analytics'] });
+      toast({
+        title: 'Action Plan Resubmitted',
+        description: 'Your action plan has been resubmitted for review.',
+      });
+      setResubmitPromiseDialogOpen(false);
+      setPromiseToResubmit(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Resubmission Failed',
+        description: error?.message || 'Failed to resubmit action plan. Please try again.',
+        variant: "destructive",
+      });
     },
   });
 
@@ -1567,6 +1630,29 @@ export default function Home() {
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           )}
+                          {evidence.status === 'rejected' && (
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleResubmitClick(evidence)}
+                                className="border-pcs_blue text-pcs_blue hover:bg-pcs_blue hover:text-white"
+                                data-testid={`button-resubmit-evidence-${evidence.id}`}
+                              >
+                                <RefreshCw className="h-4 w-4 mr-1" />
+                                Edit & Resubmit
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteClick(evidence.id)}
+                                className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                                data-testid={`button-delete-rejected-evidence-${evidence.id}`}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -2050,20 +2136,57 @@ export default function Home() {
                         : [];
                       const approvedActionPlan = sortedEvidence.find(ev => ev.status === 'approved');
                       const isLocked = !!approvedActionPlan;
+                      const isRejected = promise.reviewStatus === 'rejected';
                       
                       return (
-                        <Card key={promise.id} className="shadow-lg border-0 hover:shadow-xl transition-shadow" data-testid={`promise-card-${promise.id}`}>
+                        <Card key={promise.id} className={`shadow-lg border-0 hover:shadow-xl transition-shadow ${isRejected ? 'border-2 border-orange' : ''}`} data-testid={`promise-card-${promise.id}`}>
                           <CardHeader className="pb-3">
+                            {isRejected && promise.reviewNotes && (
+                              <Alert className="mb-4 border-orange bg-orange/5">
+                                <AlertCircle className="h-4 w-4 text-orange" />
+                                <div className="ml-2">
+                                  <h4 className="font-semibold text-orange mb-1">Rejection Reason:</h4>
+                                  <p className="text-sm text-gray-700">{promise.reviewNotes}</p>
+                                </div>
+                              </Alert>
+                            )}
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <CardTitle className="text-lg font-bold text-navy mb-1">
                                   {promise.plasticItemLabel}
                                 </CardTitle>
-                                <Badge className="bg-teal/10 text-teal hover:bg-teal/20">
-                                  {promise.plasticItemType.replace(/_/g, ' ')}
-                                </Badge>
+                                <div className="flex gap-2 items-center">
+                                  <Badge className="bg-teal/10 text-teal hover:bg-teal/20">
+                                    {promise.plasticItemType.replace(/_/g, ' ')}
+                                  </Badge>
+                                  {isRejected && (
+                                    <Badge variant="destructive" className="bg-orange text-white">
+                                      Rejected
+                                    </Badge>
+                                  )}
+                                  {promise.reviewStatus === 'pending' && (
+                                    <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                                      Under Review
+                                    </Badge>
+                                  )}
+                                </div>
                               </div>
-                              {!isLocked && (
+                              {isRejected && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setPromiseToResubmit(promise);
+                                    setResubmitPromiseDialogOpen(true);
+                                  }}
+                                  className="border-pcs_blue text-pcs_blue hover:bg-pcs_blue hover:text-white"
+                                  data-testid={`button-resubmit-promise-${promise.id}`}
+                                >
+                                  <RefreshCw className="h-4 w-4 mr-1" />
+                                  Edit & Resubmit
+                                </Button>
+                              )}
+                              {!isLocked && !isRejected && (
                                 <div className="flex gap-2">
                                   <Button
                                     size="sm"
@@ -2087,7 +2210,7 @@ export default function Home() {
                                   </Button>
                                 </div>
                               )}
-                              {isLocked && (
+                              {isLocked && !isRejected && (
                                 <Badge variant="secondary" className="bg-navy/10 text-navy border-navy/20">
                                   Approved
                                 </Badge>
@@ -2188,6 +2311,147 @@ export default function Home() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Evidence Resubmission Dialog */}
+      {evidenceToResubmit && (
+        <Dialog open={resubmitDialogOpen} onOpenChange={setResubmitDialogOpen}>
+          <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="dialog-resubmit-evidence">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-navy">
+                Edit & Resubmit Evidence
+              </DialogTitle>
+              <DialogDescription>
+                Update your evidence submission and resubmit for review.
+              </DialogDescription>
+            </DialogHeader>
+
+            {/* Show rejection reason prominently */}
+            {evidenceToResubmit.reviewNotes && (
+              <Alert className="border-orange bg-orange/5" data-testid="alert-rejection-reason">
+                <AlertCircle className="h-4 w-4 text-orange" />
+                <div className="ml-2">
+                  <h4 className="font-semibold text-orange mb-1">Rejection Reason:</h4>
+                  <p className="text-sm text-gray-700">{evidenceToResubmit.reviewNotes}</p>
+                </div>
+              </Alert>
+            )}
+
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              evidenceResubmitMutation.mutate({
+                id: evidenceToResubmit.id,
+                data: {
+                  title: formData.get('title') as string,
+                  description: formData.get('description') as string,
+                  videoLinks: formData.get('videoLinks') as string || '',
+                  visibility: formData.get('visibility') as string,
+                },
+              });
+            }}>
+              <div className="space-y-4 py-4">
+                <div>
+                  <label htmlFor="title" className="text-sm font-medium text-navy">
+                    Title *
+                  </label>
+                  <Input
+                    id="title"
+                    name="title"
+                    type="text"
+                    defaultValue={evidenceToResubmit.title}
+                    required
+                    className="mt-1"
+                    data-testid="input-resubmit-title"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="description" className="text-sm font-medium text-navy">
+                    Description *
+                  </label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    defaultValue={evidenceToResubmit.description}
+                    required
+                    rows={4}
+                    className="mt-1"
+                    data-testid="input-resubmit-description"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="videoLinks" className="text-sm font-medium text-navy">
+                    Video Links (optional)
+                  </label>
+                  <Textarea
+                    id="videoLinks"
+                    name="videoLinks"
+                    defaultValue={evidenceToResubmit.videoLinks || ''}
+                    placeholder="Enter YouTube, Vimeo, or other video links (one per line)"
+                    rows={2}
+                    className="mt-1"
+                    data-testid="input-resubmit-video-links"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Enter one video URL per line</p>
+                </div>
+
+                <div>
+                  <label htmlFor="visibility" className="text-sm font-medium text-navy">
+                    Visibility *
+                  </label>
+                  <Select name="visibility" defaultValue={evidenceToResubmit.visibility || 'private'}>
+                    <SelectTrigger className="mt-1" data-testid="select-resubmit-visibility">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="public">Public - Visible to everyone</SelectItem>
+                      <SelectItem value="private">Private - Only visible to administrators</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Alert className="bg-blue-50 border-blue-200">
+                  <Info className="h-4 w-4 text-blue-600" />
+                  <div className="ml-2 text-sm text-blue-800">
+                    <strong>Note:</strong> Files and images cannot be changed during resubmission. If you need to update files, please delete this submission and create a new one.
+                  </div>
+                </Alert>
+              </div>
+              
+              <DialogFooter className="gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleResubmitClose}
+                  data-testid="button-cancel-resubmit-evidence"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={evidenceResubmitMutation.isPending}
+                  className="bg-pcs_blue hover:bg-pcs_blue/90"
+                  data-testid="button-submit-resubmit-evidence"
+                >
+                  {evidenceResubmitMutation.isPending ? (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                      Resubmitting...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Resubmit for Review
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
+
       {/* Delete Promise Confirmation Dialog */}
       <AlertDialog open={deletePromiseDialogOpen} onOpenChange={setDeletePromiseDialogOpen}>
         <AlertDialogContent data-testid="dialog-delete-promise-confirmation">
@@ -2306,6 +2570,166 @@ export default function Home() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Resubmit Promise Dialog */}
+      {promiseToResubmit && (
+        <Dialog open={resubmitPromiseDialogOpen} onOpenChange={setResubmitPromiseDialogOpen}>
+          <DialogContent className="sm:max-w-md" data-testid="dialog-resubmit-promise">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-navy">
+                Edit & Resubmit: {promiseToResubmit.plasticItemLabel}
+              </DialogTitle>
+              <DialogDescription>
+                Update your action plan and resubmit for review.
+              </DialogDescription>
+            </DialogHeader>
+
+            {/* Show rejection reason prominently */}
+            {promiseToResubmit.reviewNotes && (
+              <Alert className="border-orange bg-orange/5" data-testid="alert-promise-rejection-reason">
+                <AlertCircle className="h-4 w-4 text-orange" />
+                <div className="ml-2">
+                  <h4 className="font-semibold text-orange mb-1">Rejection Reason:</h4>
+                  <p className="text-sm text-gray-700">{promiseToResubmit.reviewNotes}</p>
+                </div>
+              </Alert>
+            )}
+
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              resubmitPromiseMutation.mutate({
+                id: promiseToResubmit.id,
+                data: {
+                  plasticItemType: promiseToResubmit.plasticItemType,
+                  plasticItemLabel: formData.get('plasticItemLabel') as string,
+                  baselineQuantity: formData.get('baseline') 
+                    ? parseFloat(formData.get('baseline') as string) 
+                    : promiseToResubmit.baselineQuantity,
+                  targetQuantity: formData.get('target')
+                    ? parseFloat(formData.get('target') as string)
+                    : promiseToResubmit.targetQuantity,
+                  timeframeUnit: formData.get('timeframe') as string,
+                  notes: formData.get('notes') as string,
+                },
+              });
+            }}>
+              <div className="space-y-4 py-4">
+                <div>
+                  <label htmlFor="plasticItemLabel" className="text-sm font-medium text-navy">
+                    Item Label *
+                  </label>
+                  <Input
+                    id="plasticItemLabel"
+                    name="plasticItemLabel"
+                    type="text"
+                    defaultValue={promiseToResubmit.plasticItemLabel}
+                    required
+                    className="mt-1"
+                    data-testid="input-resubmit-promise-label"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="baseline" className="text-sm font-medium text-navy">
+                    Baseline Quantity (per {promiseToResubmit.timeframeUnit}) *
+                  </label>
+                  <Input
+                    id="baseline"
+                    name="baseline"
+                    type="number"
+                    defaultValue={promiseToResubmit.baselineQuantity}
+                    min="1"
+                    required
+                    className="mt-1"
+                    data-testid="input-resubmit-promise-baseline"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="target" className="text-sm font-medium text-navy">
+                    Target Quantity (per {promiseToResubmit.timeframeUnit}) *
+                  </label>
+                  <Input
+                    id="target"
+                    name="target"
+                    type="number"
+                    defaultValue={promiseToResubmit.targetQuantity}
+                    min="0"
+                    required
+                    className="mt-1"
+                    data-testid="input-resubmit-promise-target"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="timeframe" className="text-sm font-medium text-navy">
+                    Timeframe *
+                  </label>
+                  <Select name="timeframe" defaultValue={promiseToResubmit.timeframeUnit}>
+                    <SelectTrigger className="mt-1" data-testid="select-resubmit-promise-timeframe">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="week">Per Week</SelectItem>
+                      <SelectItem value="month">Per Month</SelectItem>
+                      <SelectItem value="year">Per Year</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label htmlFor="notes" className="text-sm font-medium text-navy">
+                    Notes (optional)
+                  </label>
+                  <Textarea
+                    id="notes"
+                    name="notes"
+                    defaultValue={promiseToResubmit.notes || ''}
+                    rows={3}
+                    className="mt-1"
+                    placeholder="Add any additional details about your reduction plan..."
+                    data-testid="input-resubmit-promise-notes"
+                  />
+                </div>
+              </div>
+              
+              <DialogFooter className="gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setResubmitPromiseDialogOpen(false);
+                    setPromiseToResubmit(null);
+                  }}
+                  data-testid="button-cancel-resubmit-promise"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={resubmitPromiseMutation.isPending}
+                  className="bg-pcs_blue hover:bg-pcs_blue/90"
+                  data-testid="button-submit-resubmit-promise"
+                >
+                  {resubmitPromiseMutation.isPending ? (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                      Resubmitting...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Resubmit for Review
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
+
       {/* Onboarding Components */}
       <WelcomeModal 
         open={showWelcomeModal}

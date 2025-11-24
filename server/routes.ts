@@ -18,6 +18,33 @@ const reorderResourcePackItemsSchema = z.object({
   })).min(1)
 });
 
+// Resubmission validation schemas
+const resubmitAuditSchema = z.object({
+  part1Data: z.any().optional(),
+  part2Data: z.any().optional(),
+  part3Data: z.any().optional(),
+  part4Data: z.any().optional(),
+  resultsData: z.object({
+    totalPlasticItems: z.number().optional(),
+    topProblemPlastics: z.array(z.any()).optional(),
+    plasticCounts: z.record(z.number()).optional(),
+  }).passthrough().optional(),
+  metricsData: z.any().optional(),
+  totalPlasticItems: z.any().optional(),
+  topProblemPlastics: z.any().optional(),
+  files: z.array(z.any()).optional(),
+});
+
+const resubmitActionPlanSchema = z.object({
+  plasticItemType: z.string().optional(),
+  plasticItemLabel: z.string().optional(),
+  baselineQuantity: z.number().optional(),
+  targetQuantity: z.number().optional(),
+  reductionAmount: z.number().optional(),
+  timeframeUnit: z.string().optional(),
+  notes: z.string().optional(),
+});
+
 import { randomUUID, randomBytes } from 'crypto';
 import { db } from "./db";
 import { eq, and, or, sql, desc, gte, lte, count, ilike, inArray } from "drizzle-orm";
@@ -5795,6 +5822,93 @@ Return JSON with:
     }
   });
 
+  // Resubmit rejected audit with updates
+  app.patch('/api/audits/:id/resubmit', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { id } = req.params;
+
+      // Validate input - only allow whitelisted fields
+      const validatedUpdates = resubmitAuditSchema.parse(req.body);
+      
+      // Get audit by ID
+      const audit = await storage.getAudit(id);
+      if (!audit) {
+        return res.status(404).json({ message: "Audit not found" });
+      }
+
+      // Check if audit status is 'rejected'
+      if (audit.status !== 'rejected') {
+        return res.status(403).json({ message: "Only rejected audits can be resubmitted" });
+      }
+
+      // Verify user is a member of the school or is admin
+      const user = await storage.getUser(userId);
+      const isAdmin = user?.isAdmin;
+      
+      if (!isAdmin) {
+        const schoolMember = await storage.getSchoolUser(audit.schoolId, userId);
+        if (!schoolMember) {
+          return res.status(403).json({ message: "You don't have permission to resubmit this audit" });
+        }
+      }
+
+      // Prepare update data: only use validated fields, preserve previous review notes, reset status to submitted
+      const updateData = {
+        ...validatedUpdates,
+        status: 'submitted' as const,
+        isResubmission: true,
+        previousReviewNotes: audit.reviewNotes || null,
+        reviewedBy: null,
+        reviewedAt: null,
+        reviewNotes: null,
+        updatedAt: new Date(),
+      };
+
+      // Update the audit
+      const updatedAudit = await storage.updateAudit(id, updateData);
+      if (!updatedAudit) {
+        return res.status(500).json({ message: "Failed to resubmit audit" });
+      }
+
+      // Send email notifications
+      try {
+        const school = await storage.getSchool(audit.schoolId);
+        
+        if (user?.email && school) {
+          // Send confirmation email to teacher
+          await sendAuditSubmissionEmail(
+            user.email,
+            school.name,
+            user.preferredLanguage || 'en',
+            true // isResubmission flag
+          );
+
+          // Send notification to admins
+          const adminUsers = await storage.getAllUsers();
+          const admins = adminUsers.filter(u => u.isAdmin && u.email);
+          
+          for (const admin of admins) {
+            await sendAdminNewAuditEmail(
+              admin.email!,
+              school.name,
+              `${user.firstName} ${user.lastName}`,
+              admin.preferredLanguage || 'en',
+              true // isResubmission flag
+            );
+          }
+        }
+      } catch (emailError) {
+        console.warn('Email notification failed for audit resubmission:', emailError);
+      }
+
+      res.json(updatedAudit);
+    } catch (error) {
+      console.error("Error resubmitting audit:", error);
+      res.status(500).json({ message: "Failed to resubmit audit" });
+    }
+  });
+
   // Export audit results as PDF
   app.get('/api/audits/:auditId/results-pdf', isAuthenticated, async (req: any, res) => {
     try {
@@ -6301,6 +6415,11 @@ Return JSON with:
         return res.status(404).json({ message: "Reduction promise not found" });
       }
       
+      // Check if promise status is 'pending' or 'rejected'
+      if (promise.reviewStatus !== 'pending' && promise.reviewStatus !== 'rejected') {
+        return res.status(403).json({ message: "Only pending or rejected action plans can be deleted" });
+      }
+      
       // Verify user is member of the school or is admin
       const isMember = userSchools.some(s => s.id === promise.schoolId) || req.user.isAdmin;
       if (!isMember) {
@@ -6314,6 +6433,109 @@ Return JSON with:
     } catch (error) {
       console.error("Error deleting reduction promise:", error);
       res.status(500).json({ message: "Failed to delete reduction promise" });
+    }
+  });
+
+  // Resubmit rejected action plan (reduction promise) with updates
+  app.patch('/api/reduction-promises/:id/resubmit', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { id } = req.params;
+
+      // Validate input - only allow whitelisted fields
+      const validatedUpdates = resubmitActionPlanSchema.parse(req.body);
+      
+      // Use efficient direct lookup instead of fetching all promises
+      const actionPlan = await storage.getActionPlanById(id);
+      
+      if (!actionPlan) {
+        return res.status(404).json({ message: "Action plan not found" });
+      }
+      
+      // Check if promise status is 'rejected'
+      if (actionPlan.reviewStatus !== 'rejected') {
+        return res.status(403).json({ message: "Only rejected action plans can be resubmitted" });
+      }
+      
+      // Verify user is member of the school or is admin
+      const user = await storage.getUser(userId);
+      const isAdmin = user?.isAdmin;
+      
+      if (!isAdmin) {
+        const schoolMember = await storage.getSchoolUser(actionPlan.schoolId, userId);
+        if (!schoolMember) {
+          return res.status(403).json({ message: "Not authorized to resubmit this action plan" });
+        }
+      }
+      
+      // Prepare update data: only use validated fields, preserve previous review notes, reset status to pending
+      const updateData = {
+        ...validatedUpdates,
+        reviewStatus: 'pending' as const,
+        isResubmission: true,
+        previousReviewNotes: actionPlan.reviewNotes || null,
+        reviewedBy: null,
+        reviewedAt: null,
+        reviewNotes: null,
+        updatedAt: new Date(),
+      };
+      
+      // Update the promise
+      const updatedPromise = await storage.updateReductionPromise(id, updateData, actionPlan);
+      if (!updatedPromise) {
+        return res.status(500).json({ message: "Failed to resubmit action plan" });
+      }
+      
+      // Send email notifications about action plan resubmission
+      try {
+        const school = await storage.getSchool(actionPlan.schoolId);
+        
+        if (user?.email && school) {
+          const submissionType = 'Resubmitted';
+          const userLang = user.preferredLanguage || 'en';
+          
+          // Send confirmation email to teacher using generic email template
+          await sendEmail({
+            to: user.email,
+            subject: `✅ Action Plan ${submissionType}`,
+            html: `
+              <p>Dear ${user.firstName} ${user.lastName},</p>
+              <p>Your action plan for <strong>${school.name}</strong> has been successfully ${submissionType.toLowerCase()} and is now awaiting review.</p>
+              <p>Thank you for addressing the feedback and resubmitting your action plan. Our team will review the updates shortly.</p>
+              <p>You'll receive an email notification once your action plan has been reviewed.</p>
+              <p>Keep up the fantastic work! 🌊</p>
+              <p>Best regards,<br>Plastic Clever Schools Team</p>
+            `,
+          });
+
+          // Send notification to admins
+          const adminUsers = await storage.getAllUsers();
+          const admins = adminUsers.filter(u => u.isAdmin && u.email);
+          
+          for (const admin of admins) {
+            await sendEmail({
+              to: admin.email!,
+              subject: `🔔 Action Plan Resubmitted: ${school.name}`,
+              html: `
+                <p>Dear Admin,</p>
+                <p>A previously rejected action plan has been resubmitted and requires your review.</p>
+                <p><strong>School:</strong> ${school.name}</p>
+                <p><strong>Submitted by:</strong> ${user.firstName} ${user.lastName}</p>
+                <p><strong>Status:</strong> 🔄 Resubmission</p>
+                <p>Please review this action plan from your admin dashboard.</p>
+                <p>Best regards,<br>Plastic Clever Schools System</p>
+              `,
+            });
+          }
+        }
+      } catch (emailError) {
+        console.warn('Email notification failed for action plan resubmission:', emailError);
+      }
+      
+      res.json(updatedPromise);
+    } catch (error) {
+      console.error("Error resubmitting action plan:", error);
+      res.status(500).json({ message: "Failed to resubmit action plan" });
     }
   });
 
