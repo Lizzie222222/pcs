@@ -481,13 +481,16 @@ export function createEvidenceRouters(storage: IStorage): {
       }
 
       // Prepare update data: only use validated fields, preserve previous review notes, reset status to pending
-      // CRITICAL: DO NOT include files from validatedUpdates - preserve existing files
-      // Files require separate upload flow to maintain storagePath and other metadata
+      // SMART FILE HANDLING:
+      // - If files are provided in request, use them (already validated by schema)
+      // - If files are NOT provided (undefined), don't include files key - backend preserves existing
       const updateData = {
         title: validatedUpdates.title,
         description: validatedUpdates.description,
         videoLinks: validatedUpdates.videoLinks,
         visibility: validatedUpdates.visibility,
+        // Conditionally include files only if explicitly provided
+        ...(validatedUpdates.files !== undefined ? { files: validatedUpdates.files } : {}),
         status: 'pending' as const,
         isResubmission: true,
         previousReviewNotes: evidence.reviewNotes || null,

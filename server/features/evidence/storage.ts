@@ -103,6 +103,8 @@ export class EvidenceStorage {
         roundNumber: evidence.roundNumber,
         hasChildren: evidence.hasChildren,
         parentalConsentFiles: evidence.parentalConsentFiles,
+        isResubmission: evidence.isResubmission,
+        previousReviewNotes: evidence.previousReviewNotes,
         submittedAt: evidence.submittedAt,
         updatedAt: evidence.updatedAt,
         schoolName: schools.name,
@@ -246,6 +248,8 @@ export class EvidenceStorage {
         roundNumber: evidence.roundNumber,
         hasChildren: evidence.hasChildren,
         parentalConsentFiles: evidence.parentalConsentFiles,
+        isResubmission: evidence.isResubmission,
+        previousReviewNotes: evidence.previousReviewNotes,
         submittedAt: evidence.submittedAt,
         updatedAt: evidence.updatedAt,
         school: {
@@ -465,6 +469,8 @@ export class EvidenceStorage {
         roundNumber: evidence.roundNumber,
         hasChildren: evidence.hasChildren,
         parentalConsentFiles: evidence.parentalConsentFiles,
+        isResubmission: evidence.isResubmission,
+        previousReviewNotes: evidence.previousReviewNotes,
         submittedAt: evidence.submittedAt,
         updatedAt: evidence.updatedAt,
         school: {
@@ -698,10 +704,16 @@ export class EvidenceStorage {
     reviewNotes?: string
   ): Promise<Evidence | undefined> {
     // Get evidence first to know the schoolId for progression check
-    const evidenceRecord = await this.getEvidenceById(id);
+    const evidenceRecord = await this.getEvidence(id);
     if (!evidenceRecord) {
       throw new Error('Evidence not found');
     }
+
+    // Determine previousReviewNotes handling:
+    // - On rejection of resubmission: PRESERVE existing previousReviewNotes
+    // - On approval: CLEAR previousReviewNotes (no longer needed)
+    const isRejection = status === 'rejected';
+    const preservePreviousNotes = isRejection && evidenceRecord.isResubmission;
 
     // Update status via direct database query
     const [updated] = await db
@@ -711,6 +723,8 @@ export class EvidenceStorage {
         reviewedBy,
         reviewedAt: new Date(),
         reviewNotes,
+        // Preserve previousReviewNotes if rejecting a resubmission, otherwise clear
+        previousReviewNotes: preservePreviousNotes ? evidenceRecord.previousReviewNotes : null,
         updatedAt: new Date(),
       })
       .where(eq(evidence.id, id))

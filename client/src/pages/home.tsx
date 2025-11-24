@@ -272,6 +272,17 @@ export default function Home() {
   const [evidenceToDelete, setEvidenceToDelete] = useState<string | null>(null);
   const [resubmitDialogOpen, setResubmitDialogOpen] = useState(false);
   const [evidenceToResubmit, setEvidenceToResubmit] = useState<any | null>(null);
+  const [resubmitFiles, setResubmitFiles] = useState<Array<{
+    id?: string;
+    originalName: string;
+    url: string;
+    size: number;
+    mimeType: string;
+    storagePath: string;
+  }>>([]);
+  const [isUploadingResubmitFile, setIsUploadingResubmitFile] = useState(false);
+  const [hasFilesChanged, setHasFilesChanged] = useState(false);
+  const resubmitFileInputRef = useRef<HTMLInputElement>(null);
   const [dismissedNotifications, setDismissedNotifications] = useState<string[]>(() => {
     const stored = localStorage.getItem('dismissedEvidenceNotifications');
     return stored ? JSON.parse(stored) : [];
@@ -548,6 +559,107 @@ export default function Home() {
   const handleResubmitClose = () => {
     setResubmitDialogOpen(false);
     setEvidenceToResubmit(null);
+    setResubmitFiles([]);
+    setHasFilesChanged(false);
+    setIsUploadingResubmitFile(false);
+  };
+
+  // Initialize resubmit files when evidence is loaded for resubmission
+  useEffect(() => {
+    if (evidenceToResubmit && evidenceToResubmit.files) {
+      setResubmitFiles(evidenceToResubmit.files);
+      setHasFilesChanged(false);
+    }
+  }, [evidenceToResubmit]);
+
+  // Handle file upload for resubmission
+  const handleResubmitFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setIsUploadingResubmitFile(true);
+    
+    try {
+      for (const file of files) {
+        if (file.size > 157286400) { // 150MB limit
+          toast({
+            title: "File Too Large",
+            description: `${file.name} exceeds the 150MB size limit.`,
+            variant: "destructive",
+          });
+          continue;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('visibility', evidenceToResubmit?.visibility || 'private');
+        
+        const uploadResponse = await fetch('/api/evidence-files/upload-compressed', {
+          method: 'POST',
+          credentials: 'include',
+          body: formData,
+        });
+        
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload file');
+        }
+        
+        const { objectPath, compressionRatio } = await uploadResponse.json();
+        
+        if (compressionRatio && parseFloat(compressionRatio) > 0) {
+          console.log(`Image compressed: saved ${compressionRatio}% storage space`);
+        }
+        
+        setResubmitFiles(prev => [...prev, {
+          originalName: file.name,
+          url: objectPath,
+          storagePath: objectPath,
+          size: file.size,
+          mimeType: file.type,
+        }]);
+        setHasFilesChanged(true);
+      }
+      
+      toast({
+        title: "Upload Successful",
+        description: `${files.length} file(s) uploaded successfully.`,
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload Failed",
+        description: "Failed to upload file. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingResubmitFile(false);
+      if (resubmitFileInputRef.current) {
+        resubmitFileInputRef.current.value = '';
+      }
+    }
+  };
+
+  // Remove file from resubmission
+  const handleRemoveResubmitFile = (index: number) => {
+    setResubmitFiles(prev => prev.filter((_, i) => i !== index));
+    setHasFilesChanged(true);
+  };
+
+  // Format file size helper
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  // Get file icon helper
+  const getFileIcon = (mimeType: string) => {
+    if (mimeType.includes('image')) return '🖼️';
+    if (mimeType.includes('video')) return '🎥';
+    if (mimeType.includes('pdf')) return '📄';
+    return '📁';
   };
 
   const dismissNotification = (evidenceId: string) => {
@@ -2339,14 +2451,18 @@ export default function Home() {
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
+              const data: any = {
+                title: formData.get('title') as string,
+                description: formData.get('description') as string,
+                videoLinks: formData.get('videoLinks') as string || '',
+                visibility: formData.get('visibility') as string,
+                // Always send the complete files array so the backend can detect removals
+                files: resubmitFiles,
+              };
+              
               evidenceResubmitMutation.mutate({
                 id: evidenceToResubmit.id,
-                data: {
-                  title: formData.get('title') as string,
-                  description: formData.get('description') as string,
-                  videoLinks: formData.get('videoLinks') as string || '',
-                  visibility: formData.get('visibility') as string,
-                },
+                data,
               });
             }}>
               <div className="space-y-4 py-4">
@@ -2411,12 +2527,85 @@ export default function Home() {
                   </Select>
                 </div>
 
-                <Alert className="bg-blue-50 border-blue-200">
-                  <Info className="h-4 w-4 text-blue-600" />
-                  <div className="ml-2 text-sm text-blue-800">
-                    <strong>Note:</strong> Files and images cannot be changed during resubmission. If you need to update files, please delete this submission and create a new one.
+                {/* File Management Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-medium text-navy">
+                      Files & Images {hasFilesChanged && <span className="text-orange text-xs ml-2">(Modified)</span>}
+                    </label>
+                    <input
+                      ref={resubmitFileInputRef}
+                      type="file"
+                      multiple
+                      accept="image/*,video/*,.pdf"
+                      onChange={handleResubmitFileSelect}
+                      className="hidden"
+                      data-testid="input-resubmit-file-upload"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => resubmitFileInputRef.current?.click()}
+                      disabled={isUploadingResubmitFile}
+                      data-testid="button-add-resubmit-file"
+                    >
+                      {isUploadingResubmitFile ? (
+                        <>
+                          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="mr-2 h-4 w-4" />
+                          Add Files
+                        </>
+                      )}
+                    </Button>
                   </div>
-                </Alert>
+                  
+                  {resubmitFiles.length > 0 ? (
+                    <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-md p-2">
+                      {resubmitFiles.map((file, index) => (
+                        <div 
+                          key={index} 
+                          className="flex items-center justify-between p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
+                          data-testid={`file-item-${index}`}
+                        >
+                          <div className="flex items-center space-x-2 flex-1 min-w-0">
+                            <span className="text-xl flex-shrink-0">{getFileIcon(file.mimeType)}</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900 truncate">
+                                {file.originalName}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {formatFileSize(file.size)}
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveResubmitFile(index)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
+                            data-testid={`button-remove-file-${index}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-500 italic p-3 border border-dashed border-gray-300 rounded-md text-center">
+                      No files attached. Click "Add Files" to upload.
+                    </div>
+                  )}
+                  
+                  <p className="text-xs text-gray-500 mt-2">
+                    You can add or remove files. Changes will be saved when you resubmit.
+                  </p>
+                </div>
               </div>
               
               <DialogFooter className="gap-2">
@@ -2603,10 +2792,10 @@ export default function Home() {
                 data: {
                   plasticItemType: promiseToResubmit.plasticItemType,
                   plasticItemLabel: formData.get('plasticItemLabel') as string,
-                  baselineQuantity: formData.get('baseline') 
+                  baselineQuantity: formData.get('baseline') && formData.get('baseline') !== ''
                     ? parseFloat(formData.get('baseline') as string) 
                     : promiseToResubmit.baselineQuantity,
-                  targetQuantity: formData.get('target')
+                  targetQuantity: formData.get('target') && formData.get('target') !== ''
                     ? parseFloat(formData.get('target') as string)
                     : promiseToResubmit.targetQuantity,
                   timeframeUnit: formData.get('timeframe') as string,

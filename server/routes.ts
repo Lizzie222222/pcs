@@ -19,21 +19,42 @@ const reorderResourcePackItemsSchema = z.object({
 });
 
 // Resubmission validation schemas
+// INVESTIGATION FINDINGS (Nov 2025):
+// - Database audit_responses table has: part1_data, part2_data, part3_data, part4_data, results_data (all JSONB)
+// - NO separate 'files' or 'metricsData' columns exist in database
+// - All data is stored within the JSONB columns above
+// - Using z.any() for maximum flexibility to preserve all JSONB content during resubmission
 const resubmitAuditSchema = z.object({
+  // Part 1: About Your School (school info, student count, audit date, team)
+  // Stored as JSONB, accepts any structure
   part1Data: z.any().optional(),
+  
+  // Part 2: Lunchroom & Staffroom (plastic items in food areas)
+  // Stored as JSONB, accepts any structure
   part2Data: z.any().optional(),
+  
+  // Part 3: Classrooms & Bathrooms (room-by-room plastic audit data - CRITICAL)
+  // Stored as JSONB, accepts any structure including room selections and counts
   part3Data: z.any().optional(),
+  
+  // Part 4: Waste Management (recycling bins, policies, waste destination)
+  // Stored as JSONB, accepts any structure
   part4Data: z.any().optional(),
-  resultsData: z.object({
-    totalPlasticItems: z.number().optional(),
-    topProblemPlastics: z.array(z.any()).optional(),
-    plasticCounts: z.record(z.number()).optional(),
-  }).passthrough().optional(),
-  metricsData: z.any().optional(),
-  totalPlasticItems: z.any().optional(),
-  topProblemPlastics: z.any().optional(),
-  files: z.array(z.any()).optional(),
-});
+  
+  // Calculated results with full structure (daily and annual counts)
+  // Stored as JSONB, uses passthrough to preserve any additional fields
+  resultsData: z.any().optional(),
+  
+  // Top-level analytics (duplicated from resultsData for quick access in database queries)
+  totalPlasticItems: z.number().optional(),
+  topProblemPlastics: z.array(z.any()).optional(),
+  
+  // Form navigation state (preserves which step user was on)
+  currentPart: z.number().int().min(1).max(5).optional(),
+  
+  // Round context (set by backend, but accepted here for completeness)
+  roundNumber: z.number().int().min(1).optional(),
+}).passthrough(); // Allow any additional fields not explicitly defined
 
 const resubmitActionPlanSchema = z.object({
   plasticItemType: z.string().optional(),
@@ -6450,6 +6471,24 @@ Return JSON with:
       
       if (!actionPlan) {
         return res.status(404).json({ message: "Action plan not found" });
+      }
+      
+      // Recalculate reductionAmount if baseline or target changed
+      if (validatedUpdates.baselineQuantity !== undefined || validatedUpdates.targetQuantity !== undefined) {
+        const newBaseline = validatedUpdates.baselineQuantity ?? actionPlan.baselineQuantity;
+        const newTarget = validatedUpdates.targetQuantity ?? actionPlan.targetQuantity;
+        validatedUpdates.reductionAmount = newBaseline - newTarget;
+      }
+      
+      // Validate no NaN values after recalculation
+      if (validatedUpdates.baselineQuantity !== undefined && isNaN(validatedUpdates.baselineQuantity)) {
+        return res.status(400).json({ message: "Invalid baseline quantity" });
+      }
+      if (validatedUpdates.targetQuantity !== undefined && isNaN(validatedUpdates.targetQuantity)) {
+        return res.status(400).json({ message: "Invalid target quantity" });
+      }
+      if (validatedUpdates.reductionAmount !== undefined && isNaN(validatedUpdates.reductionAmount)) {
+        return res.status(400).json({ message: "Invalid reduction amount" });
       }
       
       // Check if promise status is 'rejected'

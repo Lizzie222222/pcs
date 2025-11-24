@@ -4676,6 +4676,18 @@ export class DatabaseStorage implements IStorage {
     approved: boolean,
     notes?: string
   ): Promise<AuditResponse | undefined> {
+    // Get audit first to check if it's a resubmission
+    const existingAudit = await this.getAudit(id);
+    if (!existingAudit) {
+      throw new Error('Audit not found');
+    }
+
+    // Determine previousReviewNotes handling:
+    // - On rejection of resubmission: PRESERVE existing previousReviewNotes
+    // - On approval: CLEAR previousReviewNotes (no longer needed)
+    const isRejection = !approved;
+    const preservePreviousNotes = isRejection && existingAudit.isResubmission;
+
     const status = approved ? 'approved' : 'rejected';
     const [reviewedAudit] = await db
       .update(auditResponses)
@@ -4684,6 +4696,8 @@ export class DatabaseStorage implements IStorage {
         reviewedBy: reviewerId,
         reviewedAt: new Date(),
         reviewNotes: notes,
+        // Preserve previousReviewNotes if rejecting a resubmission, otherwise clear
+        previousReviewNotes: preservePreviousNotes ? existingAudit.previousReviewNotes : null,
         updatedAt: new Date(),
       })
       .where(eq(auditResponses.id, id))
@@ -4996,6 +5010,8 @@ export class DatabaseStorage implements IStorage {
         reviewedBy: reductionPromises.reviewedBy,
         reviewedAt: reductionPromises.reviewedAt,
         reviewNotes: reductionPromises.reviewNotes,
+        isResubmission: reductionPromises.isResubmission,
+        previousReviewNotes: reductionPromises.previousReviewNotes,
         createdAt: reductionPromises.createdAt,
         updatedAt: reductionPromises.updatedAt,
         schoolName: schools.name,
@@ -5098,6 +5114,18 @@ export class DatabaseStorage implements IStorage {
     reviewedBy: string,
     reviewNotes?: string
   ): Promise<ReductionPromise | undefined> {
+    // Get action plan first to check if it's a resubmission
+    const existingActionPlan = await this.getActionPlanById(id);
+    if (!existingActionPlan) {
+      throw new Error('Action plan not found');
+    }
+
+    // Determine previousReviewNotes handling:
+    // - On rejection of resubmission: PRESERVE existing previousReviewNotes
+    // - On approval: CLEAR previousReviewNotes (no longer needed)
+    const isRejection = reviewStatus === 'rejected';
+    const preservePreviousNotes = isRejection && existingActionPlan.isResubmission;
+
     const [updated] = await db
       .update(reductionPromises)
       .set({
@@ -5105,6 +5133,8 @@ export class DatabaseStorage implements IStorage {
         reviewedBy,
         reviewedAt: new Date(),
         reviewNotes,
+        // Preserve previousReviewNotes if rejecting a resubmission, otherwise clear
+        previousReviewNotes: preservePreviousNotes ? existingActionPlan.previousReviewNotes : null,
         updatedAt: new Date(),
       })
       .where(eq(reductionPromises.id, id))
