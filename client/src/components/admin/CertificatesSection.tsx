@@ -72,9 +72,9 @@ export default function CertificatesSection({ activeTab }: CertificatesSectionPr
     retry: false,
   });
 
-  // Fetch all schools for the dropdown (max 200 per API limit)
+  // Fetch all schools for the dropdown (max 2000 per API limit)
   const { data: schoolsData } = useQuery<{ schools: School[], total: number }>({
-    queryKey: ['/api/admin/schools', { limit: 200 }],
+    queryKey: ['/api/admin/schools', { limit: 2000 }],
     enabled: createDialogOpen,
     retry: false,
   });

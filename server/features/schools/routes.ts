@@ -59,7 +59,7 @@ export const adminSchoolsQuerySchema = z.object({
   interactionStatus: z.enum(['all', 'interacted', 'not-interacted']).optional().transform(val => val === 'all' ? undefined : val),
   completionStatus: z.enum(['all', 'plastic-clever', 'in-progress']).optional().transform(val => val === 'all' ? undefined : val),
   page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(200).default(50),
+  limit: z.coerce.number().int().positive().max(2000).default(50),
   sortBy: z.enum(['name', 'country', 'progress', 'joinDate']).optional(),
   sortOrder: z.enum(['asc', 'desc']).optional(),
 });
