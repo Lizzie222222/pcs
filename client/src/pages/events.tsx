@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { getEventAvailableLanguages, LANGUAGE_FLAG_MAP } from "@/lib/languageUtils";
 import whiteLogoUrl from "@assets/PCSWhite_1761216344335.png";
 import { normalizeObjectStorageUrl } from "@/lib/urlNormalization";
-import { format } from "date-fns";
+import { format, isSameDay } from "date-fns";
 
 interface Event {
   id: string;
@@ -244,24 +244,33 @@ function EventCard({ event, isPast = false }: { event: Event; isPast?: boolean }
             </div>
           </div>
           <div className="space-y-2 mb-4">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Calendar className="w-4 h-4" />
-              <span>{format(new Date(event.startDateTime), 'dd/MM/yyyy')}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Clock className="w-4 h-4" />
-              <span>
-                {new Date(event.startDateTime).toLocaleTimeString('en-GB', { 
-                  hour: '2-digit', 
-                  minute: '2-digit' 
-                })}
-                {' - '}
-                {new Date(event.endDateTime).toLocaleTimeString('en-GB', { 
-                  hour: '2-digit', 
-                  minute: '2-digit' 
-                })}
-              </span>
-            </div>
+            {(() => {
+              const startDate = new Date(event.startDateTime);
+              const endDate = new Date(event.endDateTime);
+              const isMultiDay = !isSameDay(startDate, endDate);
+              
+              return isMultiDay ? (
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Calendar className="w-4 h-4" />
+                  <span>
+                    {format(startDate, 'dd/MM/yyyy HH:mm')} – {format(endDate, 'dd/MM/yyyy HH:mm')}
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Calendar className="w-4 h-4" />
+                    <span>{format(startDate, 'dd/MM/yyyy')}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Clock className="w-4 h-4" />
+                    <span>
+                      {format(startDate, 'HH:mm')} - {format(endDate, 'HH:mm')}
+                    </span>
+                  </div>
+                </>
+              );
+            })()}
             {event.location && (
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <MapPin className="w-4 h-4" />

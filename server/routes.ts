@@ -10826,6 +10826,9 @@ Return JSON with:
       if (processedUpdates.registrationDeadline) {
         processedUpdates.registrationDeadline = new Date(processedUpdates.registrationDeadline);
       }
+      if (processedUpdates.recordingAvailableFrom) {
+        processedUpdates.recordingAvailableFrom = new Date(processedUpdates.recordingAvailableFrom);
+      }
       
       // Track changes for email notification
       const changes: string[] = [];
