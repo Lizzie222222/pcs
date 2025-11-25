@@ -64,10 +64,17 @@ export const programStageEnum = pgEnum('program_stage', [
  * @description Evidence review status enumeration for admin approval workflow. Tracks evidence submission lifecycle.
  * @location shared/schema.ts#L51
  * @related evidence table, server/routes.ts (evidence review endpoints), client/src/pages/admin.tsx (review handlers)
+ * 
+ * Status Flow:
+ * - pending: Initial submission, awaiting review
+ * - approved: Evidence meets requirements
+ * - revision_requested: Admin requests changes (friendly feedback flow)
+ * - rejected: Evidence unsuitable (rare, final decision)
  */
 export const evidenceStatusEnum = pgEnum('evidence_status', [
   'pending',
   'approved',
+  'revision_requested',
   'rejected'
 ]);
 
