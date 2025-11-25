@@ -506,28 +506,6 @@ export function createEvidenceRouters(storage: IStorage): {
         return res.status(500).json({ message: "Failed to resubmit evidence" });
       }
 
-      // Send email confirmation to teacher (skip admin notifications to reduce spam)
-      try {
-        const user = await storage.getUser(userId);
-        const school = await schoolStorage.getSchool(evidence.schoolId);
-        
-        if (user?.email && school) {
-          // Send confirmation email to teacher
-          await sendEvidenceSubmissionEmail(
-            user.email,
-            school.name,
-            updatedEvidence.title,
-            updatedEvidence.stage,
-            user.preferredLanguage || 'en',
-            true // isResubmission flag
-          );
-          // NOTE: Admin notifications disabled to reduce email spam
-          // Admins can view pending evidence in the review queue
-        }
-      } catch (emailError) {
-        console.warn('Email notification failed for evidence resubmission:', emailError);
-      }
-
       // Log evidence resubmission
       const user = await storage.getUser(userId);
       await logUserActivity(
@@ -547,7 +525,23 @@ export function createEvidenceRouters(storage: IStorage): {
         req
       );
 
+      // Respond immediately, then send email asynchronously (non-blocking)
       res.json(updatedEvidence);
+
+      // Send confirmation email to teacher in background (non-blocking)
+      const school = await schoolStorage.getSchool(evidence.schoolId);
+      if (user?.email && school) {
+        sendEvidenceSubmissionEmail(
+          user.email,
+          school.name,
+          updatedEvidence.title,
+          updatedEvidence.stage,
+          user.preferredLanguage || 'en',
+          true // isResubmission flag
+        ).catch((emailError: any) => {
+          console.warn('Email notification failed for evidence resubmission:', emailError);
+        });
+      }
     } catch (error) {
       console.error("Error resubmitting evidence:", error);
       res.status(500).json({ message: "Failed to resubmit evidence" });
