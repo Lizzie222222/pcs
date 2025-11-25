@@ -410,7 +410,7 @@ export class EvidenceStorage {
     const limit = Math.min(100, Math.max(1, requestedLimit));
     const page = Math.max(1, requestedPage);
     
-    // Build filters
+    // Build filters (for evidence table)
     const conditions = [
       sql`${evidence.evidenceRequirementId} IS NULL`,
       eq(evidence.isBonus, false),
@@ -423,17 +423,17 @@ export class EvidenceStorage {
       conditions.push(eq(evidence.stage, stage));
     }
 
-    // If country filter is specified, we need to join with schools for both COUNT and SELECT
-    const needsSchoolJoin = !!country;
+    // Build country filter condition (needs schools table join)
+    const countryCondition = country ? eq(schools.country, country) : undefined;
 
-    // COUNT query - join with schools if filtering by country
+    // COUNT query - always join with schools when filtering by country
     let countResult;
-    if (needsSchoolJoin) {
+    if (countryCondition) {
       countResult = await db
         .select({ count: sql<number>`count(*)` })
         .from(evidence)
         .leftJoin(schools, eq(evidence.schoolId, schools.id))
-        .where(and(...conditions, eq(schools.country, country)));
+        .where(and(...conditions, countryCondition));
     } else {
       // Single COUNT query - no JOIN needed to count all evidence including orphans
       countResult = await db
@@ -508,7 +508,7 @@ export class EvidenceStorage {
       .from(evidence)
       .leftJoin(schools, eq(evidence.schoolId, schools.id))
       .leftJoin(users, eq(evidence.reviewedBy, users.id))
-      .where(and(...conditions, ...(country ? [eq(schools.country, country)] : [])))
+      .where(countryCondition ? and(...conditions, countryCondition) : and(...conditions))
       .orderBy(desc(evidence.submittedAt), asc(evidence.id))
       .limit(limit)
       .offset(offset);

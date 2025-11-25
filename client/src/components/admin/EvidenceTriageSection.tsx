@@ -53,6 +53,7 @@ export default function EvidenceTriageSection() {
   // Filters state
   const [schoolFilter, setSchoolFilter] = useState<string>('all');
   const [stageFilter, setStageFilter] = useState<'all' | 'inspire' | 'investigate' | 'act'>('all');
+  const [countryFilter, setCountryFilter] = useState<string>('all');
   const [page, setPage] = useState(1);
   const limit = 20;
 
@@ -64,7 +65,7 @@ export default function EvidenceTriageSection() {
 
   // Fetch homeless evidence
   const { data: homelessData, isLoading: evidenceLoading } = useQuery({
-    queryKey: ['/api/admin/evidence/homeless', schoolFilter, stageFilter, page],
+    queryKey: ['/api/admin/evidence/homeless', schoolFilter, stageFilter, countryFilter, page],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (schoolFilter && schoolFilter !== 'all') {
@@ -72,6 +73,9 @@ export default function EvidenceTriageSection() {
       }
       if (stageFilter && stageFilter !== 'all') {
         params.append('stage', stageFilter);
+      }
+      if (countryFilter && countryFilter !== 'all') {
+        params.append('country', countryFilter);
       }
       params.append('page', page.toString());
       params.append('limit', limit.toString());
@@ -290,7 +294,31 @@ export default function EvidenceTriageSection() {
               </Select>
             </div>
 
-            <div className="w-64">
+            <div className="w-48">
+              <label className="text-sm font-medium mb-2 block">Country</label>
+              <Select
+                value={countryFilter}
+                onValueChange={(value) => {
+                  setCountryFilter(value);
+                  setPage(1);
+                }}
+                data-testid="select-country-filter"
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All Countries" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Countries</SelectItem>
+                  {Array.from(new Set(schools.map(s => s.country).filter(Boolean))).sort().map((country) => (
+                    <SelectItem key={country} value={country}>
+                      {country}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="w-48">
               <label className="text-sm font-medium mb-2 block">Stage</label>
               <Select
                 value={stageFilter}
