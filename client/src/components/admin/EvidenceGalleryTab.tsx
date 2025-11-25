@@ -25,8 +25,10 @@ import {
   Award,
   TrendingUp,
   Filter,
-  CalendarIcon
+  CalendarIcon,
+  UserCog
 } from "lucide-react";
+import { format } from "date-fns";
 import { EmptyState } from "@/components/ui/states";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
@@ -418,6 +420,14 @@ export default function EvidenceGalleryTab() {
                     <span>{evidence.school?.country || t('evidenceGallery.form.values.unknown')}</span>
                   </div>
                   
+                  {/* Upload Date */}
+                  {evidence.submittedAt && (
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <CalendarIcon className="h-3 w-3" />
+                      <span>{format(new Date(evidence.submittedAt), 'MMM d, yyyy')}</span>
+                    </div>
+                  )}
+                  
                   {/* Badges */}
                   <div className="flex flex-wrap gap-1">
                     <Badge className={getStageBadgeColor(evidence.stage)}>
@@ -430,6 +440,12 @@ export default function EvidenceGalleryTab() {
                       <Badge variant="outline" className="text-xs">
                         <Eye className="h-3 w-3 mr-1" />
                         {t('evidenceGallery.badges.public')}
+                      </Badge>
+                    )}
+                    {evidence.submitter?.isAdmin && (
+                      <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                        <UserCog className="h-3 w-3 mr-1" />
+                        {t('evidenceGallery.badges.adminUpload')}
                       </Badge>
                     )}
                   </div>

@@ -1293,7 +1293,8 @@
       "permissionApproved": "Permission Approved",
       "permissionRejected": "Permission Rejected",
       "public": "Public",
-      "registeredOnly": "Registered Only"
+      "registeredOnly": "Registered Only",
+      "adminUpload": "Admin Upload"
     },
     "dialogs": {
       "evidenceDetails": {
