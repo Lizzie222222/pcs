@@ -1674,7 +1674,7 @@ function AnalyticsTab({ school, reductionPromises }: {
         <CardContent className="space-y-4">
           <div>
             <div className="flex justify-between text-sm mb-2">
-              <span className="text-gray-600">Overall Progress</span>
+              <span className="text-gray-600">Round Progress</span>
               <span className="font-medium">{school.progressPercentage}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3">
@@ -2241,7 +2241,7 @@ function AuditsTab({ schoolId }: { schoolId: string }) {
                   <div className="p-4 bg-gradient-to-r from-pcs_blue/10 to-teal/10 rounded-lg border-2 border-pcs_blue/20">
                     <h4 className="font-semibold mb-2 flex items-center gap-2">
                       <Award className="h-5 w-5 text-pcs_blue" />
-                      Overall Progress
+                      Round Progress
                     </h4>
                     {(() => {
                       const approvedAudits = audits
