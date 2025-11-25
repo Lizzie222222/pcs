@@ -1237,7 +1237,27 @@ schoolsRouter.get('/api/admin/schools/:id', isAuthenticated, requireAdminOrPartn
       return res.status(404).json({ message: "School not found" });
     }
 
-    res.json(school);
+    const evidenceCounts = await storage.getSchoolEvidenceCounts(school.id);
+    
+    const allRequirements = await storage.getEvidenceRequirements();
+    const inspireRequirements = allRequirements.filter(r => r.stage === 'inspire').length;
+    const investigateRequirements = allRequirements.filter(r => r.stage === 'investigate').length;
+    const actRequirements = allRequirements.filter(r => r.stage === 'act').length;
+    const totalRequired = inspireRequirements + investigateRequirements + actRequirements;
+    
+    const totalApproved = 
+      evidenceCounts.inspire.approved + 
+      evidenceCounts.investigate.approved + 
+      (evidenceCounts.investigate.hasQuiz ? 1 : 0) +
+      (evidenceCounts.investigate.hasActionPlan ? 1 : 0) +
+      evidenceCounts.act.approved;
+
+    res.json({
+      ...school,
+      evidenceCounts,
+      totalRequired,
+      totalApproved
+    });
   } catch (error) {
     console.error("Error fetching school:", error);
     res.status(500).json({ message: "Failed to fetch school" });

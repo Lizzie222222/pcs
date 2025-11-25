@@ -84,6 +84,8 @@ interface SchoolData {
   type?: string;
   address?: string;
   primaryLanguage?: string | null;
+  totalRequired?: number;
+  totalApproved?: number;
 }
 
 interface SchoolTeacher {
@@ -1675,7 +1677,7 @@ function AnalyticsTab({ school, reductionPromises }: {
           <div>
             <div className="flex justify-between text-sm mb-2">
               <span className="text-gray-600">Round Progress</span>
-              <span className="font-medium">{school.progressPercentage}%</span>
+              <span className="font-medium">{school.totalApproved ?? 0}/{school.totalRequired ?? 0} submissions</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3">
               <div
