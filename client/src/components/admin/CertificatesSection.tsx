@@ -72,12 +72,13 @@ export default function CertificatesSection({ activeTab }: CertificatesSectionPr
     retry: false,
   });
 
-  // Fetch all schools for the dropdown
-  const { data: schools = [] } = useQuery<School[]>({
-    queryKey: ['/api/admin/schools', { limit: 1000 }],
+  // Fetch all schools for the dropdown (max 200 per API limit)
+  const { data: schoolsData } = useQuery<{ schools: School[], total: number }>({
+    queryKey: ['/api/admin/schools', { limit: 200 }],
     enabled: createDialogOpen,
     retry: false,
   });
+  const schools = schoolsData?.schools || [];
 
   // Fetch current certificate background
   const { data: backgroundData, isLoading: isLoadingBackground } = useQuery<{ url: string | null }>({
