@@ -167,7 +167,7 @@
     "files_description": "Sube fotos, documentos u otras evidencias (opcional)",
     "description_help": "Describe qué hiciste, cómo lo hiciste y qué impacto tuvo.",
     "upload_files": "Subir Archivos",
-    "upload_help": "Compatible con fotos (JPG, PNG), videos (MP4) y documentos (PDF). Máximo 150MB cada uno.",
+    "upload_help": "Compatible con fotos (JPG, PNG) y documentos (PDF). Máximo 150MB cada uno. Para videos, por favor use el campo de Enlaces de Video arriba.",
     "uploaded_files": "Archivos Subidos",
     "add_files": "Añadir Archivos",
     "file_selected": "{{filename}} ha sido seleccionado para subir",
