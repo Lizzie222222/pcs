@@ -390,13 +390,15 @@ export class EvidenceStorage {
    * @param stage - Optional stage filter
    * @param requestedPage - Requested page number (will be sanitized)
    * @param requestedLimit - Requested items per page (will be sanitized)
+   * @param country - Optional country filter
    * @returns Object with items, total, page, totalPages, limit
    */
   async getHomelessEvidence(
     schoolId: string | undefined,
     stage: 'inspire' | 'investigate' | 'act' | undefined,
     requestedPage: number,
-    requestedLimit: number
+    requestedLimit: number,
+    country?: string
   ): Promise<{
     items: EvidenceWithSchool[];
     total: number;
@@ -421,11 +423,24 @@ export class EvidenceStorage {
       conditions.push(eq(evidence.stage, stage));
     }
 
-    // Single COUNT query - no JOIN needed to count all evidence including orphans
-    const countResult = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(evidence)
-      .where(and(...conditions));
+    // If country filter is specified, we need to join with schools for both COUNT and SELECT
+    const needsSchoolJoin = !!country;
+
+    // COUNT query - join with schools if filtering by country
+    let countResult;
+    if (needsSchoolJoin) {
+      countResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(evidence)
+        .leftJoin(schools, eq(evidence.schoolId, schools.id))
+        .where(and(...conditions, eq(schools.country, country)));
+    } else {
+      // Single COUNT query - no JOIN needed to count all evidence including orphans
+      countResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(evidence)
+        .where(and(...conditions));
+    }
     
     const total = Number(countResult[0]?.count || 0);
     
@@ -493,7 +508,7 @@ export class EvidenceStorage {
       .from(evidence)
       .leftJoin(schools, eq(evidence.schoolId, schools.id))
       .leftJoin(users, eq(evidence.reviewedBy, users.id))
-      .where(and(...conditions))
+      .where(and(...conditions, ...(country ? [eq(schools.country, country)] : [])))
       .orderBy(desc(evidence.submittedAt), asc(evidence.id))
       .limit(limit)
       .offset(offset);

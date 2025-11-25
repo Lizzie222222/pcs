@@ -1281,13 +1281,14 @@ export function createEvidenceRouters(storage: IStorage): {
    * Query params:
    * - schoolId: Optional filter by school
    * - stage: Optional filter by stage (inspire/investigate/act)
+   * - country: Optional filter by country
    * - page: Page number (default 1)
    * - limit: Items per page (default 20)
    */
   adminEvidenceRouter.get('/homeless', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       // Parse query params
-      const { schoolId, stage, page, limit } = req.query;
+      const { schoolId, stage, country, page, limit } = req.query;
       
       const parsedPage = Number.parseInt(page as string, 10);
       const parsedLimit = Number.parseInt(limit as string, 10);
@@ -1300,7 +1301,8 @@ export function createEvidenceRouters(storage: IStorage): {
         schoolId as string | undefined,
         stage as 'inspire' | 'investigate' | 'act' | undefined,
         requestedPage,
-        requestedLimit
+        requestedLimit,
+        country as string | undefined
       );
       
       // Shape response
