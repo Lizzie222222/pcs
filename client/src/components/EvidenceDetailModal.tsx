@@ -45,7 +45,15 @@ export function EvidenceDetailModal({ evidence, isOpen, onClose }: EvidenceDetai
     }
   };
 
-  const files = evidence.files as any[] || [];
+  // Map file properties to match EvidenceFilesGallery interface
+  // Database stores: { originalName, url, size, mimeType, storagePath }
+  // Gallery expects: { name, url, size, type }
+  const files = (evidence.files as any[] || []).map((file: any) => ({
+    name: file.name || file.originalName || 'File',
+    url: file.url || file.storagePath || '',
+    size: file.size || 0,
+    type: file.type || file.mimeType || '',
+  }));
 
   // Helper to safely format date, handling null/undefined/empty string/invalid dates
   const formatDate = (dateValue: Date | string | null | undefined): string | null => {

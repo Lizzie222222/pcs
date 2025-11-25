@@ -5,6 +5,7 @@ import { X, Download, ChevronLeft, ChevronRight, FileText, Film, Image as ImageI
 import { PDFThumbnail } from "./PDFThumbnail";
 import { normalizeObjectStorageUrl } from "@/lib/urlNormalization";
 
+// Normalized file interface used by this component
 interface EvidenceFile {
   name: string;
   url: string;
@@ -12,14 +13,39 @@ interface EvidenceFile {
   type: string;
 }
 
+// Raw file interface from database (has different property names)
+interface RawEvidenceFile {
+  name?: string;
+  originalName?: string;
+  url?: string;
+  storagePath?: string;
+  size?: number;
+  type?: string;
+  mimeType?: string;
+}
+
 interface EvidenceFilesGalleryProps {
-  files: EvidenceFile[];
+  files: (EvidenceFile | RawEvidenceFile)[];
   className?: string;
 }
 
-export function EvidenceFilesGallery({ files, className = "" }: EvidenceFilesGalleryProps) {
+// Helper function to normalize file properties from various sources
+function normalizeFile(file: EvidenceFile | RawEvidenceFile): EvidenceFile {
+  return {
+    name: (file as any).name || (file as any).originalName || 'File',
+    url: (file as any).url || (file as any).storagePath || '',
+    size: (file as any).size || 0,
+    type: (file as any).type || (file as any).mimeType || '',
+  };
+}
+
+export function EvidenceFilesGallery({ files: rawFiles, className = "" }: EvidenceFilesGalleryProps) {
   const [selectedFileIndex, setSelectedFileIndex] = useState<number | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  
+  // Normalize all files to ensure consistent property names
+  // Handle both formats: {name, url, size, type} and {originalName, storagePath, size, mimeType}
+  const files = (rawFiles || []).map(normalizeFile);
 
   const openFile = (index: number) => {
     setSelectedFileIndex(index);
