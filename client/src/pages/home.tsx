@@ -181,6 +181,8 @@ interface DashboardData {
     awardCompleted: boolean;
     currentRound?: number;
     roundsCompleted?: number;
+    totalRequired?: number;
+    totalApproved?: number;
   };
   recentEvidence: Array<{
     id: string;
@@ -1073,8 +1075,8 @@ export default function Home() {
                   <div className="relative inline-flex items-center justify-center w-28 h-28 mb-3">
                     <div className="absolute inset-0 bg-gradient-to-br from-pcs_blue to-teal rounded-full opacity-20"></div>
                     <div className="relative bg-white rounded-full w-24 h-24 flex items-center justify-center shadow-xl border-4 border-white">
-                      <span className="text-2xl font-bold text-navy" data-testid="text-progress-percentage">
-                        {school.progressPercentage % 100 === 0 && school.progressPercentage > 0 ? 100 : school.progressPercentage % 100}%
+                      <span className="text-xl font-bold text-navy" data-testid="text-progress-percentage">
+                        {school.totalApproved ?? 0}/{school.totalRequired ?? 0}
                       </span>
                     </div>
                   </div>

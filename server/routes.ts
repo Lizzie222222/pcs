@@ -2569,6 +2569,20 @@ Return JSON with:
       // Get evidence counts with progression info
       const evidenceCounts = await storage.getSchoolEvidenceCounts(school.id);
       
+      // Calculate totalRequired and totalApproved for "X/Y submissions" display
+      const allRequirements = await storage.getEvidenceRequirements();
+      const inspireRequirements = allRequirements.filter(r => r.stage === 'inspire').length;
+      const investigateRequirements = allRequirements.filter(r => r.stage === 'investigate').length;
+      const actRequirements = allRequirements.filter(r => r.stage === 'act').length;
+      const totalRequired = inspireRequirements + investigateRequirements + actRequirements;
+      
+      const totalApproved = 
+        evidenceCounts.inspire.approved + 
+        evidenceCounts.investigate.approved + 
+        (evidenceCounts.investigate.hasQuiz ? 1 : 0) +
+        (evidenceCounts.investigate.hasActionPlan ? 1 : 0) +
+        evidenceCounts.act.approved;
+      
       // Map evidence to include roundNumber in response (already present from DB)
       const recentEvidenceWithRounds = evidence.slice(0, 10).map(ev => ({
         id: ev.id,
@@ -2585,7 +2599,11 @@ Return JSON with:
       }));
       
       res.json({
-        school,
+        school: {
+          ...school,
+          totalRequired,
+          totalApproved,
+        },
         recentEvidence: recentEvidenceWithRounds, // Latest 10 submissions from all rounds
         schoolUser: schoolUser ? {
           role: schoolUser.role,
