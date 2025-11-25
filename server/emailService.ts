@@ -1117,7 +1117,7 @@ export async function sendVerificationRequestEmail(
       </p>
     `,
     callToActionText: 'Review Request',
-    footerText: 'You received this email because you are a head teacher at this school.'
+    footerText: 'You received this email because you are a lead teacher at this school.'
   };
   
   return await sendTranslatedEmail({

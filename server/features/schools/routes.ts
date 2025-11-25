@@ -1724,7 +1724,7 @@ schoolsRouter.post('/api/admin/schools/:schoolId/assign-teacher', isAuthenticate
             <div style="padding: 40px 20px; background: #f9f9f9;">
               <h2 style="color: #0B3D5D;">You've Been Added to a School</h2>
               <p style="color: #666; line-height: 1.6;">
-                A platform administrator has added you to <strong>${school.name}</strong> as a ${role === 'head_teacher' ? 'Head Teacher' : 'Teacher'}.
+                A platform administrator has added you to <strong>${school.name}</strong> as a ${role === 'head_teacher' ? 'Lead Teacher' : 'Teacher'}.
               </p>
               <p style="color: #666; line-height: 1.6;">
                 You can now access your school dashboard and participate in the Plastic Clever Schools programme.

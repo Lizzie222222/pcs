@@ -3348,7 +3348,7 @@ export class DatabaseStorage implements IStorage {
           CASE 
             WHEN is_admin = true THEN 'Admin'
             WHEN role = 'teacher' THEN 'Teacher'
-            WHEN role = 'head_teacher' THEN 'Head Teacher'
+            WHEN role = 'head_teacher' THEN 'Lead Teacher'
             WHEN role = 'pending_teacher' THEN 'Pending Teacher'
             ELSE COALESCE(role, 'Other')
           END
@@ -3361,7 +3361,7 @@ export class DatabaseStorage implements IStorage {
         CASE 
           WHEN is_admin = true THEN 'Admin'
           WHEN role = 'teacher' THEN 'Teacher'
-          WHEN role = 'head_teacher' THEN 'Head Teacher'
+          WHEN role = 'head_teacher' THEN 'Lead Teacher'
           WHEN role = 'pending_teacher' THEN 'Pending Teacher'
           ELSE COALESCE(role, 'Other')
         END

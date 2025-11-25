@@ -196,7 +196,7 @@ export default function SchoolTeachersList() {
                         </td>
                         <td className="p-2 text-sm">
                           <Badge variant="outline" data-testid={`text-teacher-role-${teacher.userId}`}>
-                            {teacher.teacherRole || (teacher.role === 'head_teacher' ? 'Head Teacher' : 'Teacher')}
+                            {teacher.teacherRole || (teacher.role === 'head_teacher' ? 'Lead Teacher' : 'Teacher')}
                           </Badge>
                         </td>
                         <td className="p-2 text-sm" data-testid={`text-teacher-verified-${teacher.userId}`}>

@@ -1267,7 +1267,7 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
                     className="text-pcs_blue"
                     data-testid="radio-head-teacher"
                   />
-                  <span className="text-sm">Head Teacher</span>
+                  <span className="text-sm">Lead Teacher</span>
                 </label>
                 <label className="flex items-center gap-2">
                   <input

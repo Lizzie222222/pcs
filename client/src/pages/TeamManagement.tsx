@@ -374,7 +374,7 @@ export default function TeamManagement() {
                                 className={member.role === 'head_teacher' ? 'bg-pcs_blue text-white' : 'bg-teal text-white'}
                                 data-testid={`badge-member-role-${member.userId}`}
                               >
-                                {member.role === 'head_teacher' ? 'Head Teacher' : 'Teacher'}
+                                {member.role === 'head_teacher' ? 'Lead Teacher' : 'Teacher'}
                               </Badge>
                             </td>
                             <td className="p-3 text-gray-600" data-testid={`text-member-date-${member.userId}`}>

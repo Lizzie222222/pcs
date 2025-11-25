@@ -95,7 +95,7 @@ export default function EmailManagementSection({
     welcome: { recipientEmail: '', schoolName: 'Test School' },
     invitation: { recipientEmail: '', schoolName: 'Test School', inviterName: 'John Doe', expiresInDays: 7 },
     joinRequest: { recipientEmail: '', schoolName: 'Test School', requesterName: 'Jane Smith', requesterEmail: 'jane@example.com', evidence: 'I am a teacher at this school.' },
-    joinApproved: { recipientEmail: '', schoolName: 'Test School', reviewerName: 'Head Teacher', reviewNotes: '' },
+    joinApproved: { recipientEmail: '', schoolName: 'Test School', reviewerName: 'Lead Teacher', reviewNotes: '' },
     evidenceSubmitted: { recipientEmail: '', schoolName: 'Test School', evidenceTitle: 'Recycling Program', stage: 'Stage 1' },
     evidenceApproved: { recipientEmail: '', schoolName: 'Test School', evidenceTitle: 'Recycling Program' },
     evidenceRevision: { recipientEmail: '', schoolName: 'Test School', evidenceTitle: 'Recycling Program', feedback: 'Please add more details about student participation.' },
@@ -487,10 +487,10 @@ export default function EmailManagementSection({
             {/* Join Request */}
             {selectedEmailType === 'joinRequest' && (
             <div className="space-y-4">
-              <h3 className="font-semibold text-lg">Join Request (to Head Teacher)</h3>
+              <h3 className="font-semibold text-lg">Join Request (to Lead Teacher)</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Recipient Email (Head Teacher) *</label>
+                  <label className="block text-sm font-medium mb-2">Recipient Email (Lead Teacher) *</label>
                   <Input
                     type="email"
                     value={formData.joinRequest.recipientEmail}
