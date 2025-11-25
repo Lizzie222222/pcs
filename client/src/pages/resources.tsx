@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Link } from "wouter";
@@ -118,6 +118,19 @@ export default function Resources() {
   const [selectedPack, setSelectedPack] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'resources' | 'packs'>('resources');
   const limit = 12;
+
+  // Check for pack parameter in URL on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const packId = urlParams.get('pack');
+    if (packId) {
+      setSelectedPack(packId);
+      setActiveTab('packs');
+      // Clean up the URL without the pack parameter
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, []);
 
   const { data: countryOptions = [], isLoading: isLoadingCountries } = useCountries();
 
