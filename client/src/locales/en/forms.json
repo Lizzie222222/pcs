@@ -231,11 +231,21 @@
     "rejection_notes": "Review notes",
     "file_upload_error": "Failed to upload files. Please try again.",
     "submit_button": "Submit Evidence",
+    "resubmit_button": "Resubmit Evidence",
     "submitting": "Submitting evidence...",
     "success_title": "Evidence Submitted",
     "success_message": "Your evidence has been submitted for review.",
+    "resubmit_success_title": "Evidence Resubmitted",
+    "resubmit_success_message": "Your revised evidence has been submitted for review.",
     "error_title": "Submission Failed",
-    "error_message": "Failed to submit evidence. Please try again."
+    "error_message": "Failed to submit evidence. Please try again.",
+    "resubmit_title": "Resubmit Evidence",
+    "resubmit_subtitle": "Update your evidence based on reviewer feedback",
+    "previous_feedback": "Feedback from reviewer:",
+    "update_prompt": "Please review the feedback above and update your submission accordingly.",
+    "loading_evidence": "Loading evidence data...",
+    "resubmit_error_title": "Resubmission Failed",
+    "resubmit_error_message": "Failed to resubmit evidence. Please try again."
   },
   "contact": {
     "title": "Contact Us",

@@ -129,7 +129,8 @@
       "pending_review": "Pending Review",
       "pending": "Pending",
       "approved": "Approved",
-      "rejected": "Rejected"
+      "rejected": "Rejected",
+      "revision_requested": "Revision Requested"
     },
     "buttons": {
       "do_audit": "Do Audit",

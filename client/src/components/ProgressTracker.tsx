@@ -7,7 +7,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { CheckCircle, Circle, Clock, X, ExternalLink, Info, Shield } from "lucide-react";
+import { CheckCircle, Circle, Clock, X, ExternalLink, Info, Shield, AlertCircle } from "lucide-react";
 import inspireIcon from "@assets/PSC - Inspire_1760461719847.png";
 import investigateIcon from "@assets/PSC - Investigate_1760461719848.png";
 import actIcon from "@assets/PSC - Act_1760461719847.png";
@@ -103,6 +103,9 @@ export default function ProgressTracker({
   const [actionPlanRequirementId, setActionPlanRequirementId] = useState<string>('');
   const [selectedEvidence, setSelectedEvidence] = useState<Evidence | null>(null);
   const [showEvidenceDetailModal, setShowEvidenceDetailModal] = useState(false);
+  // State for evidence resubmission
+  const [resubmitEvidenceId, setResubmitEvidenceId] = useState<string | undefined>();
+  const [isResubmission, setIsResubmission] = useState(false);
 
   // Helper function to get translated content for evidence requirements
   const getTranslatedRequirement = (requirement: EvidenceRequirement) => {
@@ -508,10 +511,18 @@ export default function ProgressTracker({
     return hasApprovedEvidence || hasOverride;
   };
 
-  // Handle opening evidence form with requirement
-  const handleSubmitEvidence = (requirementId: string, stage: string) => {
+  // Handle opening evidence form with requirement (supports resubmission)
+  const handleSubmitEvidence = (requirementId: string, stage: string, existingEvidenceId?: string) => {
     setSelectedRequirementId(requirementId);
     setSelectedStage(stage);
+    // Set resubmission state if we have an existing evidence ID
+    if (existingEvidenceId) {
+      setResubmitEvidenceId(existingEvidenceId);
+      setIsResubmission(true);
+    } else {
+      setResubmitEvidenceId(undefined);
+      setIsResubmission(false);
+    }
     setShowEvidenceForm(true);
   };
 
@@ -1060,22 +1071,44 @@ export default function ProgressTracker({
                                     </Badge>
                                   </>
                                 )}
+                                {!isRequirementSatisfied(requirement.id) && evidenceStatus === 'revision_requested' && evidence && (
+                                  <>
+                                    <AlertCircle className="h-4 w-4 text-amber-500" />
+                                    <Badge 
+                                      variant="outline" 
+                                      className="text-xs bg-amber-50 text-amber-700 border-amber-200 cursor-pointer hover:bg-amber-100 transition-colors"
+                                      data-testid={`status-revision-requested-${requirement.id}`}
+                                      onClick={() => handleViewEvidence(evidence)}
+                                    >
+                                      {t('progress.status.revision_requested', 'Revision Requested')}
+                                    </Badge>
+                                  </>
+                                )}
                               </div>
 
                               {/* Action Button */}
                               {!isRequirementSatisfied(requirement.id) && evidenceStatus !== 'pending' && (
                                 <Button
                                   size="sm"
-                                  variant={evidenceStatus === 'rejected' ? 'destructive' : 'default'}
+                                  variant={(evidenceStatus === 'rejected' || evidenceStatus === 'revision_requested') ? 'destructive' : 'default'}
                                   className={`text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300 ${
                                     evidenceStatus === 'rejected' 
                                       ? '' 
+                                      : evidenceStatus === 'revision_requested'
+                                      ? 'bg-amber-500 hover:bg-amber-600'
                                       : 'bg-pcs_blue hover:bg-pcs_blue/90'
                                   }`}
-                                  onClick={() => handleSubmitEvidence(requirement.id, stage.id)}
+                                  onClick={() => {
+                                    // For rejected or revision_requested evidence, pass the evidence ID for resubmission
+                                    if ((evidenceStatus === 'rejected' || evidenceStatus === 'revision_requested') && evidence) {
+                                      handleSubmitEvidence(requirement.id, stage.id, evidence.id);
+                                    } else {
+                                      handleSubmitEvidence(requirement.id, stage.id);
+                                    }
+                                  }}
                                   data-testid={`button-submit-${requirement.id}`}
                                 >
-                                  {evidenceStatus === 'rejected' ? t('progress.buttons.resubmit') : t('progress.buttons.submit')}
+                                  {(evidenceStatus === 'rejected' || evidenceStatus === 'revision_requested') ? t('progress.buttons.resubmit') : t('progress.buttons.submit')}
                                 </Button>
                               )}
                             </div>
@@ -1137,10 +1170,14 @@ export default function ProgressTracker({
           onClose={() => {
             setShowEvidenceForm(false);
             setSelectedRequirementId(undefined);
+            setResubmitEvidenceId(undefined);
+            setIsResubmission(false);
           }}
           schoolId={schoolId}
           evidenceRequirementId={selectedRequirementId}
           preSelectedStage={selectedStage as 'inspire' | 'investigate' | 'act'}
+          existingEvidenceId={resubmitEvidenceId}
+          isResubmission={isResubmission}
         />
       )}
 

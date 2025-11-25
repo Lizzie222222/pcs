@@ -35,6 +35,22 @@ interface EvidenceSubmissionFormProps {
   evidenceRequirementId?: string;
   preSelectedStage?: 'inspire' | 'investigate' | 'act' | 'above_and_beyond';
   isAdminOrPartner?: boolean;
+  existingEvidenceId?: string;
+  isResubmission?: boolean;
+}
+
+interface ExistingEvidence {
+  id: string;
+  title: string;
+  description: string;
+  stage: 'inspire' | 'investigate' | 'act' | 'above_and_beyond';
+  videoLinks?: string | null;
+  visibility: 'public' | 'private';
+  files: UploadedFile[];
+  status: string;
+  reviewNotes?: string | null;
+  previousReviewNotes?: string | null;
+  evidenceRequirementId?: string | null;
 }
 
 interface UploadedFile {
@@ -66,7 +82,9 @@ export default function EvidenceSubmissionForm({
   schoolId: initialSchoolId, 
   evidenceRequirementId,
   preSelectedStage,
-  isAdminOrPartner = false
+  isAdminOrPartner = false,
+  existingEvidenceId,
+  isResubmission = false
 }: EvidenceSubmissionFormProps) {
   const { t } = useTranslation(['forms', 'common']);
   const { toast } = useToast();
@@ -75,6 +93,12 @@ export default function EvidenceSubmissionForm({
   const [isUploading, setIsUploading] = useState(false);
   const [selectedSchoolId, setSelectedSchoolId] = useState<string>(initialSchoolId || '');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Fetch existing evidence data for resubmission mode
+  const { data: existingEvidence, isLoading: existingEvidenceLoading } = useQuery<ExistingEvidence>({
+    queryKey: ['/api/evidence', existingEvidenceId],
+    enabled: !!existingEvidenceId && isResubmission,
+  });
   
   // Sync selectedSchoolId when initialSchoolId changes (e.g., when admin selects a school)
   useEffect(() => {
@@ -124,6 +148,64 @@ export default function EvidenceSubmissionForm({
       stage: preSelectedStage,
       videoLinks: '',
       visibility: 'private',
+    },
+  });
+
+  // Populate form with existing evidence data when in resubmission mode
+  useEffect(() => {
+    if (existingEvidence && isResubmission) {
+      form.reset({
+        title: existingEvidence.title,
+        description: existingEvidence.description,
+        stage: existingEvidence.stage,
+        videoLinks: existingEvidence.videoLinks || '',
+        visibility: existingEvidence.visibility,
+      });
+      // Also set uploaded files from existing evidence
+      if (existingEvidence.files && existingEvidence.files.length > 0) {
+        setUploadedFiles(existingEvidence.files);
+      }
+    }
+  }, [existingEvidence, isResubmission, form]);
+
+  // Resubmit evidence mutation (PATCH endpoint for updating existing evidence)
+  const resubmitEvidenceMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof evidenceSchema> & { files: UploadedFile[] }) => {
+      if (!existingEvidenceId) {
+        throw new Error('No evidence ID provided for resubmission');
+      }
+      const response = await apiRequest('PATCH', `/api/evidence/${existingEvidenceId}/resubmit`, {
+        title: data.title,
+        description: data.description,
+        videoLinks: data.videoLinks,
+        visibility: data.visibility,
+        files: data.files.map(f => ({
+          id: (f as any).id,
+          originalName: f.name,
+          url: f.url,
+          size: f.size,
+          mimeType: f.type,
+          storagePath: (f as any).storagePath || f.url,
+        })),
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast({
+        title: t('forms:evidence_submission.resubmit_success_title', 'Evidence Resubmitted'),
+        description: t('forms:evidence_submission.resubmit_success_message', 'Your evidence has been resubmitted for review.'),
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/evidence'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
+      onClose();
+    },
+    onError: (error: any) => {
+      console.error("Evidence resubmission error:", error);
+      toast({
+        title: t('forms:evidence_submission.resubmit_error_title', 'Resubmission Failed'),
+        description: error?.message || t('forms:evidence_submission.resubmit_error_message', 'Failed to resubmit evidence. Please try again.'),
+        variant: "destructive",
+      });
     },
   });
 
@@ -255,10 +337,18 @@ export default function EvidenceSubmissionForm({
       return;
     }
 
-    submitEvidenceMutation.mutate({
-      ...data,
-      files: uploadedFiles,
-    });
+    // Use appropriate mutation based on whether this is a resubmission
+    if (isResubmission && existingEvidenceId) {
+      resubmitEvidenceMutation.mutate({
+        ...data,
+        files: uploadedFiles,
+      });
+    } else {
+      submitEvidenceMutation.mutate({
+        ...data,
+        files: uploadedFiles,
+      });
+    }
   };
 
   return (
@@ -277,7 +367,9 @@ export default function EvidenceSubmissionForm({
         <div className="p-6 max-h-[85vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-navy" data-testid="text-evidence-form-title">
-              {t('forms:evidence_submission.title')}
+              {isResubmission 
+                ? t('forms:evidence_submission.resubmit_title', 'Resubmit Evidence')
+                : t('forms:evidence_submission.title')}
             </h2>
             <Button 
               variant="ghost" 
@@ -288,6 +380,30 @@ export default function EvidenceSubmissionForm({
               <X className="h-5 w-5" />
             </Button>
           </div>
+
+          {/* Show previous feedback for resubmission */}
+          {isResubmission && existingEvidence && (existingEvidence.reviewNotes || existingEvidence.previousReviewNotes) && (
+            <Alert className="mb-6 border-amber-300 bg-amber-50">
+              <Info className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-amber-800">
+                <div className="space-y-2">
+                  <p className="font-semibold">{t('forms:evidence_submission.previous_feedback', 'Feedback from reviewer:')}</p>
+                  <p className="whitespace-pre-wrap text-sm">{existingEvidence.reviewNotes || existingEvidence.previousReviewNotes}</p>
+                  <p className="text-xs text-amber-600 mt-2">
+                    {t('forms:evidence_submission.update_prompt', 'Please review the feedback above and update your submission accordingly.')}
+                  </p>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Loading state for resubmission data */}
+          {isResubmission && existingEvidenceLoading && (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-navy"></div>
+              <span className="ml-3 text-gray-600">{t('forms:evidence_submission.loading_evidence', 'Loading evidence data...')}</span>
+            </div>
+          )}
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -597,11 +713,15 @@ export default function EvidenceSubmissionForm({
                 </Button>
                 <Button
                   type="submit"
-                  disabled={submitEvidenceMutation.isPending || isUploading}
+                  disabled={submitEvidenceMutation.isPending || resubmitEvidenceMutation.isPending || isUploading || (isResubmission && existingEvidenceLoading)}
                   className="flex-1 bg-coral hover:bg-coral/90"
                   data-testid="button-submit-evidence"
                 >
-                  {submitEvidenceMutation.isPending ? t('forms:evidence_submission.submitting') : t('forms:evidence_submission.submit_button')}
+                  {(submitEvidenceMutation.isPending || resubmitEvidenceMutation.isPending) 
+                    ? t('forms:evidence_submission.submitting') 
+                    : isResubmission 
+                      ? t('forms:evidence_submission.resubmit_button', 'Resubmit Evidence')
+                      : t('forms:evidence_submission.submit_button')}
                 </Button>
               </div>
             </form>

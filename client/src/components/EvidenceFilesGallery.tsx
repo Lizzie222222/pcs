@@ -43,16 +43,17 @@ export function EvidenceFilesGallery({ files, className = "" }: EvidenceFilesGal
     }
   };
 
-  const getFileIcon = (type: string) => {
+  const getFileIcon = (type: string | undefined) => {
+    if (!type) return <FileText className="w-6 h-6" />;
     if (type.includes('image')) return <ImageIcon className="w-6 h-6" />;
     if (type.includes('video')) return <Film className="w-6 h-6" />;
     if (type.includes('pdf')) return <FileText className="w-6 h-6" />;
     return <FileText className="w-6 h-6" />;
   };
 
-  const isImage = (type: string) => type.includes('image');
-  const isVideo = (type: string) => type.includes('video');
-  const isPDF = (type: string) => type.includes('pdf');
+  const isImage = (type: string | undefined) => type?.includes('image') ?? false;
+  const isVideo = (type: string | undefined) => type?.includes('video') ?? false;
+  const isPDF = (type: string | undefined) => type?.includes('pdf') ?? false;
 
   if (!files || files.length === 0) {
     return null;
@@ -96,7 +97,7 @@ export function EvidenceFilesGallery({ files, className = "" }: EvidenceFilesGal
                 <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                   <div className="text-center">
                     <FileText className="w-8 h-8 text-gray-400 mx-auto mb-1" />
-                    <p className="text-xs text-gray-500">{file.type.split('/')[1]?.toUpperCase() || 'File'}</p>
+                    <p className="text-xs text-gray-500">{file.type?.split('/')[1]?.toUpperCase() || 'File'}</p>
                   </div>
                 </div>
               )}

@@ -8,7 +8,7 @@ import { createSchoolProgressionDelegate } from '../schools/progression';
 import { schoolStorage } from '../schools/storage';
 import type { IStorage } from '../../storage';
 import { insertEvidenceSchema, insertEvidenceRequirementSchema, evidence } from '@shared/schema';
-import { sendEvidenceSubmissionEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceRevisionRequestEmail, sendAdminNewEvidenceEmail } from '../../emailService';
+import { sendEvidenceSubmissionEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceRevisionRequestEmail } from '../../emailService';
 import { mailchimpService } from '../../mailchimpService';
 import { translateEvidenceRequirement } from '../../translationService';
 import { requireAdmin, requireAdminOrPartner } from '../../routes/utils/middleware';
@@ -446,10 +446,10 @@ export function createEvidenceRouters(storage: IStorage): {
   /**
    * PATCH /api/evidence/:id/resubmit
    * 
-   * Resubmit rejected evidence with updates
-   * - Only rejected evidence can be resubmitted
+   * Resubmit rejected or revision_requested evidence with updates
+   * - Only rejected or revision_requested evidence can be resubmitted
    * - Verifies user is a member of the school
-   * - Stores previous rejection reason for context
+   * - Stores previous review notes for context
    * - Resets status to pending for admin review
    * - Sends notification to admins
    */
@@ -467,9 +467,9 @@ export function createEvidenceRouters(storage: IStorage): {
         return res.status(404).json({ message: "Evidence not found" });
       }
 
-      // Check if evidence status is 'rejected'
-      if (evidence.status !== 'rejected') {
-        return res.status(403).json({ message: "Only rejected evidence can be resubmitted" });
+      // Check if evidence status is 'rejected' or 'revision_requested'
+      if (evidence.status !== 'rejected' && evidence.status !== 'revision_requested') {
+        return res.status(403).json({ message: "Only rejected or revision-requested evidence can be resubmitted" });
       }
 
       // Verify user is a member of the school that submitted the evidence
@@ -506,7 +506,7 @@ export function createEvidenceRouters(storage: IStorage): {
         return res.status(500).json({ message: "Failed to resubmit evidence" });
       }
 
-      // Send email notifications
+      // Send email confirmation to teacher (skip admin notifications to reduce spam)
       try {
         const user = await storage.getUser(userId);
         const school = await schoolStorage.getSchool(evidence.schoolId);
@@ -521,21 +521,8 @@ export function createEvidenceRouters(storage: IStorage): {
             user.preferredLanguage || 'en',
             true // isResubmission flag
           );
-
-          // Send notification to admins
-          const adminUsers = await storage.getAllUsers();
-          const admins = adminUsers.filter(u => u.isAdmin && u.email);
-          
-          for (const admin of admins) {
-            await sendAdminNewEvidenceEmail(
-              admin.email!,
-              school.name,
-              updatedEvidence.title,
-              updatedEvidence.stage,
-              `${user.firstName} ${user.lastName}`,
-              admin.preferredLanguage || 'en'
-            );
-          }
+          // NOTE: Admin notifications disabled to reduce email spam
+          // Admins can view pending evidence in the review queue
         }
       } catch (emailError) {
         console.warn('Email notification failed for evidence resubmission:', emailError);
