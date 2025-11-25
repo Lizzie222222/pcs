@@ -31,7 +31,7 @@ export default function ReviewsSection({
 
   // Review state
   const [reviewType, setReviewType] = useState<'evidence' | 'audits' | 'photo-consent' | 'action-plans'>('evidence');
-  const [evidenceStatusFilter, setEvidenceStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
+  const [evidenceStatusFilter, setEvidenceStatusFilter] = useState<'all' | 'pending' | 'approved' | 'revision_requested' | 'rejected'>('pending');
   const [evidenceAssigneeFilter, setEvidenceAssigneeFilter] = useState<string>('all');
   const [evidenceStageFilter, setEvidenceStageFilter] = useState<'all' | 'inspire' | 'investigate' | 'act' | 'above_and_beyond'>('all');
   const [evidenceRequirementFilter, setEvidenceRequirementFilter] = useState<string>('all');
@@ -46,7 +46,7 @@ export default function ReviewsSection({
   const [selectedEvidence, setSelectedEvidence] = useState<string[]>([]);
   const [reviewData, setReviewData] = useState<{
     evidenceId: string;
-    action: 'approved' | 'rejected';
+    action: 'approved' | 'revision_requested' | 'rejected';
     notes: string;
   } | null>(null);
   const [auditReviewData, setAuditReviewData] = useState<{
@@ -56,7 +56,7 @@ export default function ReviewsSection({
   } | null>(null);
   const [bulkEvidenceDialogOpen, setBulkEvidenceDialogOpen] = useState(false);
   const [bulkAction, setBulkAction] = useState<{
-    type: 'approve' | 'reject' | 'delete';
+    type: 'approve' | 'request_revision' | 'reject' | 'delete';
     notes?: string;
   } | null>(null);
 
@@ -225,7 +225,7 @@ export default function ReviewsSection({
   const reviewEvidenceMutation = useMutation({
     mutationFn: async ({ evidenceId, status, reviewNotes }: {
       evidenceId: string;
-      status: 'approved' | 'rejected';
+      status: 'approved' | 'revision_requested' | 'rejected';
       reviewNotes: string;
     }) => {
       return await apiRequest('PATCH', `/api/admin/evidence/${evidenceId}/review`, {
@@ -336,7 +336,7 @@ export default function ReviewsSection({
   const bulkEvidenceReviewMutation = useMutation({
     mutationFn: async ({ evidenceIds, status, reviewNotes }: {
       evidenceIds: string[];
-      status: 'approved' | 'rejected';
+      status: 'approved' | 'revision_requested' | 'rejected';
       reviewNotes: string;
     }) => {
       return await apiRequest('POST', '/api/admin/evidence/bulk-review', {

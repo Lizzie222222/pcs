@@ -756,6 +756,74 @@ export async function sendEvidenceRejectionEmail(
   });
 }
 
+export async function sendEvidenceRevisionRequestEmail(
+  userEmail: string, 
+  schoolName: string, 
+  evidenceTitle: string, 
+  feedback: string,
+  reviewerName?: string,
+  userLanguage?: string
+): Promise<boolean> {
+  const baseUrl = getBaseUrl();
+  const reviewer = reviewerName || 'Platform Admin';
+  
+  const englishContent: EmailContent = {
+    subject: `💬 Feedback: "${evidenceTitle}" - Almost There!`,
+    title: `We'd Love to See More!`,
+    preTitle: `${schoolName}`,
+    messageContent: `
+      <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; padding: 20px; margin: 0 0 25px 0; border-radius: 8px;">
+        <p style="margin: 0; color: #92400e; font-size: 18px; font-weight: 700;">
+          💬 Your Evidence Is On the Right Track!
+        </p>
+      </div>
+      
+      <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6;">
+        Great work on your submission! Our reviewer has some suggestions to help make your evidence even stronger.
+      </p>
+      
+      <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 0 0 25px 0;">
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Evidence:</p>
+        <p style="margin: 0 0 15px 0; font-size: 18px; font-weight: 700; color: #019ADE;">${evidenceTitle}</p>
+        
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Feedback from:</p>
+        <p style="margin: 0 0 20px 0; font-size: 16px; color: #333;">${reviewer}</p>
+        
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Suggestions:</p>
+        <div style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #e5e7eb;">
+          <p style="margin: 0; color: #333; white-space: pre-wrap; line-height: 1.6;">${feedback}</p>
+        </div>
+      </div>
+      
+      <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6;">
+        You're so close! Just update your submission with the feedback above, and you'll be one step closer to becoming Plastic Clever! 🌟
+      </p>
+      
+      <p style="margin: 0 0 10px 0; font-size: 15px; color: #666; line-height: 1.5;">
+        <strong>What to do next:</strong>
+      </p>
+      <ol style="margin: 0 0 20px 0; padding-left: 20px; color: #666; font-size: 15px; line-height: 1.8;">
+        <li>Review the feedback above</li>
+        <li>Go to your dashboard and find this evidence</li>
+        <li>Click "Resubmit" to update your submission</li>
+      </ol>
+      
+      <p style="margin: 0; color: #666;">
+        Questions? We're here to help at <a href="mailto:education@commonseas.com" style="color: #02BBB4; text-decoration: none;">education@commonseas.com</a>
+      </p>
+    `,
+    callToActionText: 'Update My Submission',
+    footerText: 'You received this email because we have feedback on your evidence submission.'
+  };
+  
+  return await sendTranslatedEmail({
+    to: userEmail,
+    userLanguage,
+    englishContent,
+    callToActionUrl: baseUrl,
+  });
+}
+
 export async function sendTeacherInvitationEmail(
   recipientEmail: string,
   schoolName: string,

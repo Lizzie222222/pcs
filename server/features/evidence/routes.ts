@@ -8,7 +8,7 @@ import { createSchoolProgressionDelegate } from '../schools/progression';
 import { schoolStorage } from '../schools/storage';
 import type { IStorage } from '../../storage';
 import { insertEvidenceSchema, insertEvidenceRequirementSchema, evidence } from '@shared/schema';
-import { sendEvidenceSubmissionEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendAdminNewEvidenceEmail } from '../../emailService';
+import { sendEvidenceSubmissionEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceRevisionRequestEmail, sendAdminNewEvidenceEmail } from '../../emailService';
 import { mailchimpService } from '../../mailchimpService';
 import { translateEvidenceRequirement } from '../../translationService';
 import { requireAdmin, requireAdminOrPartner } from '../../routes/utils/middleware';
@@ -943,7 +943,7 @@ export function createEvidenceRouters(storage: IStorage): {
       const { status, reviewNotes } = req.body;
       const reviewerId = req.user.id;
       
-      if (!['approved', 'rejected'].includes(status)) {
+      if (!['approved', 'rejected', 'revision_requested'].includes(status)) {
         return res.status(400).json({ message: "Invalid status" });
       }
 
@@ -973,16 +973,21 @@ export function createEvidenceRouters(storage: IStorage): {
       if (user?.email && school) {
         if (status === 'approved') {
           await sendEvidenceApprovalEmail(user.email, school.name, evidence.title, reviewerName, user.preferredLanguage || 'en');
+        } else if (status === 'revision_requested') {
+          // Send a friendlier revision request email
+          await sendEvidenceRevisionRequestEmail(user.email, school.name, evidence.title, reviewNotes || 'Please review the feedback and update your submission', reviewerName, user.preferredLanguage || 'en');
         } else {
           await sendEvidenceRejectionEmail(user.email, school.name, evidence.title, reviewNotes || 'Please review and resubmit', reviewerName, user.preferredLanguage || 'en');
         }
       }
 
-      // Log evidence approval or rejection
+      // Log evidence approval, revision request, or rejection
+      const activityType = status === 'approved' ? 'evidence_approve' : 
+                          status === 'revision_requested' ? 'evidence_revision_request' : 'evidence_reject';
       await logUserActivity(
         reviewerId,
         reviewer?.email || undefined,
-        status === 'approved' ? 'evidence_approve' : 'evidence_reject',
+        activityType,
         {
           evidenceId: evidence.id,
           title: evidence.title,
@@ -996,9 +1001,11 @@ export function createEvidenceRouters(storage: IStorage): {
       );
 
       // Log audit action
+      const auditAction = status === 'approved' ? 'approved' : 
+                         status === 'revision_requested' ? 'revision_requested' : 'rejected';
       await logAuditAction(
         reviewerId,
-        status === 'approved' ? 'approved' : 'rejected',
+        auditAction,
         'evidence',
         evidence.id,
         { reason: reviewNotes }
@@ -1031,7 +1038,7 @@ export function createEvidenceRouters(storage: IStorage): {
         return res.status(400).json({ message: "Evidence IDs array is required" });
       }
       
-      if (!['approved', 'rejected'].includes(status)) {
+      if (!['approved', 'rejected', 'revision_requested'].includes(status)) {
         return res.status(400).json({ message: "Invalid status" });
       }
 
@@ -1066,9 +1073,11 @@ export function createEvidenceRouters(storage: IStorage): {
             results.success.push(evidenceId);
 
             // Log audit action
+            const auditAction = status === 'approved' ? 'approved' : 
+                               status === 'revision_requested' ? 'revision_requested' : 'rejected';
             await logAuditAction(
               reviewerId,
-              status === 'approved' ? 'approved' : 'rejected',
+              auditAction,
               'evidence',
               evidenceId,
               { reason: reviewNotes }
@@ -1082,6 +1091,9 @@ export function createEvidenceRouters(storage: IStorage): {
               if (user?.email && school) {
                 if (status === 'approved') {
                   await sendEvidenceApprovalEmail(user.email, school.name, evidence.title, reviewerName, user.preferredLanguage || 'en');
+                } else if (status === 'revision_requested') {
+                  // Send a revision request email (more collaborative than rejection)
+                  await sendEvidenceRevisionRequestEmail(user.email, school.name, evidence.title, reviewNotes || 'Please review the feedback and update your submission', reviewerName, user.preferredLanguage || 'en');
                 } else {
                   await sendEvidenceRejectionEmail(user.email, school.name, evidence.title, reviewNotes || 'Please review and resubmit', reviewerName, user.preferredLanguage || 'en');
                 }

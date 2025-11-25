@@ -74,6 +74,7 @@ import {
   Award,
   TrendingUp,
   Check,
+  MessageSquare,
 } from "lucide-react";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
@@ -99,12 +100,12 @@ interface EvidenceReviewQueueProps {
   evidenceLoading: boolean;
   reviewData: {
     evidenceId: string;
-    action: 'approved' | 'rejected';
+    action: 'approved' | 'revision_requested' | 'rejected';
     notes: string;
   } | null;
   setReviewData: (data: {
     evidenceId: string;
-    action: 'approved' | 'rejected';
+    action: 'approved' | 'revision_requested' | 'rejected';
     notes: string;
   } | null) => void;
   reviewEvidenceMutation: any;
@@ -114,17 +115,17 @@ interface EvidenceReviewQueueProps {
   bulkEvidenceDialogOpen: boolean;
   setBulkEvidenceDialogOpen: (open: boolean) => void;
   bulkAction: {
-    type: 'approve' | 'reject' | 'delete';
+    type: 'approve' | 'request_revision' | 'reject' | 'delete';
     notes?: string;
   } | null;
   setBulkAction: (action: {
-    type: 'approve' | 'reject' | 'delete';
+    type: 'approve' | 'request_revision' | 'reject' | 'delete';
     notes?: string;
   } | null) => void;
   selectedEvidence: string[];
   setSelectedEvidence: (ids: string[]) => void;
-  evidenceStatusFilter: 'all' | 'pending' | 'approved' | 'rejected';
-  setEvidenceStatusFilter: (filter: 'all' | 'pending' | 'approved' | 'rejected') => void;
+  evidenceStatusFilter: 'all' | 'pending' | 'approved' | 'revision_requested' | 'rejected';
+  setEvidenceStatusFilter: (filter: 'all' | 'pending' | 'approved' | 'revision_requested' | 'rejected') => void;
   evidenceAssigneeFilter: string;
   setEvidenceAssigneeFilter: (filter: string) => void;
   evidenceStageFilter: 'all' | 'inspire' | 'investigate' | 'act' | 'above_and_beyond';
@@ -490,6 +491,18 @@ export default function EvidenceReviewQueue({
                   </Button>
                   <Button
                     size="sm"
+                    className="bg-amber-500 hover:bg-amber-600 text-white h-8 px-2"
+                    onClick={() => setReviewData({
+                      evidenceId: item.id,
+                      action: 'revision_requested',
+                      notes: ''
+                    })}
+                    data-testid={`button-table-request-revision-${item.id}`}
+                  >
+                    <MessageSquare className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    size="sm"
                     variant="destructive"
                     className="h-8 px-2"
                     onClick={() => setReviewData({
@@ -548,6 +561,18 @@ export default function EvidenceReviewQueue({
                   >
                     <CheckCircle className="h-4 w-4 mr-1" />
                     {t('reviews.evidence.buttons.bulkApprove')}
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="bg-amber-500 hover:bg-amber-600 text-white"
+                    onClick={() => {
+                      setBulkAction({ type: 'request_revision', notes: '' });
+                      setBulkEvidenceDialogOpen(true);
+                    }}
+                    data-testid="button-bulk-request-revision"
+                  >
+                    <MessageSquare className="h-4 w-4 mr-1" />
+                    {t('reviews.evidence.buttons.bulkRequestRevision', 'Request Revisions')}
                   </Button>
                   <Button
                     size="sm"
@@ -754,6 +779,17 @@ export default function EvidenceReviewQueue({
                   data-testid="filter-evidence-approved"
                 >
                   {t('reviews.evidence.filters.approved')}
+                </button>
+                <button
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    evidenceStatusFilter === 'revision_requested'
+                      ? 'bg-amber-100 text-amber-800 shadow-sm'
+                      : 'text-gray-600 hover:text-navy'
+                  }`}
+                  onClick={() => setEvidenceStatusFilter('revision_requested')}
+                  data-testid="filter-evidence-revision-requested"
+                >
+                  {t('reviews.evidence.filters.revisionRequested', 'Revision Requested')}
                 </button>
                 <button
                   className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
@@ -1136,6 +1172,19 @@ export default function EvidenceReviewQueue({
                       </Button>
                       <Button
                         size="sm"
+                        className="bg-amber-500 hover:bg-amber-600 text-white"
+                        onClick={() => setReviewData({
+                          evidenceId: evidence.id,
+                          action: 'revision_requested',
+                          notes: ''
+                        })}
+                        data-testid={`button-request-revision-${evidence.id}`}
+                      >
+                        <MessageSquare className="h-4 w-4 mr-1" />
+                        {t('reviews.evidence.buttons.requestRevision', 'Request Revision')}
+                      </Button>
+                      <Button
+                        size="sm"
                         variant="destructive"
                         onClick={() => setReviewData({
                           evidenceId: evidence.id,
@@ -1173,12 +1222,27 @@ export default function EvidenceReviewQueue({
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
             <h3 className="text-lg font-bold text-navy mb-4">
-              {reviewData.action === 'approved' ? t('reviews.evidence.modal.approveTitle') : t('reviews.evidence.modal.rejectTitle')}
+              {reviewData.action === 'approved' 
+                ? t('reviews.evidence.modal.approveTitle') 
+                : reviewData.action === 'revision_requested'
+                ? t('reviews.evidence.modal.requestRevisionTitle', 'Request Revision')
+                : t('reviews.evidence.modal.rejectTitle')}
             </h3>
+            {reviewData.action === 'revision_requested' && (
+              <p className="text-sm text-gray-600 mb-4">
+                {t('reviews.evidence.modal.revisionDescription', 'The school will be notified and asked to update their submission based on your feedback.')}
+              </p>
+            )}
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t('reviews.evidence.modal.reviewNotes')} {reviewData.action === 'rejected' && <span className="text-red-500">{t('reviews.evidence.modal.required')}</span>}
+                  {reviewData.action === 'revision_requested' 
+                    ? t('reviews.evidence.modal.revisionFeedback', 'Feedback for school')
+                    : t('reviews.evidence.modal.reviewNotes')
+                  } 
+                  {(reviewData.action === 'rejected' || reviewData.action === 'revision_requested') && (
+                    <span className="text-red-500">{t('reviews.evidence.modal.required')}</span>
+                  )}
                 </label>
                 <Textarea
                   value={reviewData.notes}
@@ -1186,6 +1250,8 @@ export default function EvidenceReviewQueue({
                   placeholder={
                     reviewData.action === 'approved'
                       ? t('reviews.evidence.modal.feedbackOptional')
+                      : reviewData.action === 'revision_requested'
+                      ? t('reviews.evidence.modal.revisionPlaceholder', 'Please explain what changes would help improve this evidence (e.g., clearer photos, more detail in description)...')
                       : t('reviews.evidence.modal.feedbackRequired')
                   }
                   rows={4}
@@ -1202,12 +1268,20 @@ export default function EvidenceReviewQueue({
                   {t('reviews.evidence.modal.cancel')}
                 </Button>
                 <Button
-                  className={`flex-1 ${reviewData.action === 'approved' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'}`}
+                  className={`flex-1 ${
+                    reviewData.action === 'approved' 
+                      ? 'bg-green-500 hover:bg-green-600' 
+                      : reviewData.action === 'revision_requested'
+                      ? 'bg-amber-500 hover:bg-amber-600'
+                      : 'bg-red-500 hover:bg-red-600'
+                  }`}
                   onClick={() => {
-                    if (reviewData.action === 'rejected' && !reviewData.notes.trim()) {
+                    if ((reviewData.action === 'rejected' || reviewData.action === 'revision_requested') && !reviewData.notes.trim()) {
                       toast({
                         title: t('reviews.evidence.toasts.reviewNotesRequired'),
-                        description: t('reviews.evidence.toasts.feedbackRequired'),
+                        description: reviewData.action === 'revision_requested'
+                          ? t('reviews.evidence.toasts.revisionFeedbackRequired', 'Please provide feedback explaining what changes would help improve this evidence.')
+                          : t('reviews.evidence.toasts.feedbackRequired'),
                         variant: "destructive",
                       });
                       return;
@@ -1222,7 +1296,11 @@ export default function EvidenceReviewQueue({
                   data-testid="button-confirm-review"
                 >
                   {reviewEvidenceMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  {reviewEvidenceMutation.isPending ? t('reviews.evidence.modal.processing') : t('reviews.evidence.modal.confirm')}
+                  {reviewEvidenceMutation.isPending 
+                    ? t('reviews.evidence.modal.processing') 
+                    : reviewData.action === 'revision_requested'
+                    ? t('reviews.evidence.modal.sendFeedback', 'Send Feedback')
+                    : t('reviews.evidence.modal.confirm')}
                 </Button>
               </div>
             </div>
@@ -1278,6 +1356,7 @@ export default function EvidenceReviewQueue({
           <div className="bg-white rounded-lg max-w-md w-full p-6">
             <h3 className="text-lg font-bold text-navy mb-4">
               {bulkAction.type === 'approve' ? t('reviews.evidence.bulkDialog.approveTitle') :
+               bulkAction.type === 'request_revision' ? t('reviews.evidence.bulkDialog.requestRevisionTitle', 'Request Revisions') :
                bulkAction.type === 'reject' ? t('reviews.evidence.bulkDialog.rejectTitle') :
                t('reviews.evidence.bulkDialog.deleteTitle')}
             </h3>
@@ -1288,10 +1367,16 @@ export default function EvidenceReviewQueue({
                 </p>
               </div>
 
-              {(bulkAction.type === 'approve' || bulkAction.type === 'reject') && (
+              {(bulkAction.type === 'approve' || bulkAction.type === 'request_revision' || bulkAction.type === 'reject') && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('reviews.evidence.bulkDialog.reviewNotes')} {bulkAction.type === 'reject' && <span className="text-red-500">{t('reviews.evidence.bulkDialog.required')}</span>}
+                    {bulkAction.type === 'request_revision' 
+                      ? t('reviews.evidence.bulkDialog.revisionFeedback', 'Feedback for schools')
+                      : t('reviews.evidence.bulkDialog.reviewNotes')
+                    } 
+                    {(bulkAction.type === 'reject' || bulkAction.type === 'request_revision') && (
+                      <span className="text-red-500">{t('reviews.evidence.bulkDialog.required')}</span>
+                    )}
                   </label>
                   <Textarea
                     value={bulkAction.notes || ''}
@@ -1299,6 +1384,8 @@ export default function EvidenceReviewQueue({
                     placeholder={
                       bulkAction.type === 'approve'
                         ? t('reviews.evidence.bulkDialog.feedbackOptional')
+                        : bulkAction.type === 'request_revision'
+                        ? t('reviews.evidence.bulkDialog.revisionPlaceholder', 'Please explain what changes are needed...')
                         : t('reviews.evidence.bulkDialog.feedbackRequired')
                     }
                     rows={4}
@@ -1330,14 +1417,17 @@ export default function EvidenceReviewQueue({
                 <Button
                   className={`flex-1 ${
                     bulkAction.type === 'approve' ? 'bg-green-500 hover:bg-green-600' :
+                    bulkAction.type === 'request_revision' ? 'bg-amber-500 hover:bg-amber-600' :
                     bulkAction.type === 'reject' ? 'bg-red-500 hover:bg-red-600' :
                     'bg-red-600 hover:bg-red-700'
                   }`}
                   onClick={() => {
-                    if (bulkAction.type === 'reject' && !bulkAction.notes?.trim()) {
+                    if ((bulkAction.type === 'reject' || bulkAction.type === 'request_revision') && !bulkAction.notes?.trim()) {
                       toast({
                         title: t('reviews.evidence.bulkDialog.toasts.reviewNotesRequired'),
-                        description: t('reviews.evidence.bulkDialog.toasts.feedbackRequired'),
+                        description: bulkAction.type === 'request_revision' 
+                          ? t('reviews.evidence.bulkDialog.toasts.revisionFeedbackRequired', 'Please provide feedback explaining what needs to be changed.')
+                          : t('reviews.evidence.bulkDialog.toasts.feedbackRequired'),
                         variant: "destructive",
                       });
                       return;
@@ -1346,9 +1436,14 @@ export default function EvidenceReviewQueue({
                     if (bulkAction.type === 'delete') {
                       bulkEvidenceDeleteMutation.mutate(selectedEvidence);
                     } else {
+                      const statusMap: Record<string, 'approved' | 'revision_requested' | 'rejected'> = {
+                        'approve': 'approved',
+                        'request_revision': 'revision_requested',
+                        'reject': 'rejected'
+                      };
                       bulkEvidenceReviewMutation.mutate({
                         evidenceIds: selectedEvidence,
-                        status: bulkAction.type as 'approved' | 'rejected',
+                        status: statusMap[bulkAction.type],
                         reviewNotes: bulkAction.notes || '',
                       });
                     }
