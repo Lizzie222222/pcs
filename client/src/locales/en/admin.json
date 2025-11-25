@@ -1257,7 +1257,8 @@
         "stage": "Stage",
         "country": "Country",
         "status": "Status",
-        "visibility": "Visibility"
+        "visibility": "Visibility",
+        "dateRange": "Submitted Date"
       },
       "options": {
         "allStages": "All Stages",

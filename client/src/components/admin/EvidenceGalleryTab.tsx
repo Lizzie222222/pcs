@@ -24,13 +24,16 @@ import {
   MapPin,
   Award,
   TrendingUp,
-  Filter
+  Filter,
+  CalendarIcon
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/states";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
 import { PDFThumbnail } from "@/components/PDFThumbnail";
 import SchoolQuickViewDialog from "./SchoolQuickViewDialog";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { DateRange } from "react-day-picker";
 import type { EvidenceWithSchool } from "@shared/schema";
 
 export default function EvidenceGalleryTab() {
@@ -46,6 +49,7 @@ export default function EvidenceGalleryTab() {
     visibility: '',
     evidenceRequirementId: '',
   });
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [selectedEvidence, setSelectedEvidence] = useState<EvidenceWithSchool | null>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [schoolHistoryDialogOpen, setSchoolHistoryDialogOpen] = useState(false);
@@ -55,7 +59,7 @@ export default function EvidenceGalleryTab() {
   
   // Fetch all evidence with filters
   const { data: evidenceList = [], isLoading } = useQuery<EvidenceWithSchool[]>({
-    queryKey: ['/api/admin/evidence', filters],
+    queryKey: ['/api/admin/evidence', filters, dateRange],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (filters.status) params.append('status', filters.status);
@@ -63,6 +67,8 @@ export default function EvidenceGalleryTab() {
       if (filters.country) params.append('country', filters.country);
       if (filters.visibility) params.append('visibility', filters.visibility);
       if (filters.evidenceRequirementId) params.append('evidenceRequirementId', filters.evidenceRequirementId);
+      if (dateRange?.from) params.append('dateFrom', dateRange.from.toISOString());
+      if (dateRange?.to) params.append('dateTo', dateRange.to.toISOString());
       
       const response = await fetch(`/api/admin/evidence?${params}`, {
         credentials: 'include',
@@ -210,112 +216,126 @@ export default function EvidenceGalleryTab() {
       {/* Filters */}
       <Card>
         <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('evidenceGallery.filters.labels.stage')}</label>
-              <Select 
-                value={filters.stage || 'all'} 
-                onValueChange={(value) => {
-                  const newStage = value === 'all' ? '' : value;
-                  setFilters(prev => ({ 
-                    ...prev, 
-                    stage: newStage,
-                    evidenceRequirementId: '' // Clear requirement filter when stage changes
-                  }));
-                }}
-              >
-                <SelectTrigger data-testid="select-stage-filter">
-                  <SelectValue placeholder={t('evidenceGallery.filters.options.allStages')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('evidenceGallery.filters.options.allStages')}</SelectItem>
-                  <SelectItem value="inspire">{t('evidenceGallery.filters.stages.inspire')}</SelectItem>
-                  <SelectItem value="investigate">{t('evidenceGallery.filters.stages.investigate')}</SelectItem>
-                  <SelectItem value="act">{t('evidenceGallery.filters.stages.act')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('evidenceGallery.filters.labels.stage')}</label>
+                <Select 
+                  value={filters.stage || 'all'} 
+                  onValueChange={(value) => {
+                    const newStage = value === 'all' ? '' : value;
+                    setFilters(prev => ({ 
+                      ...prev, 
+                      stage: newStage,
+                      evidenceRequirementId: '' // Clear requirement filter when stage changes
+                    }));
+                  }}
+                >
+                  <SelectTrigger data-testid="select-stage-filter">
+                    <SelectValue placeholder={t('evidenceGallery.filters.options.allStages')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('evidenceGallery.filters.options.allStages')}</SelectItem>
+                    <SelectItem value="inspire">{t('evidenceGallery.filters.stages.inspire')}</SelectItem>
+                    <SelectItem value="investigate">{t('evidenceGallery.filters.stages.investigate')}</SelectItem>
+                    <SelectItem value="act">{t('evidenceGallery.filters.stages.act')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Step</label>
-              <Select 
-                value={filters.evidenceRequirementId || 'all'} 
-                onValueChange={(value) => setFilters(prev => ({ ...prev, evidenceRequirementId: value === 'all' ? '' : value }))}
-                disabled={!filters.stage || filteredRequirements.length === 0}
-              >
-                <SelectTrigger data-testid="select-requirement-filter">
-                  <SelectValue placeholder={filters.stage ? "All Steps" : "Select stage first"} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Steps</SelectItem>
-                  {filteredRequirements.map((req) => (
-                    <SelectItem key={req.id} value={req.id}>{req.title}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('evidenceGallery.filters.labels.country')}</label>
-              <Select 
-                value={filters.country || 'all'} 
-                onValueChange={(value) => setFilters(prev => ({ ...prev, country: value === 'all' ? '' : value }))}
-              >
-                <SelectTrigger data-testid="select-country-filter">
-                  <SelectValue placeholder={t('evidenceGallery.filters.options.allCountries')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('evidenceGallery.filters.options.allCountries')}</SelectItem>
-                  {countries.map((country: string) => (
-                    <SelectItem key={country} value={country}>{country}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('evidenceGallery.filters.labels.status')}</label>
-              <Select 
-                value={filters.status || 'all'} 
-                onValueChange={(value) => setFilters(prev => ({ ...prev, status: value === 'all' ? '' : value }))}
-              >
-                <SelectTrigger data-testid="select-status-filter">
-                  <SelectValue placeholder={t('evidenceGallery.filters.options.allStatuses')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('evidenceGallery.filters.options.allStatuses')}</SelectItem>
-                  <SelectItem value="pending">{t('evidenceGallery.filters.statuses.pending')}</SelectItem>
-                  <SelectItem value="approved">{t('evidenceGallery.filters.statuses.approved')}</SelectItem>
-                  <SelectItem value="rejected">{t('evidenceGallery.filters.statuses.rejected')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Step</label>
+                <Select 
+                  value={filters.evidenceRequirementId || 'all'} 
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, evidenceRequirementId: value === 'all' ? '' : value }))}
+                  disabled={!filters.stage || filteredRequirements.length === 0}
+                >
+                  <SelectTrigger data-testid="select-requirement-filter">
+                    <SelectValue placeholder={filters.stage ? "All Steps" : "Select stage first"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Steps</SelectItem>
+                    {filteredRequirements.map((req) => (
+                      <SelectItem key={req.id} value={req.id}>{req.title}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('evidenceGallery.filters.labels.country')}</label>
+                <Select 
+                  value={filters.country || 'all'} 
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, country: value === 'all' ? '' : value }))}
+                >
+                  <SelectTrigger data-testid="select-country-filter">
+                    <SelectValue placeholder={t('evidenceGallery.filters.options.allCountries')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('evidenceGallery.filters.options.allCountries')}</SelectItem>
+                    {countries.map((country: string) => (
+                      <SelectItem key={country} value={country}>{country}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('evidenceGallery.filters.labels.status')}</label>
+                <Select 
+                  value={filters.status || 'all'} 
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, status: value === 'all' ? '' : value }))}
+                >
+                  <SelectTrigger data-testid="select-status-filter">
+                    <SelectValue placeholder={t('evidenceGallery.filters.options.allStatuses')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('evidenceGallery.filters.options.allStatuses')}</SelectItem>
+                    <SelectItem value="pending">{t('evidenceGallery.filters.statuses.pending')}</SelectItem>
+                    <SelectItem value="approved">{t('evidenceGallery.filters.statuses.approved')}</SelectItem>
+                    <SelectItem value="rejected">{t('evidenceGallery.filters.statuses.rejected')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('evidenceGallery.filters.labels.visibility')}</label>
-              <Select 
-                value={filters.visibility || 'all'} 
-                onValueChange={(value) => setFilters(prev => ({ ...prev, visibility: value === 'all' ? '' : value }))}
-              >
-                <SelectTrigger data-testid="select-visibility-filter">
-                  <SelectValue placeholder={t('evidenceGallery.filters.options.allVisibility')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('evidenceGallery.filters.options.allVisibility')}</SelectItem>
-                  <SelectItem value="public">{t('evidenceGallery.filters.options.public')}</SelectItem>
-                  <SelectItem value="private">{t('evidenceGallery.filters.options.private')}</SelectItem>
-                </SelectContent>
-              </Select>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('evidenceGallery.filters.labels.visibility')}</label>
+                <Select 
+                  value={filters.visibility || 'all'} 
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, visibility: value === 'all' ? '' : value }))}
+                >
+                  <SelectTrigger data-testid="select-visibility-filter">
+                    <SelectValue placeholder={t('evidenceGallery.filters.options.allVisibility')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('evidenceGallery.filters.options.allVisibility')}</SelectItem>
+                    <SelectItem value="public">{t('evidenceGallery.filters.options.public')}</SelectItem>
+                    <SelectItem value="private">{t('evidenceGallery.filters.options.private')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex items-end">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setFilters({ status: '', stage: '', country: '', visibility: '', evidenceRequirementId: '' });
+                    setDateRange(undefined);
+                  }}
+                  data-testid="button-clear-filters"
+                >
+                  {t('evidenceGallery.buttons.clearFilters')}
+                </Button>
+              </div>
             </div>
             
-            <div className="flex items-end">
-              <Button 
-                variant="outline" 
-                onClick={() => setFilters({ status: '', stage: '', country: '', visibility: '', evidenceRequirementId: '' })}
-                data-testid="button-clear-filters"
-              >
-                {t('evidenceGallery.buttons.clearFilters')}
-              </Button>
+            {/* Date Range Filter */}
+            <div className="flex items-center gap-4 pt-2 border-t">
+              <label className="text-sm font-medium text-gray-700">{t('evidenceGallery.filters.labels.dateRange')}</label>
+              <DateRangePicker
+                value={dateRange}
+                onChange={setDateRange}
+              />
             </div>
           </div>
         </CardContent>
