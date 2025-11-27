@@ -6,7 +6,7 @@ import { ObjectStorageService, ObjectNotFoundError, objectStorageClient } from "
 import { ObjectPermission, getObjectAclPolicy, setObjectAclPolicy } from "./objectAcl";
 import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail, sendEventAnnouncementEmail, sendEventDigestEmail, sendContactFormEmail, getFromAddress, sendWeeklyAdminDigest, WeeklyDigestData, getBaseUrl } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
-import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, insertCaseStudySchema, type VerificationRequest, users, schools, schoolUsers, caseStudies, importBatches, userActivityLogs, certificates, evidence } from "@shared/schema";
+import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, insertCaseStudySchema, type VerificationRequest, users, schools, schoolUsers, caseStudies, importBatches, userActivityLogs, certificates, evidence, evidenceRequirements } from "@shared/schema";
 import { nanoid } from 'nanoid';
 import { z } from "zod";
 
@@ -6736,25 +6736,33 @@ Return JSON with:
       // This ensures "View Plan" works and progression counts are accurate
       try {
         const school = await storage.getSchool(actionPlan.schoolId);
-        const evidenceRequirementId = '5cfb26b9-76f3-408d-8514-d892ae30d061'; // Action Plan Development
         
-        // Find evidence for this school, requirement, and round
-        const evidenceFilters = {
-          schoolId: actionPlan.schoolId,
-          evidenceRequirementId,
-          roundNumber: school?.currentRound || actionPlan.roundNumber || 1,
-        };
+        // Dynamically look up action plan requirements by requirementType
+        const actionPlanRequirements = await db
+          .select({ id: evidenceRequirements.id })
+          .from(evidenceRequirements)
+          .where(eq(evidenceRequirements.requirementType, 'action_plan'));
         
-        const evidence = await storage.getAllEvidence(evidenceFilters);
-        
-        // Update the first matching evidence (there should only be one per round)
-        if (evidence && evidence.length > 0) {
-          await storage.updateEvidenceStatus(
-            evidence[0].id,
-            reviewStatus,
-            reviewerId,
-            reviewNotes
-          );
+        // Find evidence for this school, any action plan requirement, and round
+        for (const req of actionPlanRequirements) {
+          const evidenceFilters = {
+            schoolId: actionPlan.schoolId,
+            evidenceRequirementId: req.id,
+            roundNumber: school?.currentRound || actionPlan.roundNumber || 1,
+          };
+          
+          const evidence = await storage.getAllEvidence(evidenceFilters);
+          
+          // Update the first matching evidence (there should only be one per round)
+          if (evidence && evidence.length > 0) {
+            await storage.updateEvidenceStatus(
+              evidence[0].id,
+              reviewStatus,
+              reviewerId,
+              reviewNotes
+            );
+            break; // Only update one evidence
+          }
         }
       } catch (evidenceUpdateError) {
         console.error("[Action Plan Review] Failed to update evidence status:", evidenceUpdateError);
@@ -6845,23 +6853,31 @@ Return JSON with:
           // CRITICAL: Also update the associated evidence status
           try {
             const school = await storage.getSchool(actionPlan.schoolId);
-            const evidenceRequirementId = '5cfb26b9-76f3-408d-8514-d892ae30d061'; // Action Plan Development
             
-            const evidenceFilters = {
-              schoolId: actionPlan.schoolId,
-              evidenceRequirementId,
-              roundNumber: school?.currentRound || actionPlan.roundNumber || 1,
-            };
+            // Dynamically look up action plan requirements by requirementType
+            const actionPlanRequirements = await db
+              .select({ id: evidenceRequirements.id })
+              .from(evidenceRequirements)
+              .where(eq(evidenceRequirements.requirementType, 'action_plan'));
             
-            const evidence = await storage.getAllEvidence(evidenceFilters);
-            
-            if (evidence && evidence.length > 0) {
-              await storage.updateEvidenceStatus(
-                evidence[0].id,
-                reviewStatus,
-                reviewerId,
-                reviewNotes
-              );
+            for (const req of actionPlanRequirements) {
+              const evidenceFilters = {
+                schoolId: actionPlan.schoolId,
+                evidenceRequirementId: req.id,
+                roundNumber: school?.currentRound || actionPlan.roundNumber || 1,
+              };
+              
+              const evidence = await storage.getAllEvidence(evidenceFilters);
+              
+              if (evidence && evidence.length > 0) {
+                await storage.updateEvidenceStatus(
+                  evidence[0].id,
+                  reviewStatus,
+                  reviewerId,
+                  reviewNotes
+                );
+                break; // Only update one evidence
+              }
             }
           } catch (evidenceUpdateError) {
             console.error("[Bulk Action Plan Review] Failed to update evidence status:", evidenceUpdateError);
