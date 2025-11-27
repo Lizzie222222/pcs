@@ -16,7 +16,8 @@ import { z } from "zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ClipboardCheck, ChevronRight, ChevronLeft, Save, Send, CheckCircle, Download, Upload, AlertCircle, RefreshCw } from "lucide-react";
+import { usePdfDownload } from "@/lib/pdfDownload";
+import { ClipboardCheck, ChevronRight, ChevronLeft, Save, Send, CheckCircle, Download, Upload, AlertCircle, RefreshCw, Loader2 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 import type { AuditResponse } from "@shared/schema";
 
@@ -146,6 +147,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
   const [auditId, setAuditId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { downloadPdf, isDownloading } = usePdfDownload();
   const hasLoadedInitialData = useRef(false);
 
   // Fetch existing audits if any
@@ -711,9 +713,17 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     }
   };
 
-  // Download PDF handler
-  const handleDownloadPDF = () => {
-    window.open(`/api/audits/${auditId}/results-pdf`, '_blank');
+  // Download PDF handler - uses fetch + blob for better error handling
+  const handleDownloadPDF = async () => {
+    if (!auditId) return;
+    const url = `/api/audits/${auditId}/results-pdf`;
+    await downloadPdf(url, { filename: `audit-results-${auditId}.pdf` });
+  };
+  
+  // Download blank audit form
+  const handleDownloadBlankForm = async () => {
+    const url = '/api/printable-forms/audit';
+    await downloadPdf(url);
   };
 
   // Calculate progress
@@ -740,12 +750,22 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
           <Button
             variant="outline"
             size="sm"
-            onClick={() => window.open('/api/printable-forms/audit', '_blank')}
+            onClick={handleDownloadBlankForm}
+            disabled={isDownloading('/api/printable-forms/audit')}
             className="border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900"
             data-testid="button-download-blank-audit-form"
           >
-            <Download className="h-4 w-4 mr-2" />
-            Download Blank Audit Form (PDF)
+            {isDownloading('/api/printable-forms/audit') ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Downloading...
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4 mr-2" />
+                Download Blank Audit Form (PDF)
+              </>
+            )}
           </Button>
         </div>
         <div className="mt-4">
@@ -2235,11 +2255,22 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   <Button
                     onClick={handleDownloadPDF}
                     variant="outline"
+                    disabled={!auditId || isDownloading(`/api/audits/${auditId}/results-pdf`)}
                     className="flex-1 border-purple-600 text-purple-600 hover:bg-purple-50"
                     data-testid="button-download-results-pdf"
+                    title={!auditId ? "Save your audit first to download results" : undefined}
                   >
-                    <Download className="h-4 w-4 mr-2" />
-                    {t('audit.actions.downloadPdf')}
+                    {auditId && isDownloading(`/api/audits/${auditId}/results-pdf`) ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Generating PDF...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="h-4 w-4 mr-2" />
+                        {t('audit.actions.downloadPdf')}
+                      </>
+                    )}
                   </Button>
                   <Button
                     onClick={handleSubmitAuditOnly}

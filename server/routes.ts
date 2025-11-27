@@ -11589,35 +11589,61 @@ Return JSON with:
   // Printable Form Download Routes
   const { generatePrintableForm, getPrintableFormFilename } = await import('./lib/printableForms');
   
-  // Download blank audit form PDF
+  // Download blank audit form PDF (serves static pre-generated file)
   app.get('/api/printable-forms/audit', async (req, res) => {
     try {
-      console.log('[Printable Forms] Generating audit form PDF...');
-      const pdfBuffer = await generatePrintableForm('audit-form');
-      const filename = getPrintableFormFilename('audit');
+      console.log('[Printable Forms] Serving static audit form PDF...');
+      const staticPdfPath = path.join(process.cwd(), 'public', 'plastic-clever-audit-form.pdf');
       
+      // Check if static file exists
+      const fs = await import('fs/promises');
+      try {
+        await fs.access(staticPdfPath);
+      } catch {
+        console.error('[Printable Forms] Static audit form PDF not found, falling back to generation');
+        const pdfBuffer = await generatePrintableForm('audit-form');
+        const filename = getPrintableFormFilename('audit');
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        return res.send(pdfBuffer);
+      }
+      
+      const filename = getPrintableFormFilename('audit');
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      res.send(pdfBuffer);
+      res.sendFile(staticPdfPath);
     } catch (error) {
-      console.error('[Printable Forms] Error generating audit form:', error);
-      res.status(500).json({ message: 'Failed to generate audit form PDF' });
+      console.error('[Printable Forms] Error serving audit form:', error);
+      res.status(500).json({ message: 'Failed to serve audit form PDF' });
     }
   });
   
-  // Download blank action plan form PDF
+  // Download blank action plan form PDF (serves static pre-generated file)
   app.get('/api/printable-forms/action-plan', async (req, res) => {
     try {
-      console.log('[Printable Forms] Generating action plan form PDF...');
-      const pdfBuffer = await generatePrintableForm('action-plan-form');
-      const filename = getPrintableFormFilename('action-plan');
+      console.log('[Printable Forms] Serving static action plan form PDF...');
+      const staticPdfPath = path.join(process.cwd(), 'public', 'plastic-clever-action-plan-form.pdf');
       
+      // Check if static file exists
+      const fs = await import('fs/promises');
+      try {
+        await fs.access(staticPdfPath);
+      } catch {
+        console.error('[Printable Forms] Static action plan PDF not found, falling back to generation');
+        const pdfBuffer = await generatePrintableForm('action-plan-form');
+        const filename = getPrintableFormFilename('action-plan');
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        return res.send(pdfBuffer);
+      }
+      
+      const filename = getPrintableFormFilename('action-plan');
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      res.send(pdfBuffer);
+      res.sendFile(staticPdfPath);
     } catch (error) {
-      console.error('[Printable Forms] Error generating action plan form:', error);
-      res.status(500).json({ message: 'Failed to generate action plan form PDF' });
+      console.error('[Printable Forms] Error serving action plan form:', error);
+      res.status(500).json({ message: 'Failed to serve action plan form PDF' });
     }
   });
 
