@@ -150,8 +150,27 @@ interface SchoolActivityAging {
   }>;
 }
 
+interface ReferralSourceAnalytics {
+  distribution: Array<{ source: string; count: number; percentage: number }>;
+  totalResponses: number;
+  noResponseCount: number;
+}
+
 // Color palette for charts
 const ANALYTICS_COLORS = ['#0B3D5D', '#019ADE', '#02BBB4', '#FFC557', '#FF595A', '#6B7280', '#10B981', '#8B5CF6'];
+
+const formatReferralSource = (source: string): string => {
+  const sourceLabels: Record<string, string> = {
+    'google_search': 'Google Search',
+    'social_media': 'Social Media',
+    'colleague': 'Colleague',
+    'conference': 'Conference/Event',
+    'email': 'Email',
+    'website': 'Website',
+    'other': 'Other',
+  };
+  return sourceLabels[source] || source.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+};
 
 interface AnalyticsContentProps {
   activeTab: string;
@@ -222,6 +241,10 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
   const schoolActivityAgingQuery = useQuery<SchoolActivityAging>({
     queryKey: ['/api/admin/analytics/school-activity-aging'],
     enabled: activeTab === 'overview' // Loads when overview tab is active, displayed in schools-evidence tab
+  });
+
+  const referralSourceQuery = useQuery<ReferralSourceAnalytics>({
+    queryKey: ['/api/admin/analytics/referral-sources'],
   });
 
   const [analyticsSubTab, setAnalyticsSubTab] = useState("overview");
@@ -791,6 +814,44 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Referral Source Summary */}
+              {referralSourceQuery.data && referralSourceQuery.data.distribution.length > 0 && (
+                <Card 
+                  className="cursor-pointer transition-all hover:shadow-lg hover:scale-[1.01]"
+                  onClick={() => setAnalyticsSubTab("engagement")}
+                  data-testid="card-referral-sources-overview"
+                >
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <TrendingUp className="w-5 h-5 mr-2 text-pcs_blue" />
+                        How Did You Hear About Us?
+                      </div>
+                      <Badge variant="secondary">{referralSourceQuery.data.totalResponses} responses</Badge>
+                    </CardTitle>
+                    <p className="text-sm text-gray-500">Click for detailed breakdown →</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
+                      {referralSourceQuery.data.distribution.slice(0, 7).map((item, index) => (
+                        <div 
+                          key={item.source}
+                          className="text-center p-3 bg-gray-50 rounded-lg"
+                          data-testid={`overview-referral-${item.source}`}
+                        >
+                          <div 
+                            className="w-3 h-3 rounded-full mx-auto mb-2" 
+                            style={{ backgroundColor: ANALYTICS_COLORS[index % ANALYTICS_COLORS.length] }}
+                          />
+                          <div className="text-lg font-bold">{item.percentage}%</div>
+                          <div className="text-xs text-gray-600 truncate">{formatReferralSource(item.source)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </>
           )}
         </TabsContent>
@@ -1429,6 +1490,83 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                 </CardContent>
               </Card>
             </div>
+          )}
+
+          {/* Referral Sources - How Did You Hear About Us */}
+          {referralSourceQuery.data && (
+            <Card data-testid="card-referral-sources">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <TrendingUp className="w-5 h-5 mr-2 text-pcs_blue" />
+                  How Did You Hear About Us?
+                </CardTitle>
+                <p className="text-sm text-gray-500">
+                  Breakdown of referral sources from registration ({referralSourceQuery.data.totalResponses} responses)
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Pie Chart */}
+                  <div>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={referralSourceQuery.data.distribution}
+                          dataKey="count"
+                          nameKey="source"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={100}
+                          label={(entry) => `${entry.percentage}%`}
+                        >
+                          {referralSourceQuery.data.distribution.map((entry, index) => (
+                            <Cell key={`referral-cell-${index}`} fill={ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value: number, name: string) => [
+                            `${value} (${referralSourceQuery.data?.distribution.find(d => d.source === name)?.percentage || 0}%)`,
+                            formatReferralSource(name)
+                          ]}
+                        />
+                        <Legend formatter={(value) => formatReferralSource(value)} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* Detailed Breakdown Table */}
+                  <div>
+                    <div className="space-y-3">
+                      {referralSourceQuery.data.distribution.map((item, index) => (
+                        <div 
+                          key={item.source} 
+                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                          data-testid={`referral-item-${item.source}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-4 h-4 rounded-full" 
+                              style={{ backgroundColor: ANALYTICS_COLORS[index % ANALYTICS_COLORS.length] }}
+                            />
+                            <span className="font-medium">{formatReferralSource(item.source)}</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="font-bold text-lg">{item.count}</span>
+                            <span className="text-gray-500 ml-2">({item.percentage}%)</span>
+                          </div>
+                        </div>
+                      ))}
+                      {referralSourceQuery.data.noResponseCount > 0 && (
+                        <div className="flex items-center justify-between p-3 bg-gray-100 rounded-lg text-gray-500">
+                          <span>No response provided</span>
+                          <span>{referralSourceQuery.data.noResponseCount}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           )}
         </TabsContent>
       </Tabs>

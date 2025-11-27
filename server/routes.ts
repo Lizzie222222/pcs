@@ -4544,6 +4544,16 @@ Return JSON with:
     }
   });
 
+  app.get('/api/admin/analytics/referral-sources', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const analytics = await storage.getReferralSourceAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching referral source analytics:", error);
+      res.status(500).json({ message: "Failed to fetch referral source analytics" });
+    }
+  });
+
   app.get('/api/admin/analytics/evidence', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const { startDate, endDate } = req.query;

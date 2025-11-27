@@ -642,6 +642,12 @@ export interface IStorage {
     wasteReductionSchools: Array<{ month: string; count: number }>;
   }>;
 
+  getReferralSourceAnalytics(): Promise<{
+    distribution: Array<{ source: string; count: number; percentage: number }>;
+    totalResponses: number;
+    noResponseCount: number;
+  }>;
+
   // Audit operations
   createAudit(audit: InsertAuditResponse): Promise<AuditResponse>;
   getAudit(id: string): Promise<AuditResponse | undefined>;
@@ -5145,6 +5151,44 @@ export class DatabaseStorage implements IStorage {
       monthlySubmissions,
       plasticItemsTrend,
       wasteReductionSchools,
+    };
+  }
+
+  async getReferralSourceAnalytics(): Promise<{
+    distribution: Array<{ source: string; count: number; percentage: number }>;
+    totalResponses: number;
+    noResponseCount: number;
+  }> {
+    const allSchoolUsers = await db
+      .select({
+        referralSource: schoolUsers.referralSource,
+      })
+      .from(schoolUsers);
+
+    const totalRecords = allSchoolUsers.length;
+    const noResponseCount = allSchoolUsers.filter(su => !su.referralSource).length;
+    const totalResponses = totalRecords - noResponseCount;
+
+    const sourceCounts = new Map<string, number>();
+    allSchoolUsers.forEach(su => {
+      if (su.referralSource) {
+        const currentCount = sourceCounts.get(su.referralSource) || 0;
+        sourceCounts.set(su.referralSource, currentCount + 1);
+      }
+    });
+
+    const distribution = Array.from(sourceCounts.entries())
+      .map(([source, count]) => ({
+        source,
+        count,
+        percentage: totalResponses > 0 ? Math.round((count / totalResponses) * 100) : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    return {
+      distribution,
+      totalResponses,
+      noResponseCount,
     };
   }
 
