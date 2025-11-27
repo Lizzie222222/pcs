@@ -63,6 +63,7 @@ interface AnalyticsOverview {
   notInteractedUsers?: number;
   interactionRate?: number;
   totalResourceDownloads?: number;
+  activeSchoolsLastMonth?: number;
 }
 
 interface SchoolProgressAnalytics {
@@ -156,6 +157,13 @@ interface ReferralSourceAnalytics {
   noResponseCount: number;
 }
 
+interface ResourceAnalytics {
+  downloadTrends: Array<{ month: string; downloads: number }>;
+  popularResources: Array<{ title: string; downloads: number; stage: string }>;
+  resourcesByStage: Array<{ stage: string; count: number; totalDownloads: number }>;
+  resourcesByCountry: Array<{ country: string; resources: number; downloads: number }>;
+}
+
 // Color palette for charts
 const ANALYTICS_COLORS = ['#0B3D5D', '#019ADE', '#02BBB4', '#FFC557', '#FF595A', '#6B7280', '#10B981', '#8B5CF6'];
 
@@ -245,6 +253,10 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
 
   const referralSourceQuery = useQuery<ReferralSourceAnalytics>({
     queryKey: ['/api/admin/analytics/referral-sources'],
+  });
+
+  const resourceAnalyticsQuery = useQuery<ResourceAnalytics>({
+    queryKey: ['/api/admin/analytics/resources'],
   });
 
   const [analyticsSubTab, setAnalyticsSubTab] = useState("overview");
@@ -674,7 +686,10 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-sm text-gray-600 font-medium">Total Schools</CardTitle>
+                    <CardTitle className="text-sm text-gray-600 font-medium flex items-center gap-2">
+                      <School className="h-4 w-4 text-pcs_blue" />
+                      Total Schools
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-pcs_blue">{overviewQuery.data.totalSchools}</div>
@@ -684,10 +699,13 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
 
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-sm text-gray-600 font-medium">Total Evidence</CardTitle>
+                    <CardTitle className="text-sm text-gray-600 font-medium flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-pcs_teal" />
+                      Total Evidence
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-teal">{overviewQuery.data.totalEvidence}</div>
+                    <div className="text-2xl font-bold text-pcs_teal">{overviewQuery.data.totalEvidence}</div>
                     <p className="text-xs text-gray-500 mt-1">Submissions received</p>
                   </CardContent>
                 </Card>
@@ -745,7 +763,10 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
 
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-sm text-gray-600 font-medium">Students Impacted</CardTitle>
+                    <CardTitle className="text-sm text-gray-600 font-medium flex items-center gap-2">
+                      <Heart className="h-4 w-4 text-pcs_blue" />
+                      Students Impacted
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-pcs_blue">{overviewQuery.data.studentsImpacted.toLocaleString()}</div>
@@ -852,6 +873,74 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                   </CardContent>
                 </Card>
               )}
+
+              {/* Most Downloaded Resources */}
+              <Card data-testid="card-most-downloaded-resources">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Download className="w-5 h-5 mr-2 text-pcs_coral" />
+                      Most Downloaded Resources
+                    </div>
+                    <Badge variant="secondary">Top 10</Badge>
+                  </CardTitle>
+                  <p className="text-sm text-gray-500">Resources with the highest download counts</p>
+                </CardHeader>
+                <CardContent>
+                  {resourceAnalyticsQuery.isLoading ? (
+                    <div className="space-y-3" data-testid="loading-resources">
+                      {[1, 2, 3, 4, 5].map(i => (
+                        <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg animate-pulse">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-gray-200 rounded-full" />
+                            <div>
+                              <div className="h-4 bg-gray-200 rounded w-40 mb-1" />
+                              <div className="h-3 bg-gray-200 rounded w-20" />
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="h-5 bg-gray-200 rounded w-12 mb-1" />
+                            <div className="h-3 bg-gray-200 rounded w-16" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : resourceAnalyticsQuery.data && resourceAnalyticsQuery.data.popularResources.length > 0 ? (
+                    <div className="space-y-3" data-testid="resources-list">
+                      {resourceAnalyticsQuery.data.popularResources.map((resource, index) => (
+                        <div 
+                          key={index}
+                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                          data-testid={`resource-rank-${index + 1}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                              style={{ backgroundColor: index < 3 ? ANALYTICS_COLORS[index] : '#6B7280' }}
+                            >
+                              {index + 1}
+                            </div>
+                            <div>
+                              <div className="font-medium text-gray-900" data-testid={`resource-title-${index + 1}`}>{resource.title}</div>
+                              <div className="text-xs text-gray-500 capitalize" data-testid={`resource-stage-${index + 1}`}>{resource.stage || 'All Stages'}</div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-lg font-bold text-pcs_coral" data-testid={`resource-downloads-${index + 1}`}>{resource.downloads.toLocaleString()}</div>
+                            <div className="text-xs text-gray-500">downloads</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500" data-testid="no-resources">
+                      <Download className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                      <p className="font-medium">No resource downloads yet</p>
+                      <p className="text-sm">Downloads will appear here once resources are accessed</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </>
           )}
         </TabsContent>
