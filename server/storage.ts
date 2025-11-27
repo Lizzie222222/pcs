@@ -3026,42 +3026,41 @@ export class DatabaseStorage implements IStorage {
     countriesReached: number;
     activeSchoolsLastMonth: number;
   }> {
-    // Build date filter conditions
-    const schoolDateFilter = startDate && endDate 
-      ? sql`created_at >= ${startDate}::timestamp AND created_at < (${endDate}::timestamp + INTERVAL '1 day')`
-      : sql`true`;
+    // LIFETIME METRICS - These are NEVER filtered by date range
+    // They always show totals across all time for accurate program-wide statistics
     
-    const userDateFilter = startDate && endDate
-      ? sql`created_at >= ${startDate}::timestamp AND created_at < (${endDate}::timestamp + INTERVAL '1 day')`
-      : sql`true`;
+    // Total schools (lifetime)
+    const [schoolsCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(schools);
     
-    const evidenceDateFilter = startDate && endDate
-      ? sql`submitted_at >= ${startDate}::timestamp AND submitted_at < (${endDate}::timestamp + INTERVAL '1 day')`
-      : sql`true`;
-
-    // Get individual metrics separately to avoid complex subquery issues
-    const [schoolsCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(schools).where(schoolDateFilter);
-    const [usersCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(users).where(userDateFilter);
+    // Total users (lifetime)
+    const [usersCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(users);
     
-    // Use shared deduplication logic to ensure consistency with landing page
+    // Total evidence (lifetime) - Use shared deduplication logic to ensure consistency with landing page
     const totalEvidence = await schoolStorage.getDeduplicatedEvidenceCount();
     
-    // Sum total rounds completed across all schools
+    // Sum total rounds completed across all schools (lifetime)
     const [completedAwardsSum] = await db.select({ 
       sum: sql<number>`COALESCE(SUM(rounds_completed), 0)` 
-    }).from(schools).where(schoolDateFilter);
+    }).from(schools);
     
-    // Count schools that have completed at least one round
+    // Count schools that have completed at least one round (lifetime)
     const [schoolsCompletedCount] = await db.select({ 
       count: sql<number>`COUNT(*)` 
-    }).from(schools).where(and(schoolDateFilter, sql`rounds_completed > 0`));
+    }).from(schools).where(sql`rounds_completed > 0`);
     
-    const [pendingCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(evidence).where(and(eq(evidence.status, 'pending'), evidenceDateFilter));
-    const [avgProgress] = await db.select({ avg: sql<number>`COALESCE(AVG(progress_percentage), 0)` }).from(schools).where(schoolDateFilter);
-    const [studentsSum] = await db.select({ sum: sql<number>`COALESCE(SUM(student_count), 0)` }).from(schools).where(schoolDateFilter);
-    const [countriesCount] = await db.select({ count: sql<number>`COUNT(DISTINCT country)` }).from(schools).where(schoolDateFilter);
+    // Total students impacted (lifetime)
+    const [studentsSum] = await db.select({ sum: sql<number>`COALESCE(SUM(student_count), 0)` }).from(schools);
     
-    // Count schools with activity in the last 30 days (based on lastActiveAt)
+    // Countries reached (lifetime)
+    const [countriesCount] = await db.select({ count: sql<number>`COUNT(DISTINCT country)` }).from(schools);
+    
+    // Pending evidence count (lifetime - includes all pending regardless of submitted_at)
+    const [pendingCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(evidence).where(eq(evidence.status, 'pending'));
+    
+    // Average progress (lifetime - across all schools)
+    const [avgProgress] = await db.select({ avg: sql<number>`COALESCE(AVG(progress_percentage), 0)` }).from(schools);
+    
+    // Count schools with activity in the last 30 days (based on lastActiveAt) - always 30 days
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const [activeSchoolsCount] = await db.select({ 

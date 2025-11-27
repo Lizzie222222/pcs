@@ -187,11 +187,8 @@ interface AnalyticsContentProps {
 export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
   const { toast } = useToast();
   
-  // Date range state - default to Last 30 days
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => ({
-    from: subDays(new Date(), 30),
-    to: new Date(),
-  }));
+  // Date range state - default to All Time (undefined means no date filtering)
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   // Analytics queries - only load when this component is mounted (overview tab is active)
   const overviewQuery = useQuery<AnalyticsOverview>({
