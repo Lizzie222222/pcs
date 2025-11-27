@@ -59,6 +59,7 @@ interface AnalyticsOverview {
   averageProgress: number;
   studentsImpacted: number;
   countriesReached: number;
+  lifetimeTotalUsers?: number;
   interactedUsers?: number;
   notInteractedUsers?: number;
   interactionRate?: number;
@@ -191,6 +192,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   // Analytics queries - only load when this component is mounted (overview tab is active)
+  // Date filtering is optional - defaults to All Time (undefined) which shows lifetime totals
   const overviewQuery = useQuery<AnalyticsOverview>({
     queryKey: ['/api/admin/analytics/overview', { 
       startDate: dateRange?.from?.toISOString(), 
@@ -825,8 +827,8 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                       {(overviewQuery.data.notInteractedUsers || 0).toLocaleString()}
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      {overviewQuery.data.totalUsers > 0 
-                        ? Math.round(((overviewQuery.data.notInteractedUsers || 0) / overviewQuery.data.totalUsers) * 100)
+                      {(overviewQuery.data.lifetimeTotalUsers || overviewQuery.data.totalUsers) > 0 
+                        ? Math.round(((overviewQuery.data.notInteractedUsers || 0) / (overviewQuery.data.lifetimeTotalUsers || overviewQuery.data.totalUsers)) * 100)
                         : 0}% awaiting first login
                     </p>
                   </CardContent>

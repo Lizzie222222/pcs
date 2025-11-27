@@ -4394,6 +4394,7 @@ Return JSON with:
   });
 
   // Analytics endpoints
+  // Date filtering is optional - defaults to lifetime totals when not specified
   app.get('/api/admin/analytics/overview', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const { startDate, endDate } = req.query;
@@ -4402,8 +4403,15 @@ Return JSON with:
         endDate as string | undefined
       );
       
-      // Get user interaction metrics
-      const totalUsersResult = await db.execute(sql`
+      // Build date filter for user queries to match storage behavior
+      const hasDateRange = startDate && endDate;
+      const userDateFilter = hasDateRange
+        ? sql`AND created_at >= ${startDate}::timestamp AND created_at < (${endDate}::timestamp + INTERVAL '1 day')`
+        : sql``;
+      
+      // Get user interaction metrics - lifetime totals (these track overall engagement status)
+      // Note: has_interacted is a lifetime flag, not date-bounded, so we query all users for interaction rates
+      const lifetimeTotalUsersResult = await db.execute(sql`
         SELECT COUNT(*) as count FROM users WHERE deleted_at IS NULL
       `);
       const interactedUsersResult = await db.execute(sql`
@@ -4413,12 +4421,12 @@ Return JSON with:
         SELECT COUNT(*) as count FROM users WHERE deleted_at IS NULL AND (has_interacted = false OR has_interacted IS NULL)
       `);
       
-      const totalUsers = Number(totalUsersResult.rows[0]?.count || 0);
+      const lifetimeTotalUsers = Number(lifetimeTotalUsersResult.rows[0]?.count || 0);
       const interactedUsers = Number(interactedUsersResult.rows[0]?.count || 0);
       const notInteractedUsers = Number(notInteractedUsersResult.rows[0]?.count || 0);
-      const interactionRate = totalUsers > 0 ? Math.round((interactedUsers / totalUsers) * 100) : 0;
+      const interactionRate = lifetimeTotalUsers > 0 ? Math.round((interactedUsers / lifetimeTotalUsers) * 100) : 0;
       
-      // Get total resource downloads
+      // Get total resource downloads (lifetime - no date tracking available)
       const resourceDownloadsResult = await db.execute(sql`
         SELECT COALESCE(SUM(download_count), 0) as total FROM resources
       `);
@@ -4428,10 +4436,12 @@ Return JSON with:
       const totalResourceDownloads = Number(resourceDownloadsResult.rows[0]?.total || 0) + 
                                       Number(resourcePackDownloadsResult.rows[0]?.total || 0);
       
-      // Merge user interaction metrics with existing analytics
+      // Merge metrics - keep storage's date-filtered values, add lifetime interaction metrics separately
       const enrichedAnalytics = {
         ...analytics,
-        totalUsers,
+        // Keep analytics.totalUsers from storage (already date-filtered)
+        // Add lifetime interaction metrics as separate fields
+        lifetimeTotalUsers,
         interactedUsers,
         notInteractedUsers,
         interactionRate,

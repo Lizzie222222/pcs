@@ -3014,6 +3014,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Analytics implementations
+  // Date filtering is optional - when not provided (All Time), shows lifetime totals
+  // When provided, filters metrics to the specified date range
   async getAnalyticsOverview(startDate?: string, endDate?: string): Promise<{
     totalSchools: number;
     totalUsers: number;
@@ -3059,12 +3061,13 @@ export class DatabaseStorage implements IStorage {
       count: sql<number>`COUNT(*)` 
     }).from(schools).where(and(schoolDateFilter, sql`rounds_completed > 0`));
     
+    // Pending evidence - filtered by submission date if date range specified
     const [pendingCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(evidence).where(and(eq(evidence.status, 'pending'), evidenceDateFilter));
     const [avgProgress] = await db.select({ avg: sql<number>`COALESCE(AVG(progress_percentage), 0)` }).from(schools).where(schoolDateFilter);
     const [studentsSum] = await db.select({ sum: sql<number>`COALESCE(SUM(student_count), 0)` }).from(schools).where(schoolDateFilter);
     const [countriesCount] = await db.select({ count: sql<number>`COUNT(DISTINCT country)` }).from(schools).where(schoolDateFilter);
     
-    // Count schools with activity in the last 30 days (based on lastActiveAt) - always 30 days
+    // Active Schools Last Month - always uses rolling 30-day window (not affected by date filter)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const [activeSchoolsCount] = await db.select({ 
