@@ -667,18 +667,16 @@ export default function Landing() {
             </div>
           )}
 
-          {upcomingEvents.length > 3 && (
-            <div className="text-center mt-12">
-              <a
-                href="/events"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-pcs_blue text-white rounded-lg font-semibold hover:bg-pcs_blue/90 transition-all duration-300 shadow-lg hover:shadow-xl"
-                data-testid="button-view-all-events"
-              >
-                View All Events
-                <ArrowRight className="w-5 h-5" />
-              </a>
-            </div>
-          )}
+          <div className="text-center mt-12">
+            <a
+              href="/events"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-pcs_blue text-white rounded-lg font-semibold hover:bg-pcs_blue/90 transition-all duration-300 shadow-lg hover:shadow-xl"
+              data-testid="button-view-all-events"
+            >
+              View All Events
+              <ArrowRight className="w-5 h-5" />
+            </a>
+          </div>
         </div>
       </section>
 
