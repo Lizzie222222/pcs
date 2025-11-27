@@ -165,6 +165,48 @@ interface ResourceAnalytics {
   resourcesByCountry: Array<{ country: string; resources: number; downloads: number }>;
 }
 
+interface ActiveUsersOverTimeAnalytics {
+  monthly: Array<{ month: string; activeUsers: number; newUsers: number }>;
+  weekly: Array<{ week: string; activeUsers: number }>;
+}
+
+interface StageFunnelAnalytics {
+  stages: Array<{ stage: string; count: number; percentage: number }>;
+  dropoffs: Array<{ from: string; to: string; dropoffRate: number }>;
+}
+
+interface TimeToCompletionAnalytics {
+  averageDays: Array<{ stage: string; avgDays: number; medianDays: number; schoolCount: number }>;
+  distribution: Array<{ range: string; count: number }>;
+}
+
+interface CohortAnalysisAnalytics {
+  cohorts: Array<{ month: string; registered: number; reachedInvestigate: number; reachedAct: number; completed: number; avgProgress: number }>;
+}
+
+interface ActivityHeatmapAnalytics {
+  heatmap: Array<{ dayOfWeek: number; hour: number; count: number }>;
+  peakTimes: { bestDay: string; bestHour: number };
+}
+
+interface ReactivationRateAnalytics {
+  reactivatedSchools: number;
+  totalDormantSchools: number;
+  reactivationRate: number;
+  reactivations: Array<{ month: string; count: number }>;
+}
+
+interface EvidenceTypeBreakdownAnalytics {
+  byRequirement: Array<{ requirement: string; total: number; approved: number; pending: number; rejected: number; approvalRate: number }>;
+  byStage: Array<{ stage: string; total: number; approved: number; avgReviewDays: number }>;
+}
+
+interface PromiseCompletionAnalytics {
+  overview: { total: number; completed: number; inProgress: number; notStarted: number; completionRate: number };
+  byCategory: Array<{ category: string; total: number; completed: number; rate: number }>;
+  trends: Array<{ month: string; created: number; completed: number }>;
+}
+
 // Color palette for charts
 const ANALYTICS_COLORS = ['#0B3D5D', '#019ADE', '#02BBB4', '#FFC557', '#FF595A', '#6B7280', '#10B981', '#8B5CF6'];
 
@@ -256,6 +298,46 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
 
   const resourceAnalyticsQuery = useQuery<ResourceAnalytics>({
     queryKey: ['/api/admin/analytics/resources'],
+  });
+
+  const activeUsersOverTimeQuery = useQuery<ActiveUsersOverTimeAnalytics>({
+    queryKey: ['/api/admin/analytics/active-users-over-time'],
+    enabled: activeTab === 'overview'
+  });
+
+  const stageFunnelQuery = useQuery<StageFunnelAnalytics>({
+    queryKey: ['/api/admin/analytics/stage-funnel'],
+    enabled: activeTab === 'overview'
+  });
+
+  const timeToCompletionQuery = useQuery<TimeToCompletionAnalytics>({
+    queryKey: ['/api/admin/analytics/time-to-completion'],
+    enabled: activeTab === 'overview'
+  });
+
+  const cohortAnalysisQuery = useQuery<CohortAnalysisAnalytics>({
+    queryKey: ['/api/admin/analytics/cohort-analysis'],
+    enabled: activeTab === 'overview'
+  });
+
+  const activityHeatmapQuery = useQuery<ActivityHeatmapAnalytics>({
+    queryKey: ['/api/admin/analytics/activity-heatmap'],
+    enabled: activeTab === 'overview'
+  });
+
+  const reactivationRateQuery = useQuery<ReactivationRateAnalytics>({
+    queryKey: ['/api/admin/analytics/reactivation-rate'],
+    enabled: activeTab === 'overview'
+  });
+
+  const evidenceTypeBreakdownQuery = useQuery<EvidenceTypeBreakdownAnalytics>({
+    queryKey: ['/api/admin/analytics/evidence-type-breakdown'],
+    enabled: activeTab === 'overview'
+  });
+
+  const promiseCompletionQuery = useQuery<PromiseCompletionAnalytics>({
+    queryKey: ['/api/admin/analytics/promise-completion'],
+    enabled: activeTab === 'overview'
   });
 
   const [analyticsSubTab, setAnalyticsSubTab] = useState("overview");
@@ -568,7 +650,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
 
       {/* Nested Tabs for Analytics Sections */}
       <Tabs value={analyticsSubTab} onValueChange={setAnalyticsSubTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4" data-testid="analytics-tabs">
+        <TabsList className="grid w-full grid-cols-5" data-testid="analytics-tabs">
           <TabsTrigger value="overview" data-testid="tab-overview">
             <BarChart3 className="w-4 h-4 mr-2" />
             Overview
@@ -584,6 +666,10 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
           <TabsTrigger value="engagement" data-testid="tab-engagement">
             <Users className="w-4 h-4 mr-2" />
             User Engagement
+          </TabsTrigger>
+          <TabsTrigger value="advanced" data-testid="tab-advanced">
+            <TrendingUp className="w-4 h-4 mr-2" />
+            Advanced Analytics
           </TabsTrigger>
         </TabsList>
 
@@ -1653,6 +1739,526 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                     </div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* Advanced Analytics Tab */}
+        <TabsContent value="advanced" className="space-y-6" data-testid="content-advanced">
+          {/* Active Users Over Time */}
+          <Card data-testid="card-active-users-over-time">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Users className="w-5 h-5 mr-2 text-pcs_blue" />
+                Active Users Over Time
+              </CardTitle>
+              <p className="text-sm text-gray-500">Monthly active and new user trends</p>
+            </CardHeader>
+            <CardContent>
+              {activeUsersOverTimeQuery.isLoading ? (
+                <div className="h-[300px] flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_blue"></div>
+                </div>
+              ) : activeUsersOverTimeQuery.data?.monthly && activeUsersOverTimeQuery.data.monthly.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={activeUsersOverTimeQuery.data.monthly}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis yAxisId="left" />
+                    <YAxis yAxisId="right" orientation="right" />
+                    <Tooltip />
+                    <Legend />
+                    <Line yAxisId="left" type="monotone" dataKey="activeUsers" stroke={ANALYTICS_COLORS[0]} strokeWidth={2} name="Active Users" />
+                    <Line yAxisId="right" type="monotone" dataKey="newUsers" stroke={ANALYTICS_COLORS[2]} strokeWidth={2} name="New Users" />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[300px] flex items-center justify-center text-gray-500">
+                  <div className="text-center">
+                    <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p>No user activity data available</p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Stage Progression Funnel */}
+          <Card data-testid="card-stage-funnel">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Target className="w-5 h-5 mr-2 text-pcs_teal" />
+                Stage Progression Funnel
+              </CardTitle>
+              <p className="text-sm text-gray-500">School progression through each stage</p>
+            </CardHeader>
+            <CardContent>
+              {stageFunnelQuery.isLoading ? (
+                <div className="h-[300px] flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_teal"></div>
+                </div>
+              ) : stageFunnelQuery.data?.stages && stageFunnelQuery.data.stages.length > 0 ? (
+                <div className="space-y-6">
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={stageFunnelQuery.data.stages} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" />
+                      <YAxis dataKey="stage" type="category" width={100} />
+                      <Tooltip formatter={(value: number, name: string) => [value, name === 'count' ? 'Schools' : name]} />
+                      <Bar dataKey="count" fill={ANALYTICS_COLORS[1]}>
+                        {stageFunnelQuery.data.stages.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                  {stageFunnelQuery.data.dropoffs && stageFunnelQuery.data.dropoffs.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {stageFunnelQuery.data.dropoffs.map((dropoff, index) => (
+                        <div key={index} className="p-3 bg-gray-50 rounded-lg" data-testid={`dropoff-${dropoff.from}-${dropoff.to}`}>
+                          <div className="text-sm text-gray-600">{dropoff.from} → {dropoff.to}</div>
+                          <div className="text-lg font-bold text-pcs_coral">{dropoff.dropoffRate.toFixed(1)}% drop-off</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="h-[300px] flex items-center justify-center text-gray-500">
+                  <div className="text-center">
+                    <Target className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p>No funnel data available</p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Time to Completion - Average Days */}
+            <Card data-testid="card-time-to-completion">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Clock className="w-5 h-5 mr-2 text-pcs_blue" />
+                  Time to Completion by Stage
+                </CardTitle>
+                <p className="text-sm text-gray-500">Average days to complete each stage</p>
+              </CardHeader>
+              <CardContent>
+                {timeToCompletionQuery.isLoading ? (
+                  <div className="h-[250px] flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_blue"></div>
+                  </div>
+                ) : timeToCompletionQuery.data?.averageDays && timeToCompletionQuery.data.averageDays.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={timeToCompletionQuery.data.averageDays}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="stage" />
+                      <YAxis />
+                      <Tooltip formatter={(value: number) => [`${value.toFixed(1)} days`, 'Average']} />
+                      <Legend />
+                      <Bar dataKey="avgDays" fill={ANALYTICS_COLORS[0]} name="Avg Days" />
+                      <Bar dataKey="medianDays" fill={ANALYTICS_COLORS[2]} name="Median Days" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-[250px] flex items-center justify-center text-gray-500">
+                    <div className="text-center">
+                      <Clock className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                      <p>No completion time data available</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Time to Completion - Distribution */}
+            <Card data-testid="card-completion-distribution">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <BarChart3 className="w-5 h-5 mr-2 text-pcs_teal" />
+                  Completion Time Distribution
+                </CardTitle>
+                <p className="text-sm text-gray-500">Schools by completion time range</p>
+              </CardHeader>
+              <CardContent>
+                {timeToCompletionQuery.isLoading ? (
+                  <div className="h-[250px] flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_teal"></div>
+                  </div>
+                ) : timeToCompletionQuery.data?.distribution && timeToCompletionQuery.data.distribution.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={timeToCompletionQuery.data.distribution}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="range" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="count" fill={ANALYTICS_COLORS[2]} name="Schools" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-[250px] flex items-center justify-center text-gray-500">
+                    <div className="text-center">
+                      <BarChart3 className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                      <p>No distribution data available</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Cohort Analysis */}
+          <Card data-testid="card-cohort-analysis">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Users className="w-5 h-5 mr-2 text-pcs_blue" />
+                Cohort Analysis
+              </CardTitle>
+              <p className="text-sm text-gray-500">Monthly registration cohorts and their progression</p>
+            </CardHeader>
+            <CardContent>
+              {cohortAnalysisQuery.isLoading ? (
+                <div className="h-[300px] flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_blue"></div>
+                </div>
+              ) : cohortAnalysisQuery.data?.cohorts && cohortAnalysisQuery.data.cohorts.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={cohortAnalysisQuery.data.cohorts}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="registered" fill={ANALYTICS_COLORS[0]} name="Registered" />
+                    <Bar dataKey="reachedInvestigate" fill={ANALYTICS_COLORS[1]} name="Reached Investigate" />
+                    <Bar dataKey="reachedAct" fill={ANALYTICS_COLORS[2]} name="Reached Act" />
+                    <Bar dataKey="completed" fill={ANALYTICS_COLORS[6]} name="Completed" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[300px] flex items-center justify-center text-gray-500">
+                  <div className="text-center">
+                    <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p>No cohort data available</p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Activity Heatmap */}
+          <Card data-testid="card-activity-heatmap">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <BarChart3 className="w-5 h-5 mr-2 text-pcs_coral" />
+                Activity Heatmap
+              </CardTitle>
+              <p className="text-sm text-gray-500">
+                Activity patterns by day and hour
+                {activityHeatmapQuery.data?.peakTimes && (
+                  <span className="ml-2 text-pcs_blue font-medium">
+                    Peak: {activityHeatmapQuery.data.peakTimes.bestDay} at {activityHeatmapQuery.data.peakTimes.bestHour}:00
+                  </span>
+                )}
+              </p>
+            </CardHeader>
+            <CardContent>
+              {activityHeatmapQuery.isLoading ? (
+                <div className="h-[300px] flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_coral"></div>
+                </div>
+              ) : activityHeatmapQuery.data?.heatmap && activityHeatmapQuery.data.heatmap.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <div className="min-w-[600px]">
+                    <div className="flex">
+                      <div className="w-20"></div>
+                      {Array.from({ length: 24 }, (_, i) => (
+                        <div key={i} className="flex-1 text-center text-xs text-gray-500">
+                          {i}
+                        </div>
+                      ))}
+                    </div>
+                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, dayIndex) => (
+                      <div key={day} className="flex items-center">
+                        <div className="w-20 text-sm text-gray-600 font-medium">{day}</div>
+                        {Array.from({ length: 24 }, (_, hour) => {
+                          const cell = activityHeatmapQuery.data?.heatmap.find(
+                            h => h.dayOfWeek === dayIndex && h.hour === hour
+                          );
+                          const count = cell?.count || 0;
+                          const maxCount = Math.max(...(activityHeatmapQuery.data?.heatmap.map(h => h.count) || [1]));
+                          const intensity = maxCount > 0 ? count / maxCount : 0;
+                          return (
+                            <div
+                              key={hour}
+                              className="flex-1 h-8 m-0.5 rounded cursor-pointer transition-all hover:scale-105"
+                              style={{
+                                backgroundColor: `rgba(1, 154, 222, ${Math.max(0.1, intensity)})`,
+                              }}
+                              title={`${day} ${hour}:00 - ${count} activities`}
+                              data-testid={`heatmap-cell-${dayIndex}-${hour}`}
+                            />
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="h-[300px] flex items-center justify-center text-gray-500">
+                  <div className="text-center">
+                    <BarChart3 className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p>No activity heatmap data available</p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Reactivation Rate */}
+            <Card data-testid="card-reactivation-rate">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <TrendingUp className="w-5 h-5 mr-2 text-green-600" />
+                  Reactivation Rate
+                </CardTitle>
+                <p className="text-sm text-gray-500">Dormant schools that became active again</p>
+              </CardHeader>
+              <CardContent>
+                {reactivationRateQuery.isLoading ? (
+                  <div className="h-[250px] flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                  </div>
+                ) : reactivationRateQuery.data ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="text-center p-3 bg-green-50 rounded-lg" data-testid="metric-reactivation-rate">
+                        <div className="text-2xl font-bold text-green-600">
+                          {reactivationRateQuery.data.reactivationRate.toFixed(1)}%
+                        </div>
+                        <div className="text-xs text-gray-600">Reactivation Rate</div>
+                      </div>
+                      <div className="text-center p-3 bg-blue-50 rounded-lg" data-testid="metric-reactivated-schools">
+                        <div className="text-2xl font-bold text-pcs_blue">
+                          {reactivationRateQuery.data.reactivatedSchools}
+                        </div>
+                        <div className="text-xs text-gray-600">Reactivated</div>
+                      </div>
+                      <div className="text-center p-3 bg-gray-50 rounded-lg" data-testid="metric-dormant-schools">
+                        <div className="text-2xl font-bold text-gray-600">
+                          {reactivationRateQuery.data.totalDormantSchools}
+                        </div>
+                        <div className="text-xs text-gray-600">Total Dormant</div>
+                      </div>
+                    </div>
+                    {reactivationRateQuery.data.reactivations && reactivationRateQuery.data.reactivations.length > 0 && (
+                      <ResponsiveContainer width="100%" height={150}>
+                        <LineChart data={reactivationRateQuery.data.reactivations}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 10 }} />
+                          <Tooltip />
+                          <Line type="monotone" dataKey="count" stroke="#10B981" strokeWidth={2} name="Reactivations" />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    )}
+                  </div>
+                ) : (
+                  <div className="h-[250px] flex items-center justify-center text-gray-500">
+                    <div className="text-center">
+                      <TrendingUp className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                      <p>No reactivation data available</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Promise Completion Overview */}
+            <Card data-testid="card-promise-completion">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Target className="w-5 h-5 mr-2 text-pcs_yellow" />
+                  Promise Completion
+                </CardTitle>
+                <p className="text-sm text-gray-500">Action plan completion status</p>
+              </CardHeader>
+              <CardContent>
+                {promiseCompletionQuery.isLoading ? (
+                  <div className="h-[250px] flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_yellow"></div>
+                  </div>
+                ) : promiseCompletionQuery.data?.overview ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="text-center p-3 bg-green-50 rounded-lg" data-testid="metric-completion-rate">
+                        <div className="text-2xl font-bold text-green-600">
+                          {promiseCompletionQuery.data.overview.completionRate.toFixed(1)}%
+                        </div>
+                        <div className="text-xs text-gray-600">Completion Rate</div>
+                      </div>
+                      <div className="text-center p-3 bg-blue-50 rounded-lg" data-testid="metric-total-promises">
+                        <div className="text-2xl font-bold text-pcs_blue">
+                          {promiseCompletionQuery.data.overview.total}
+                        </div>
+                        <div className="text-xs text-gray-600">Total Promises</div>
+                      </div>
+                      <div className="text-center p-3 bg-teal-50 rounded-lg" data-testid="metric-completed-promises">
+                        <div className="text-2xl font-bold text-pcs_teal">
+                          {promiseCompletionQuery.data.overview.completed}
+                        </div>
+                        <div className="text-xs text-gray-600">Completed</div>
+                      </div>
+                      <div className="text-center p-3 bg-yellow-50 rounded-lg" data-testid="metric-in-progress-promises">
+                        <div className="text-2xl font-bold text-pcs_yellow">
+                          {promiseCompletionQuery.data.overview.inProgress}
+                        </div>
+                        <div className="text-xs text-gray-600">In Progress</div>
+                      </div>
+                    </div>
+                    {promiseCompletionQuery.data.byCategory && promiseCompletionQuery.data.byCategory.length > 0 && (
+                      <ResponsiveContainer width="100%" height={150}>
+                        <PieChart>
+                          <Pie
+                            data={promiseCompletionQuery.data.byCategory}
+                            dataKey="total"
+                            nameKey="category"
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={60}
+                            label={(entry) => entry.category}
+                          >
+                            {promiseCompletionQuery.data.byCategory.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value: number, name: string) => [value, 'Promises']} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    )}
+                  </div>
+                ) : (
+                  <div className="h-[250px] flex items-center justify-center text-gray-500">
+                    <div className="text-center">
+                      <Target className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                      <p>No promise completion data available</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Evidence Type Breakdown */}
+          <Card data-testid="card-evidence-type-breakdown">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <FileText className="w-5 h-5 mr-2 text-pcs_blue" />
+                Evidence Type Breakdown
+              </CardTitle>
+              <p className="text-sm text-gray-500">Evidence submissions by requirement with approval rates</p>
+            </CardHeader>
+            <CardContent>
+              {evidenceTypeBreakdownQuery.isLoading ? (
+                <div className="h-[300px] flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_blue"></div>
+                </div>
+              ) : evidenceTypeBreakdownQuery.data?.byRequirement && evidenceTypeBreakdownQuery.data.byRequirement.length > 0 ? (
+                <div className="space-y-6">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={evidenceTypeBreakdownQuery.data.byRequirement} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" />
+                      <YAxis dataKey="requirement" type="category" width={150} tick={{ fontSize: 11 }} />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="approved" stackId="a" fill={ANALYTICS_COLORS[6]} name="Approved" />
+                      <Bar dataKey="pending" stackId="a" fill={ANALYTICS_COLORS[3]} name="Pending" />
+                      <Bar dataKey="rejected" stackId="a" fill={ANALYTICS_COLORS[4]} name="Rejected" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {evidenceTypeBreakdownQuery.data.byRequirement.slice(0, 4).map((req, index) => (
+                      <div key={index} className="p-3 bg-gray-50 rounded-lg" data-testid={`evidence-req-${index}`}>
+                        <div className="text-sm font-medium text-gray-700 truncate">{req.requirement}</div>
+                        <div className="text-lg font-bold text-green-600">{req.approvalRate.toFixed(1)}%</div>
+                        <div className="text-xs text-gray-500">Approval Rate</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="h-[300px] flex items-center justify-center text-gray-500">
+                  <div className="text-center">
+                    <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p>No evidence breakdown data available</p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Evidence by Stage Summary */}
+          {evidenceTypeBreakdownQuery.data?.byStage && evidenceTypeBreakdownQuery.data.byStage.length > 0 && (
+            <Card data-testid="card-evidence-by-stage">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Award className="w-5 h-5 mr-2 text-pcs_teal" />
+                  Evidence by Stage
+                </CardTitle>
+                <p className="text-sm text-gray-500">Evidence submission and review metrics per stage</p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {evidenceTypeBreakdownQuery.data.byStage.map((stage, index) => (
+                    <div key={index} className="p-4 bg-gray-50 rounded-lg" data-testid={`stage-summary-${stage.stage}`}>
+                      <div className="font-medium text-gray-800 capitalize mb-2">{stage.stage}</div>
+                      <div className="space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Total:</span>
+                          <span className="font-medium">{stage.total}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Approved:</span>
+                          <span className="font-medium text-green-600">{stage.approved}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Avg Review:</span>
+                          <span className="font-medium">{stage.avgReviewDays.toFixed(1)} days</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Promise Completion Trends */}
+          {promiseCompletionQuery.data?.trends && promiseCompletionQuery.data.trends.length > 0 && (
+            <Card data-testid="card-promise-trends">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <TrendingUp className="w-5 h-5 mr-2 text-pcs_blue" />
+                  Promise Completion Trends
+                </CardTitle>
+                <p className="text-sm text-gray-500">Monthly promise creation and completion</p>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={promiseCompletionQuery.data.trends}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="created" stroke={ANALYTICS_COLORS[0]} strokeWidth={2} name="Created" />
+                    <Line type="monotone" dataKey="completed" stroke={ANALYTICS_COLORS[6]} strokeWidth={2} name="Completed" />
+                  </LineChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           )}

@@ -4564,6 +4564,87 @@ Return JSON with:
     }
   });
 
+  // New advanced analytics endpoints
+  app.get('/api/admin/analytics/active-users-over-time', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const analytics = await storage.getActiveUsersOverTime();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching active users over time:", error);
+      res.status(500).json({ message: "Failed to fetch active users over time" });
+    }
+  });
+
+  app.get('/api/admin/analytics/stage-funnel', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const analytics = await storage.getStageProgressionFunnel();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching stage funnel:", error);
+      res.status(500).json({ message: "Failed to fetch stage funnel" });
+    }
+  });
+
+  app.get('/api/admin/analytics/time-to-completion', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const analytics = await storage.getTimeToCompletion();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching time to completion:", error);
+      res.status(500).json({ message: "Failed to fetch time to completion" });
+    }
+  });
+
+  app.get('/api/admin/analytics/cohort-analysis', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const analytics = await storage.getCohortAnalysis();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching cohort analysis:", error);
+      res.status(500).json({ message: "Failed to fetch cohort analysis" });
+    }
+  });
+
+  app.get('/api/admin/analytics/activity-heatmap', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const analytics = await storage.getActivityHeatmap();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching activity heatmap:", error);
+      res.status(500).json({ message: "Failed to fetch activity heatmap" });
+    }
+  });
+
+  app.get('/api/admin/analytics/reactivation-rate', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const analytics = await storage.getReactivationRate();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching reactivation rate:", error);
+      res.status(500).json({ message: "Failed to fetch reactivation rate" });
+    }
+  });
+
+  app.get('/api/admin/analytics/evidence-type-breakdown', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const analytics = await storage.getEvidenceTypeBreakdown();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching evidence type breakdown:", error);
+      res.status(500).json({ message: "Failed to fetch evidence type breakdown" });
+    }
+  });
+
+  app.get('/api/admin/analytics/promise-completion', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const analytics = await storage.getPromiseCompletionRate();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching promise completion rate:", error);
+      res.status(500).json({ message: "Failed to fetch promise completion rate" });
+    }
+  });
+
   app.get('/api/admin/analytics/evidence', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const { startDate, endDate } = req.query;

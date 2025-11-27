@@ -5198,6 +5198,461 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
+  // Active Users Over Time - tracks monthly user activity based on last_active_at
+  async getActiveUsersOverTime(): Promise<{
+    monthly: Array<{ month: string; activeUsers: number; newUsers: number }>;
+    weekly: Array<{ week: string; activeUsers: number }>;
+  }> {
+    // Monthly active users (last 12 months) - based on school activity (since user lastActiveAt may not be set)
+    const monthlyActive = await db
+      .select({
+        month: sql<string>`TO_CHAR(last_active_at, 'YYYY-MM')`,
+        activeUsers: sql<number>`COUNT(DISTINCT id)`,
+      })
+      .from(schools)
+      .where(sql`last_active_at >= NOW() - INTERVAL '12 months' AND last_active_at IS NOT NULL`)
+      .groupBy(sql`TO_CHAR(last_active_at, 'YYYY-MM')`)
+      .orderBy(sql`TO_CHAR(last_active_at, 'YYYY-MM')`);
+
+    // New user registrations per month
+    const monthlyNew = await db
+      .select({
+        month: sql<string>`TO_CHAR(created_at, 'YYYY-MM')`,
+        newUsers: sql<number>`COUNT(*)`,
+      })
+      .from(users)
+      .where(sql`created_at >= NOW() - INTERVAL '12 months'`)
+      .groupBy(sql`TO_CHAR(created_at, 'YYYY-MM')`)
+      .orderBy(sql`TO_CHAR(created_at, 'YYYY-MM')`);
+
+    // Merge monthly data
+    const monthlyMap = new Map<string, { activeUsers: number; newUsers: number }>();
+    monthlyActive.forEach(m => {
+      monthlyMap.set(m.month, { activeUsers: Number(m.activeUsers) || 0, newUsers: 0 });
+    });
+    monthlyNew.forEach(m => {
+      const existing = monthlyMap.get(m.month) || { activeUsers: 0, newUsers: 0 };
+      monthlyMap.set(m.month, { ...existing, newUsers: Number(m.newUsers) || 0 });
+    });
+
+    const monthly = Array.from(monthlyMap.entries())
+      .map(([month, data]) => ({ month, ...data }))
+      .sort((a, b) => a.month.localeCompare(b.month));
+
+    // Weekly active schools (last 12 weeks)
+    const weeklyActive = await db
+      .select({
+        week: sql<string>`TO_CHAR(last_active_at, 'IYYY-IW')`,
+        activeUsers: sql<number>`COUNT(DISTINCT id)`,
+      })
+      .from(schools)
+      .where(sql`last_active_at >= NOW() - INTERVAL '12 weeks' AND last_active_at IS NOT NULL`)
+      .groupBy(sql`TO_CHAR(last_active_at, 'IYYY-IW')`)
+      .orderBy(sql`TO_CHAR(last_active_at, 'IYYY-IW')`);
+
+    return {
+      monthly,
+      weekly: weeklyActive.map(w => ({ week: w.week, activeUsers: Number(w.activeUsers) || 0 })),
+    };
+  }
+
+  // Stage Progression Funnel - shows conversion rates between stages
+  async getStageProgressionFunnel(): Promise<{
+    stages: Array<{ stage: string; count: number; percentage: number }>;
+    dropoffs: Array<{ from: string; to: string; dropoffRate: number }>;
+  }> {
+    const [totals] = await db
+      .select({
+        total: sql<number>`COUNT(*)`,
+        inspire: sql<number>`COUNT(*) FILTER (WHERE current_stage IN ('inspire', 'investigate', 'act') OR inspire_completed = true)`,
+        investigate: sql<number>`COUNT(*) FILTER (WHERE current_stage IN ('investigate', 'act') OR investigate_completed = true)`,
+        act: sql<number>`COUNT(*) FILTER (WHERE current_stage = 'act' OR act_completed = true)`,
+        completed: sql<number>`COUNT(*) FILTER (WHERE rounds_completed > 0)`,
+      })
+      .from(schools);
+
+    const total = Number(totals.total) || 1;
+    const stages = [
+      { stage: 'Registered', count: total, percentage: 100 },
+      { stage: 'Inspire', count: Number(totals.inspire) || 0, percentage: Math.round(((Number(totals.inspire) || 0) / total) * 100) },
+      { stage: 'Investigate', count: Number(totals.investigate) || 0, percentage: Math.round(((Number(totals.investigate) || 0) / total) * 100) },
+      { stage: 'Act', count: Number(totals.act) || 0, percentage: Math.round(((Number(totals.act) || 0) / total) * 100) },
+      { stage: 'Completed', count: Number(totals.completed) || 0, percentage: Math.round(((Number(totals.completed) || 0) / total) * 100) },
+    ];
+
+    const dropoffs = [
+      { from: 'Registered', to: 'Inspire', dropoffRate: stages[0].count > 0 ? Math.round((1 - stages[1].count / stages[0].count) * 100) : 0 },
+      { from: 'Inspire', to: 'Investigate', dropoffRate: stages[1].count > 0 ? Math.round((1 - stages[2].count / stages[1].count) * 100) : 0 },
+      { from: 'Investigate', to: 'Act', dropoffRate: stages[2].count > 0 ? Math.round((1 - stages[3].count / stages[2].count) * 100) : 0 },
+      { from: 'Act', to: 'Completed', dropoffRate: stages[3].count > 0 ? Math.round((1 - stages[4].count / stages[3].count) * 100) : 0 },
+    ];
+
+    return { stages, dropoffs };
+  }
+
+  // Time to Completion - average days to complete each stage
+  async getTimeToCompletion(): Promise<{
+    averageDays: Array<{ stage: string; avgDays: number; medianDays: number; schoolCount: number }>;
+    distribution: Array<{ range: string; count: number }>;
+  }> {
+    // Get schools with completion dates from evidence
+    const inspireCompletions = await db
+      .select({
+        schoolId: evidence.schoolId,
+        minDate: sql<string>`MIN(submitted_at)`,
+        maxDate: sql<string>`MAX(submitted_at)`,
+      })
+      .from(evidence)
+      .where(and(eq(evidence.stage, 'inspire'), eq(evidence.status, 'approved')))
+      .groupBy(evidence.schoolId);
+
+    const investigateCompletions = await db
+      .select({
+        schoolId: evidence.schoolId,
+        minDate: sql<string>`MIN(submitted_at)`,
+        maxDate: sql<string>`MAX(submitted_at)`,
+      })
+      .from(evidence)
+      .where(and(eq(evidence.stage, 'investigate'), eq(evidence.status, 'approved')))
+      .groupBy(evidence.schoolId);
+
+    const actCompletions = await db
+      .select({
+        schoolId: evidence.schoolId,
+        minDate: sql<string>`MIN(submitted_at)`,
+        maxDate: sql<string>`MAX(submitted_at)`,
+      })
+      .from(evidence)
+      .where(and(eq(evidence.stage, 'act'), eq(evidence.status, 'approved')))
+      .groupBy(evidence.schoolId);
+
+    // Calculate average days per stage
+    const calculateStats = (completions: any[]) => {
+      if (completions.length === 0) return { avgDays: 0, medianDays: 0, count: 0 };
+      const days = completions.map(c => {
+        const min = new Date(c.minDate);
+        const max = new Date(c.maxDate);
+        return Math.max(1, Math.ceil((max.getTime() - min.getTime()) / (1000 * 60 * 60 * 24)));
+      }).filter(d => d > 0 && d < 365); // Exclude outliers
+      if (days.length === 0) return { avgDays: 0, medianDays: 0, count: 0 };
+      days.sort((a, b) => a - b);
+      const avg = Math.round(days.reduce((a, b) => a + b, 0) / days.length);
+      const median = days[Math.floor(days.length / 2)];
+      return { avgDays: avg, medianDays: median, count: days.length };
+    };
+
+    const inspireStats = calculateStats(inspireCompletions);
+    const investigateStats = calculateStats(investigateCompletions);
+    const actStats = calculateStats(actCompletions);
+
+    const averageDays = [
+      { stage: 'Inspire', avgDays: inspireStats.avgDays, medianDays: inspireStats.medianDays, schoolCount: inspireStats.count },
+      { stage: 'Investigate', avgDays: investigateStats.avgDays, medianDays: investigateStats.medianDays, schoolCount: investigateStats.count },
+      { stage: 'Act', avgDays: actStats.avgDays, medianDays: actStats.medianDays, schoolCount: actStats.count },
+    ];
+
+    // Overall completion time distribution
+    const allSchools = await db
+      .select({
+        schoolId: schools.id,
+        createdAt: schools.createdAt,
+        roundsCompleted: schools.roundsCompleted,
+      })
+      .from(schools)
+      .where(sql`rounds_completed > 0`);
+
+    const completionDays = allSchools.map(s => {
+      if (!s.createdAt) return 0;
+      const created = new Date(s.createdAt);
+      const now = new Date();
+      return Math.ceil((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
+    }).filter(d => d > 0);
+
+    const distribution = [
+      { range: '< 30 days', count: completionDays.filter(d => d < 30).length },
+      { range: '30-60 days', count: completionDays.filter(d => d >= 30 && d < 60).length },
+      { range: '60-90 days', count: completionDays.filter(d => d >= 60 && d < 90).length },
+      { range: '90-180 days', count: completionDays.filter(d => d >= 90 && d < 180).length },
+      { range: '180+ days', count: completionDays.filter(d => d >= 180).length },
+    ];
+
+    return { averageDays, distribution };
+  }
+
+  // Cohort Analysis - compare school performance by registration month
+  async getCohortAnalysis(): Promise<{
+    cohorts: Array<{
+      month: string;
+      registered: number;
+      reachedInvestigate: number;
+      reachedAct: number;
+      completed: number;
+      avgProgress: number;
+    }>;
+  }> {
+    const cohortData = await db
+      .select({
+        month: sql<string>`TO_CHAR(created_at, 'YYYY-MM')`,
+        registered: sql<number>`COUNT(*)`,
+        reachedInvestigate: sql<number>`COUNT(*) FILTER (WHERE current_stage IN ('investigate', 'act') OR investigate_completed = true)`,
+        reachedAct: sql<number>`COUNT(*) FILTER (WHERE current_stage = 'act' OR act_completed = true)`,
+        completed: sql<number>`COUNT(*) FILTER (WHERE rounds_completed > 0)`,
+        avgProgress: sql<number>`ROUND(AVG(progress_percentage))`,
+      })
+      .from(schools)
+      .where(sql`created_at >= NOW() - INTERVAL '12 months'`)
+      .groupBy(sql`TO_CHAR(created_at, 'YYYY-MM')`)
+      .orderBy(sql`TO_CHAR(created_at, 'YYYY-MM')`);
+
+    return {
+      cohorts: cohortData.map(c => ({
+        month: c.month,
+        registered: Number(c.registered) || 0,
+        reachedInvestigate: Number(c.reachedInvestigate) || 0,
+        reachedAct: Number(c.reachedAct) || 0,
+        completed: Number(c.completed) || 0,
+        avgProgress: Number(c.avgProgress) || 0,
+      })),
+    };
+  }
+
+  // Activity Heatmap - when schools are most active (day of week / hour)
+  async getActivityHeatmap(): Promise<{
+    heatmap: Array<{ dayOfWeek: number; hour: number; count: number }>;
+    peakTimes: { bestDay: string; bestHour: number };
+  }> {
+    // Get activity from evidence submissions
+    const activityData = await db
+      .select({
+        dayOfWeek: sql<number>`EXTRACT(DOW FROM submitted_at)`,
+        hour: sql<number>`EXTRACT(HOUR FROM submitted_at)`,
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(evidence)
+      .where(sql`submitted_at >= NOW() - INTERVAL '6 months' AND submitted_at IS NOT NULL`)
+      .groupBy(sql`EXTRACT(DOW FROM submitted_at)`, sql`EXTRACT(HOUR FROM submitted_at)`)
+      .orderBy(sql`EXTRACT(DOW FROM submitted_at)`, sql`EXTRACT(HOUR FROM submitted_at)`);
+
+    const heatmap = activityData.map(a => ({
+      dayOfWeek: Number(a.dayOfWeek),
+      hour: Number(a.hour),
+      count: Number(a.count) || 0,
+    }));
+
+    // Find peak time
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayTotals = new Map<number, number>();
+    const hourTotals = new Map<number, number>();
+
+    heatmap.forEach(h => {
+      dayTotals.set(h.dayOfWeek, (dayTotals.get(h.dayOfWeek) || 0) + h.count);
+      hourTotals.set(h.hour, (hourTotals.get(h.hour) || 0) + h.count);
+    });
+
+    let bestDay = 0;
+    let bestDayCount = 0;
+    dayTotals.forEach((count, day) => {
+      if (count > bestDayCount) { bestDayCount = count; bestDay = day; }
+    });
+
+    let bestHour = 0;
+    let bestHourCount = 0;
+    hourTotals.forEach((count, hour) => {
+      if (count > bestHourCount) { bestHourCount = count; bestHour = hour; }
+    });
+
+    return {
+      heatmap,
+      peakTimes: { bestDay: dayNames[bestDay], bestHour },
+    };
+  }
+
+  // Reactivation Rate - schools that returned after dormancy
+  async getReactivationRate(): Promise<{
+    reactivatedSchools: number;
+    totalDormantSchools: number;
+    reactivationRate: number;
+    reactivations: Array<{ month: string; count: number }>;
+  }> {
+    // Schools that had a gap of 30+ days between activities
+    const schoolActivity = await db
+      .select({
+        schoolId: evidence.schoolId,
+        dates: sql<string[]>`ARRAY_AGG(DISTINCT DATE(submitted_at) ORDER BY DATE(submitted_at))`,
+      })
+      .from(evidence)
+      .groupBy(evidence.schoolId);
+
+    let reactivatedSchools = 0;
+    let totalDormantSchools = 0;
+    const reactivationsByMonth = new Map<string, number>();
+
+    schoolActivity.forEach(school => {
+      const dates = school.dates as string[];
+      if (!dates || dates.length < 2) return;
+
+      let hadDormancy = false;
+      let wasReactivated = false;
+
+      for (let i = 1; i < dates.length; i++) {
+        const prev = new Date(dates[i - 1]);
+        const curr = new Date(dates[i]);
+        const daysDiff = Math.ceil((curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (daysDiff >= 30) {
+          hadDormancy = true;
+          wasReactivated = true;
+          const month = curr.toISOString().substring(0, 7);
+          reactivationsByMonth.set(month, (reactivationsByMonth.get(month) || 0) + 1);
+        }
+      }
+
+      if (hadDormancy) totalDormantSchools++;
+      if (wasReactivated) reactivatedSchools++;
+    });
+
+    const reactivations = Array.from(reactivationsByMonth.entries())
+      .map(([month, count]) => ({ month, count }))
+      .sort((a, b) => a.month.localeCompare(b.month))
+      .slice(-12);
+
+    return {
+      reactivatedSchools,
+      totalDormantSchools,
+      reactivationRate: totalDormantSchools > 0 ? Math.round((reactivatedSchools / totalDormantSchools) * 100) : 0,
+      reactivations,
+    };
+  }
+
+  // Evidence Type Breakdown - types and approval rates
+  async getEvidenceTypeBreakdown(): Promise<{
+    byRequirement: Array<{ requirement: string; total: number; approved: number; pending: number; rejected: number; approvalRate: number }>;
+    byStage: Array<{ stage: string; total: number; approved: number; avgReviewDays: number }>;
+  }> {
+    // Get evidence with requirement details
+    const evidenceByReq = await db
+      .select({
+        requirementId: evidence.evidenceRequirementId,
+        total: sql<number>`COUNT(*)`,
+        approved: sql<number>`COUNT(*) FILTER (WHERE ${evidence.status} = 'approved')`,
+        pending: sql<number>`COUNT(*) FILTER (WHERE ${evidence.status} = 'pending')`,
+        rejected: sql<number>`COUNT(*) FILTER (WHERE ${evidence.status} = 'rejected')`,
+      })
+      .from(evidence)
+      .where(sql`${evidence.evidenceRequirementId} IS NOT NULL`)
+      .groupBy(evidence.evidenceRequirementId);
+
+    // Get requirement names
+    const requirementIds = evidenceByReq.map(e => e.requirementId).filter(Boolean) as string[];
+    const requirementMap = new Map<string, string>();
+    
+    if (requirementIds.length > 0) {
+      const reqs = await db
+        .select({ id: evidenceRequirements.id, titleKey: evidenceRequirements.titleKey })
+        .from(evidenceRequirements)
+        .where(inArray(evidenceRequirements.id, requirementIds));
+      reqs.forEach(r => requirementMap.set(r.id, r.titleKey || 'Unknown'));
+    }
+
+    const byRequirement = evidenceByReq.map(e => {
+      const total = Number(e.total) || 0;
+      const approved = Number(e.approved) || 0;
+      return {
+        requirement: requirementMap.get(e.requirementId || '') || 'Unknown',
+        total,
+        approved,
+        pending: Number(e.pending) || 0,
+        rejected: Number(e.rejected) || 0,
+        approvalRate: total > 0 ? Math.round((approved / total) * 100) : 0,
+      };
+    }).sort((a, b) => b.total - a.total).slice(0, 10);
+
+    // By stage
+    const evidenceByStage = await db
+      .select({
+        stage: evidence.stage,
+        total: sql<number>`COUNT(*)`,
+        approved: sql<number>`COUNT(*) FILTER (WHERE ${evidence.status} = 'approved')`,
+        avgReviewDays: sql<number>`ROUND(AVG(EXTRACT(EPOCH FROM (reviewed_at - submitted_at)) / 86400))`,
+      })
+      .from(evidence)
+      .groupBy(evidence.stage);
+
+    const byStage = evidenceByStage.map(e => ({
+      stage: e.stage || 'unknown',
+      total: Number(e.total) || 0,
+      approved: Number(e.approved) || 0,
+      avgReviewDays: Number(e.avgReviewDays) || 0,
+    }));
+
+    return { byRequirement, byStage };
+  }
+
+  // Promise Completion Rate - action plan fulfillment
+  async getPromiseCompletionRate(): Promise<{
+    overview: { total: number; completed: number; inProgress: number; notStarted: number; completionRate: number };
+    byCategory: Array<{ category: string; total: number; completed: number; rate: number }>;
+    trends: Array<{ month: string; created: number; completed: number }>;
+  }> {
+    // Overall promise stats
+    const [stats] = await db
+      .select({
+        total: sql<number>`COUNT(*)`,
+        completed: sql<number>`COUNT(*) FILTER (WHERE status = 'completed')`,
+        inProgress: sql<number>`COUNT(*) FILTER (WHERE status = 'active')`,
+        notStarted: sql<number>`COUNT(*) FILTER (WHERE status = 'pending')`,
+      })
+      .from(reductionPromises);
+
+    const total = Number(stats.total) || 0;
+    const completed = Number(stats.completed) || 0;
+
+    // By plastic item category
+    const byCategory = await db
+      .select({
+        category: reductionPromises.plasticItem,
+        total: sql<number>`COUNT(*)`,
+        completed: sql<number>`COUNT(*) FILTER (WHERE status = 'completed')`,
+      })
+      .from(reductionPromises)
+      .groupBy(reductionPromises.plasticItem)
+      .orderBy(sql`COUNT(*) DESC`)
+      .limit(10);
+
+    // Monthly trends
+    const trends = await db
+      .select({
+        month: sql<string>`TO_CHAR(created_at, 'YYYY-MM')`,
+        created: sql<number>`COUNT(*)`,
+        completed: sql<number>`COUNT(*) FILTER (WHERE status = 'completed')`,
+      })
+      .from(reductionPromises)
+      .where(sql`created_at >= NOW() - INTERVAL '12 months'`)
+      .groupBy(sql`TO_CHAR(created_at, 'YYYY-MM')`)
+      .orderBy(sql`TO_CHAR(created_at, 'YYYY-MM')`);
+
+    return {
+      overview: {
+        total,
+        completed,
+        inProgress: Number(stats.inProgress) || 0,
+        notStarted: Number(stats.notStarted) || 0,
+        completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
+      },
+      byCategory: byCategory.map(c => ({
+        category: c.category || 'Unknown',
+        total: Number(c.total) || 0,
+        completed: Number(c.completed) || 0,
+        rate: Number(c.total) > 0 ? Math.round((Number(c.completed) / Number(c.total)) * 100) : 0,
+      })),
+      trends: trends.map(t => ({
+        month: t.month,
+        created: Number(t.created) || 0,
+        completed: Number(t.completed) || 0,
+      })),
+    };
+  }
+
   // Reduction Promise operations
   async getReductionPromisesBySchool(schoolId: string): Promise<ReductionPromise[]> {
     return await db
