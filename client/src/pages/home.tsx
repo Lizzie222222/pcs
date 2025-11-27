@@ -395,16 +395,19 @@ export default function Home() {
     retry: false,
   });
 
-  // Fetch evidence requirements to find "Action Plan Development"
+  // Fetch evidence requirements to find action plan requirement
   const { data: evidenceRequirements = [] } = useQuery<any[]>({
     queryKey: ['/api/evidence-requirements'],
     enabled: !!dashboardData?.school?.id,
     retry: false,
   });
 
-  // Find the Action Plan Development requirement
+  // Find the Action Plan Development requirement using requirementType for portability
+  // Fallback to title matching for legacy data where requirementType defaults to 'standard'
   const actionPlanRequirement = evidenceRequirements.find(req => 
-    req.title.includes("Action Plan Development") && req.stage === 'investigate'
+    req.requirementType === 'action_plan' ||
+    ((!req.requirementType || req.requirementType === 'standard') && 
+     req.title?.toLowerCase().includes("action plan"))
   );
 
   // Fetch action plan evidence if we have the requirement ID

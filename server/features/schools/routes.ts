@@ -1282,9 +1282,12 @@ schoolsRouter.get('/api/admin/schools/:id/evidence', isAuthenticated, requireAdm
       : allAudits;
     
     // Get evidence requirements to find the Plastic Waste Audit requirement ID
+    // Uses requirementType field for portability, with title fallback for legacy data
     const requirements = await storage.getEvidenceRequirements('investigate');
     const plasticWasteAuditRequirement = requirements.find(req => 
-      req.title === 'Plastic Waste Audit' || req.title.includes('Plastic Waste Audit')
+      req.requirementType === 'audit' ||
+      ((!req.requirementType || req.requirementType === 'standard') && 
+       req.title?.toLowerCase().includes('plastic waste audit'))
     );
     
     // Convert audits to evidence-like format

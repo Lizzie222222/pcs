@@ -529,21 +529,28 @@ export default function ProgressTracker({
 
   // Check if requirement is the Plastic Waste Audit (uses requirementType field, with fallback to title check for legacy data)
   const isPlasticWasteAudit = (requirement: EvidenceRequirement) => {
-    if (requirement.requirementType) {
-      return requirement.requirementType === 'audit';
+    // If explicitly set to 'audit', use that
+    if (requirement.requirementType === 'audit') {
+      return true;
     }
-    // Fallback for legacy data without requirementType
-    return requirement.title.toLowerCase().includes("plastic waste audit") || 
-           requirement.title.toLowerCase().includes("audit");
+    // If not set or set to 'standard' (default from migration), fallback to title check for legacy data
+    if (!requirement.requirementType || requirement.requirementType === 'standard') {
+      return requirement.title.toLowerCase().includes("plastic waste audit");
+    }
+    return false;
   };
 
   // Check if requirement is Action Plan Development (uses requirementType field, with fallback for legacy data)
   const isActionPlanDevelopment = (requirement: EvidenceRequirement) => {
-    if (requirement.requirementType) {
-      return requirement.requirementType === 'action_plan';
+    // If explicitly set to 'action_plan', use that
+    if (requirement.requirementType === 'action_plan') {
+      return true;
     }
-    // Fallback for legacy data without requirementType
-    return requirement.title.toLowerCase().includes("action plan");
+    // If not set or set to 'standard' (default from migration), fallback to title check for legacy data
+    if (!requirement.requirementType || requirement.requirementType === 'standard') {
+      return requirement.title.toLowerCase().includes("action plan");
+    }
+    return false;
   };
 
   // Get audit status for display
