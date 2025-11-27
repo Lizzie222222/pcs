@@ -49,8 +49,17 @@ export class SchoolStorage {
     return school;
   }
 
-  async getSchool(id: string): Promise<School | undefined> {
-    const [school] = await db.select().from(schools).where(eq(schools.id, id));
+  async getSchool(id: string): Promise<(School & { primaryContactEmail: string | null; primaryContactFirstName: string | null; primaryContactLastName: string | null }) | undefined> {
+    const [school] = await db
+      .select({
+        ...getTableColumns(schools),
+        primaryContactEmail: sql<string | null>`COALESCE(${users.email}, ${schools.adminEmail})`,
+        primaryContactFirstName: users.firstName,
+        primaryContactLastName: users.lastName,
+      })
+      .from(schools)
+      .leftJoin(users, eq(schools.primaryContactId, users.id))
+      .where(eq(schools.id, id));
     return school;
   }
 
@@ -162,7 +171,7 @@ export class SchoolStorage {
     let query = db
       .select({
         ...getTableColumns(schools),
-        primaryContactEmail: users.email,
+        primaryContactEmail: sql<string | null>`COALESCE(${users.email}, ${schools.adminEmail})`,
         primaryContactFirstName: users.firstName,
         primaryContactLastName: users.lastName,
       })
