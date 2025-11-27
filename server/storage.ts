@@ -5653,6 +5653,169 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
+  // Resource Effectiveness - which resources are most downloaded by stage
+  async getResourceEffectiveness(): Promise<{
+    resourceImpact: Array<{
+      resourceId: string;
+      resourceTitle: string;
+      stage: string;
+      downloads: number;
+      schoolsProgressed: number;
+      correlationScore: number;
+    }>;
+    stageCorrelation: Array<{
+      stage: string;
+      totalDownloads: number;
+      avgDownloadsPerProgression: number;
+    }>;
+  }> {
+    // Get top resources with download counts
+    const topResources = await db
+      .select({
+        id: resources.id,
+        title: resources.title,
+        stage: resources.stage,
+        downloads: sql<number>`COALESCE(${resources.downloadCount}, 0)`,
+      })
+      .from(resources)
+      .where(eq(resources.isActive, true))
+      .orderBy(desc(resources.downloadCount))
+      .limit(10);
+
+    // Get schools that progressed by stage (to calculate correlation)
+    const progressedSchools = await db
+      .select({
+        stage: schools.currentStage,
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(schools)
+      .where(sql`${schools.progressPercentage} > 0`)
+      .groupBy(schools.currentStage);
+
+    const stageProgressionMap = new Map<string, number>();
+    progressedSchools.forEach(s => stageProgressionMap.set(s.stage || 'unknown', Number(s.count) || 0));
+
+    const resourceImpact = topResources.map(r => {
+      const downloads = Number(r.downloads) || 0;
+      const stageKey = r.stage || 'general';
+      const schoolsProgressed = stageProgressionMap.get(stageKey) || 0;
+      return {
+        resourceId: r.id,
+        resourceTitle: r.title || 'Unknown',
+        stage: stageKey,
+        downloads,
+        schoolsProgressed,
+        correlationScore: schoolsProgressed > 0 ? Math.round((downloads / schoolsProgressed) * 100) : 0,
+      };
+    });
+
+    // Aggregate downloads by stage
+    const stageAggregation = await db
+      .select({
+        stage: resources.stage,
+        totalDownloads: sql<number>`SUM(COALESCE(${resources.downloadCount}, 0))`,
+        resourceCount: sql<number>`COUNT(*)`,
+      })
+      .from(resources)
+      .where(eq(resources.isActive, true))
+      .groupBy(resources.stage);
+
+    const stageCorrelation = stageAggregation.map(s => {
+      const stageKey = s.stage || 'general';
+      const schoolsInStage = stageProgressionMap.get(stageKey) || 1;
+      return {
+        stage: stageKey,
+        totalDownloads: Number(s.totalDownloads) || 0,
+        avgDownloadsPerProgression: Math.round((Number(s.totalDownloads) || 0) / schoolsInStage),
+      };
+    });
+
+    return { resourceImpact, stageCorrelation };
+  }
+
+  // Plastic Reduction Trends - estimated reduction over time from audits
+  async getPlasticReductionTrends(): Promise<{
+    monthlyReduction: Array<{
+      month: string;
+      estimatedReduction: number;
+      schoolsWithReduction: number;
+    }>;
+    categoryReduction: Array<{
+      category: string;
+      totalReduction: number;
+      promiseCount: number;
+    }>;
+    impactMetrics: {
+      totalAnnualReduction: number;
+      totalWeightKg: number;
+      treesEquivalent: number;
+      oceanBottles: number;
+    };
+  }> {
+    // Get reduction promises grouped by month
+    const monthlyData = await db
+      .select({
+        month: sql<string>`TO_CHAR(created_at, 'YYYY-MM')`,
+        totalReduction: sql<number>`SUM(reduction_amount)`,
+        schoolCount: sql<number>`COUNT(DISTINCT school_id)`,
+      })
+      .from(reductionPromises)
+      .where(sql`created_at >= NOW() - INTERVAL '12 months' AND reduction_amount > 0`)
+      .groupBy(sql`TO_CHAR(created_at, 'YYYY-MM')`)
+      .orderBy(sql`TO_CHAR(created_at, 'YYYY-MM')`);
+
+    const monthlyReduction = monthlyData.map(m => ({
+      month: m.month,
+      estimatedReduction: Number(m.totalReduction) || 0,
+      schoolsWithReduction: Number(m.schoolCount) || 0,
+    }));
+
+    // Get reduction by plastic category
+    const categoryData = await db
+      .select({
+        category: reductionPromises.plasticItem,
+        totalReduction: sql<number>`SUM(reduction_amount)`,
+        promiseCount: sql<number>`COUNT(*)`,
+      })
+      .from(reductionPromises)
+      .where(sql`reduction_amount > 0`)
+      .groupBy(reductionPromises.plasticItem)
+      .orderBy(sql`SUM(reduction_amount) DESC`)
+      .limit(10);
+
+    const categoryReduction = categoryData.map(c => ({
+      category: c.category || 'Unknown',
+      totalReduction: Number(c.totalReduction) || 0,
+      promiseCount: Number(c.promiseCount) || 0,
+    }));
+
+    // Calculate impact metrics
+    const [totals] = await db
+      .select({
+        annualReduction: sql<number>`SUM(annual_reduction)`,
+        annualWeight: sql<number>`SUM(annual_weight_kg)`,
+      })
+      .from(reductionPromises);
+
+    const totalAnnualReduction = Number(totals?.annualReduction) || 0;
+    const totalWeightKg = Number(totals?.annualWeight) || 0;
+    
+    // Fun equivalents (approximate calculations)
+    const treesEquivalent = Math.round(totalWeightKg * 0.02); // ~50kg plastic = 1 tree worth of carbon
+    const oceanBottles = Math.round(totalWeightKg / 0.025); // Average plastic bottle = 25g
+
+    return {
+      monthlyReduction,
+      categoryReduction,
+      impactMetrics: {
+        totalAnnualReduction,
+        totalWeightKg,
+        treesEquivalent,
+        oceanBottles,
+      },
+    };
+  }
+
   // Reduction Promise operations
   async getReductionPromisesBySchool(schoolId: string): Promise<ReductionPromise[]> {
     return await db

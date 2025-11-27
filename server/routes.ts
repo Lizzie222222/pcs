@@ -4645,6 +4645,26 @@ Return JSON with:
     }
   });
 
+  app.get('/api/admin/analytics/resource-effectiveness', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const analytics = await storage.getResourceEffectiveness();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching resource effectiveness:", error);
+      res.status(500).json({ message: "Failed to fetch resource effectiveness" });
+    }
+  });
+
+  app.get('/api/admin/analytics/plastic-reduction-trends', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const analytics = await storage.getPlasticReductionTrends();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching plastic reduction trends:", error);
+      res.status(500).json({ message: "Failed to fetch plastic reduction trends" });
+    }
+  });
+
   app.get('/api/admin/analytics/evidence', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const { startDate, endDate } = req.query;

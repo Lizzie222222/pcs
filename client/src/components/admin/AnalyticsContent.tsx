@@ -207,6 +207,41 @@ interface PromiseCompletionAnalytics {
   trends: Array<{ month: string; created: number; completed: number }>;
 }
 
+interface ResourceEffectivenessAnalytics {
+  resourceImpact: Array<{
+    resourceId: string;
+    resourceTitle: string;
+    stage: string;
+    downloads: number;
+    schoolsProgressed: number;
+    correlationScore: number;
+  }>;
+  stageCorrelation: Array<{
+    stage: string;
+    totalDownloads: number;
+    avgDownloadsPerProgression: number;
+  }>;
+}
+
+interface PlasticReductionTrendsAnalytics {
+  monthlyReduction: Array<{
+    month: string;
+    estimatedReduction: number;
+    schoolsWithReduction: number;
+  }>;
+  categoryReduction: Array<{
+    category: string;
+    totalReduction: number;
+    promiseCount: number;
+  }>;
+  impactMetrics: {
+    totalAnnualReduction: number;
+    totalWeightKg: number;
+    treesEquivalent: number;
+    oceanBottles: number;
+  };
+}
+
 // Color palette for charts
 const ANALYTICS_COLORS = ['#0B3D5D', '#019ADE', '#02BBB4', '#FFC557', '#FF595A', '#6B7280', '#10B981', '#8B5CF6'];
 
@@ -337,6 +372,16 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
 
   const promiseCompletionQuery = useQuery<PromiseCompletionAnalytics>({
     queryKey: ['/api/admin/analytics/promise-completion'],
+    enabled: activeTab === 'overview'
+  });
+
+  const resourceEffectivenessQuery = useQuery<ResourceEffectivenessAnalytics>({
+    queryKey: ['/api/admin/analytics/resource-effectiveness'],
+    enabled: activeTab === 'overview'
+  });
+
+  const plasticReductionTrendsQuery = useQuery<PlasticReductionTrendsAnalytics>({
+    queryKey: ['/api/admin/analytics/plastic-reduction-trends'],
     enabled: activeTab === 'overview'
   });
 
@@ -2262,6 +2307,159 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
               </CardContent>
             </Card>
           )}
+
+          {/* Resource Effectiveness */}
+          <Card data-testid="card-resource-effectiveness">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <FileText className="w-5 h-5 mr-2 text-pcs_teal" />
+                Resource Effectiveness
+              </CardTitle>
+              <p className="text-sm text-gray-500">Most downloaded resources and their correlation with school progression</p>
+            </CardHeader>
+            <CardContent>
+              {resourceEffectivenessQuery.isLoading ? (
+                <div className="h-[300px] flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_teal"></div>
+                </div>
+              ) : resourceEffectivenessQuery.data?.resourceImpact && resourceEffectivenessQuery.data.resourceImpact.length > 0 ? (
+                <div className="space-y-6">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={resourceEffectivenessQuery.data.resourceImpact} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" />
+                      <YAxis dataKey="resourceTitle" type="category" width={200} tick={{ fontSize: 10 }} />
+                      <Tooltip 
+                        formatter={(value: number, name: string) => [
+                          name === 'downloads' ? `${value} downloads` : `${value}%`,
+                          name === 'downloads' ? 'Downloads' : 'Correlation Score'
+                        ]}
+                      />
+                      <Legend />
+                      <Bar dataKey="downloads" fill={ANALYTICS_COLORS[1]} name="Downloads" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                  {resourceEffectivenessQuery.data.stageCorrelation && resourceEffectivenessQuery.data.stageCorrelation.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {resourceEffectivenessQuery.data.stageCorrelation.map((stage, index) => (
+                        <div key={index} className="p-4 bg-gray-50 rounded-lg" data-testid={`resource-stage-${stage.stage}`}>
+                          <div className="font-medium text-gray-800 capitalize mb-2">{stage.stage}</div>
+                          <div className="space-y-1 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Total Downloads:</span>
+                              <span className="font-medium">{stage.totalDownloads}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Avg per School:</span>
+                              <span className="font-medium text-pcs_teal">{stage.avgDownloadsPerProgression}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="h-[300px] flex items-center justify-center text-gray-500">
+                  <div className="text-center">
+                    <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p>No resource effectiveness data available</p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Plastic Reduction Trends */}
+          <Card data-testid="card-plastic-reduction-trends">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Leaf className="w-5 h-5 mr-2 text-green-600" />
+                Plastic Reduction Trends
+              </CardTitle>
+              <p className="text-sm text-gray-500">Estimated plastic reduction from action plans over time</p>
+            </CardHeader>
+            <CardContent>
+              {plasticReductionTrendsQuery.isLoading ? (
+                <div className="h-[400px] flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                </div>
+              ) : plasticReductionTrendsQuery.data ? (
+                <div className="space-y-6">
+                  {/* Impact Metrics Cards */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="p-4 bg-green-50 rounded-lg text-center" data-testid="metric-annual-reduction">
+                      <div className="text-2xl font-bold text-green-600">
+                        {plasticReductionTrendsQuery.data.impactMetrics.totalAnnualReduction.toLocaleString()}
+                      </div>
+                      <div className="text-xs text-gray-600">Annual Items Reduced</div>
+                    </div>
+                    <div className="p-4 bg-blue-50 rounded-lg text-center" data-testid="metric-weight-kg">
+                      <div className="text-2xl font-bold text-pcs_blue">
+                        {plasticReductionTrendsQuery.data.impactMetrics.totalWeightKg.toLocaleString()} kg
+                      </div>
+                      <div className="text-xs text-gray-600">Plastic Weight Saved</div>
+                    </div>
+                    <div className="p-4 bg-teal-50 rounded-lg text-center" data-testid="metric-trees-equivalent">
+                      <div className="text-2xl font-bold text-pcs_teal">
+                        {plasticReductionTrendsQuery.data.impactMetrics.treesEquivalent.toLocaleString()}
+                      </div>
+                      <div className="text-xs text-gray-600">Trees Equivalent</div>
+                    </div>
+                    <div className="p-4 bg-cyan-50 rounded-lg text-center" data-testid="metric-ocean-bottles">
+                      <div className="text-2xl font-bold text-cyan-600">
+                        {plasticReductionTrendsQuery.data.impactMetrics.oceanBottles.toLocaleString()}
+                      </div>
+                      <div className="text-xs text-gray-600">Bottles Kept from Ocean</div>
+                    </div>
+                  </div>
+
+                  {/* Monthly Reduction Chart */}
+                  {plasticReductionTrendsQuery.data.monthlyReduction && plasticReductionTrendsQuery.data.monthlyReduction.length > 0 && (
+                    <ResponsiveContainer width="100%" height={250}>
+                      <LineChart data={plasticReductionTrendsQuery.data.monthlyReduction}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis yAxisId="left" />
+                        <YAxis yAxisId="right" orientation="right" />
+                        <Tooltip />
+                        <Legend />
+                        <Line yAxisId="left" type="monotone" dataKey="estimatedReduction" stroke={ANALYTICS_COLORS[6]} strokeWidth={2} name="Items Reduced" />
+                        <Line yAxisId="right" type="monotone" dataKey="schoolsWithReduction" stroke={ANALYTICS_COLORS[1]} strokeWidth={2} name="Schools" />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  )}
+
+                  {/* Category Breakdown */}
+                  {plasticReductionTrendsQuery.data.categoryReduction && plasticReductionTrendsQuery.data.categoryReduction.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 mb-3">Reduction by Plastic Category</h4>
+                      <ResponsiveContainer width="100%" height={200}>
+                        <BarChart data={plasticReductionTrendsQuery.data.categoryReduction}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="category" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={60} />
+                          <YAxis />
+                          <Tooltip />
+                          <Bar dataKey="totalReduction" fill={ANALYTICS_COLORS[6]} name="Items Reduced">
+                            {plasticReductionTrendsQuery.data.categoryReduction.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="h-[400px] flex items-center justify-center text-gray-500">
+                  <div className="text-center">
+                    <Leaf className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p>No plastic reduction data available</p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
