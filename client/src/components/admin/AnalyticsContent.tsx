@@ -61,6 +61,7 @@ interface AnalyticsOverview {
   interactedUsers?: number;
   notInteractedUsers?: number;
   interactionRate?: number;
+  totalResourceDownloads?: number;
 }
 
 interface SchoolProgressAnalytics {
@@ -687,6 +688,19 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                   <CardContent>
                     <div className="text-2xl font-bold text-pcs_blue">{overviewQuery.data.studentsImpacted.toLocaleString()}</div>
                     <p className="text-xs text-gray-500 mt-1">Lives changed</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm text-gray-600 font-medium flex items-center gap-2">
+                      <Download className="h-4 w-4 text-pcs_coral" />
+                      Resource Downloads
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-pcs_coral" data-testid="metric-resource-downloads">{(overviewQuery.data.totalResourceDownloads || 0).toLocaleString()}</div>
+                    <p className="text-xs text-gray-500 mt-1">Total resources downloaded</p>
                   </CardContent>
                 </Card>
               </div>

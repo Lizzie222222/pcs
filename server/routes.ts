@@ -4418,6 +4418,16 @@ Return JSON with:
       const notInteractedUsers = Number(notInteractedUsersResult.rows[0]?.count || 0);
       const interactionRate = totalUsers > 0 ? Math.round((interactedUsers / totalUsers) * 100) : 0;
       
+      // Get total resource downloads
+      const resourceDownloadsResult = await db.execute(sql`
+        SELECT COALESCE(SUM(download_count), 0) as total FROM resources
+      `);
+      const resourcePackDownloadsResult = await db.execute(sql`
+        SELECT COALESCE(SUM(download_count), 0) as total FROM resource_packs
+      `);
+      const totalResourceDownloads = Number(resourceDownloadsResult.rows[0]?.total || 0) + 
+                                      Number(resourcePackDownloadsResult.rows[0]?.total || 0);
+      
       // Merge user interaction metrics with existing analytics
       const enrichedAnalytics = {
         ...analytics,
@@ -4425,6 +4435,7 @@ Return JSON with:
         interactedUsers,
         notInteractedUsers,
         interactionRate,
+        totalResourceDownloads,
       };
       
       res.json(enrichedAnalytics);

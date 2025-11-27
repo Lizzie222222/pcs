@@ -498,6 +498,7 @@ export interface IStorage {
     activeUsers: number;
     totalActions: number;
     pendingActionPlansCount: number;
+    totalResourceDownloads: number;
   }>;
   
   getAllUsersWithSchools(): Promise<Array<{ 
@@ -2727,6 +2728,7 @@ export class DatabaseStorage implements IStorage {
     activeUsers: number;
     totalActions: number;
     pendingActionPlansCount: number;
+    totalResourceDownloads: number;
   }> {
     const [schoolStats] = await db
       .select({ totalSchools: sql<number>`count(*)` })
@@ -2787,6 +2789,21 @@ export class DatabaseStorage implements IStorage {
     const historicalCount = Number(historicalOverwrites?.value || 0);
     const totalActions = Number(approvedEvidenceStats?.approvedEvidence || 0) + Number(legacyStats?.legacyTotal || 0) + historicalCount;
     
+    // Calculate total resource downloads from resources and resource packs
+    const [resourceDownloadsStats] = await db
+      .select({ 
+        total: sql<number>`coalesce(sum(download_count), 0)`
+      })
+      .from(resources);
+    
+    const [resourcePackDownloadsStats] = await db
+      .select({ 
+        total: sql<number>`coalesce(sum(download_count), 0)`
+      })
+      .from(resourcePacks);
+    
+    const totalResourceDownloads = Number(resourceDownloadsStats?.total || 0) + Number(resourcePackDownloadsStats?.total || 0);
+    
     return {
       totalSchools: Number(schoolStats.totalSchools || 0),
       pendingEvidence: Number(evidenceStats.pendingEvidence || 0),
@@ -2794,6 +2811,7 @@ export class DatabaseStorage implements IStorage {
       activeUsers: Number(userStats.activeUsers || 0),
       totalActions,
       pendingActionPlansCount: Number(actionPlanStats.pendingActionPlans || 0),
+      totalResourceDownloads,
     };
   }
 
