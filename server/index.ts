@@ -5,12 +5,16 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeWebSocket } from "./websocket";
 import { initScheduler } from "./scheduler";
-import { botBlocker } from "./middleware/rateLimiting";
+import { immediateBlocker, botBlocker } from "./middleware/rateLimiting";
 import { requestTimeout } from "./middleware/timeout";
 
 const app = express();
 
-// Bot blocker - Apply early to reject bot traffic immediately
+// Immediate bot blocker - Apply first to reject bot traffic instantly without processing
+// Returns 404 for known bot paths and blocks empty/malicious User-Agents
+app.use(immediateBlocker);
+
+// Rate-limited bot blocker - Additional protection for bots that slip through
 app.use(botBlocker);
 
 // Enable gzip/brotli compression for all responses

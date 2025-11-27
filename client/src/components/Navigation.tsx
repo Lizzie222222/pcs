@@ -46,13 +46,13 @@ export default function Navigation() {
 
   // Get unread notification count
   // Use WebSocket for real-time updates when connected
-  // Fall back to 30-second polling when disconnected
+  // Fall back to 60-second polling when disconnected (optimized for reduced server load)
   const { data: unreadCountData } = useQuery<{ count: number }>({
     queryKey: ['/api/notifications/unread-count'],
     enabled: isAuthenticated,
     retry: false,
-    // Only poll when WebSocket is disconnected (30s fallback)
-    refetchInterval: connectionState === 'connected' ? false : 30000,
+    // Only poll when WebSocket is disconnected (60s fallback - reduced from 30s)
+    refetchInterval: connectionState === 'connected' ? false : 60000,
   });
 
   // Subscribe to WebSocket notification updates for real-time count refresh
