@@ -78,6 +78,33 @@ export function getFromAddress(): string {
 }
 
 /**
+ * Convert plain text to styled HTML paragraphs.
+ * Detects if content is already HTML and leaves it unchanged.
+ * Plain text line breaks are converted to proper paragraph tags with consistent styling.
+ */
+export function formatEmailContent(content: string): string {
+  if (!content) return '';
+  
+  const trimmedContent = content.trim();
+  
+  const hasHtmlTags = /<[a-z][\s\S]*>/i.test(trimmedContent);
+  
+  if (hasHtmlTags) {
+    return trimmedContent;
+  }
+  
+  const paragraphs = trimmedContent.split(/\n\s*\n/);
+  
+  const formattedParagraphs = paragraphs.map(paragraph => {
+    const lines = paragraph.trim().split(/\n/);
+    const lineContent = lines.join('<br>');
+    return `<p style="margin: 0 0 16px 0; color: #333333; font-size: 16px; line-height: 1.7;">${lineContent}</p>`;
+  });
+  
+  return formattedParagraphs.join('\n');
+}
+
+/**
  * Generate beautiful HTML email template with gradient design and logo
  * Following the modern design pattern from admin invitation emails
  */
@@ -1731,11 +1758,14 @@ export interface BulkEmailParams {
 export async function sendBulkEmail(params: BulkEmailParams): Promise<{ sent: number; failed: number; details: Array<{email: string; success: boolean}> }> {
   const results = { sent: 0, failed: 0, details: [] as Array<{email: string; success: boolean}> };
   
+  // Format message content - auto-convert plain text to styled HTML paragraphs
+  const formattedContent = formatEmailContent(params.messageContent);
+  
   // Generate the HTML email using our template system
   const html = generateEmailTemplate({
     title: params.title,
     preTitle: params.preTitle,
-    content: params.messageContent,
+    content: formattedContent,
     callToActionText: params.callToActionText,
     callToActionUrl: params.callToActionUrl,
     footerText: 'You received this email from Plastic Clever Schools.'

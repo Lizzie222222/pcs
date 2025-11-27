@@ -41,6 +41,7 @@ import {
   uptimeMetrics,
   passwordResetTokens,
   settings,
+  emailRecipientGroups,
   type User,
   type UpsertUser,
   type School,
@@ -126,6 +127,8 @@ import {
   type InsertPasswordResetToken,
   type Setting,
   type InsertSetting,
+  type EmailRecipientGroup,
+  type InsertEmailRecipientGroup,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, asc, ilike, count, sql, inArray, getTableColumns, ne, gte, isNull } from "drizzle-orm";
@@ -490,6 +493,14 @@ export interface IStorage {
   updateTestimonial(id: string, updates: Partial<Testimonial>): Promise<Testimonial | undefined>;
   deleteTestimonial(id: string): Promise<void>;
   
+  // Email recipient groups operations
+  createEmailRecipientGroup(group: InsertEmailRecipientGroup): Promise<EmailRecipientGroup>;
+  getEmailRecipientGroups(): Promise<EmailRecipientGroup[]>;
+  getEmailRecipientGroup(id: string): Promise<EmailRecipientGroup | undefined>;
+  updateEmailRecipientGroup(id: string, updates: Partial<EmailRecipientGroup>): Promise<EmailRecipientGroup | undefined>;
+  deleteEmailRecipientGroup(id: string): Promise<void>;
+  getRecipientsByPredefinedGroup(groupType: string): Promise<Array<{ email: string; schoolId: string; schoolName: string }>>;
+  
   // Admin operations
   getAdminStats(): Promise<{
     totalSchools: number;
@@ -530,7 +541,17 @@ export interface IStorage {
     averageProgress: number;
     studentsImpacted: number;
     countriesReached: number;
+    activeSchoolsLastMonth: number;
   }>;
+
+  getActiveSchoolsLastMonth(): Promise<Array<{
+    id: string;
+    name: string;
+    country: string;
+    lastActiveAt: Date | null;
+    currentStage: string;
+    progressPercentage: number;
+  }>>;
 
   getSchoolProgressAnalytics(startDate?: string, endDate?: string): Promise<{
     stageDistribution: Array<{ stage: string; count: number }>;
@@ -2997,6 +3018,7 @@ export class DatabaseStorage implements IStorage {
     averageProgress: number;
     studentsImpacted: number;
     countriesReached: number;
+    activeSchoolsLastMonth: number;
   }> {
     // Build date filter conditions
     const schoolDateFilter = startDate && endDate 
@@ -3032,6 +3054,13 @@ export class DatabaseStorage implements IStorage {
     const [avgProgress] = await db.select({ avg: sql<number>`COALESCE(AVG(progress_percentage), 0)` }).from(schools).where(schoolDateFilter);
     const [studentsSum] = await db.select({ sum: sql<number>`COALESCE(SUM(student_count), 0)` }).from(schools).where(schoolDateFilter);
     const [countriesCount] = await db.select({ count: sql<number>`COUNT(DISTINCT country)` }).from(schools).where(schoolDateFilter);
+    
+    // Count schools with activity in the last 30 days (based on lastActiveAt)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const [activeSchoolsCount] = await db.select({ 
+      count: sql<number>`COUNT(*)` 
+    }).from(schools).where(sql`last_active_at >= ${thirtyDaysAgo.toISOString()}::timestamp`);
 
     return {
       totalSchools: schoolsCount?.count || 0,
@@ -3043,7 +3072,42 @@ export class DatabaseStorage implements IStorage {
       averageProgress: avgProgress?.avg || 0,
       studentsImpacted: studentsSum?.sum || 0,
       countriesReached: countriesCount?.count || 0,
+      activeSchoolsLastMonth: Number(activeSchoolsCount?.count || 0),
     };
+  }
+
+  async getActiveSchoolsLastMonth(): Promise<Array<{
+    id: string;
+    name: string;
+    country: string;
+    lastActiveAt: Date | null;
+    currentStage: string;
+    progressPercentage: number;
+  }>> {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const activeSchools = await db
+      .select({
+        id: schools.id,
+        name: schools.name,
+        country: schools.country,
+        lastActiveAt: schools.lastActiveAt,
+        currentStage: schools.currentStage,
+        progressPercentage: schools.progressPercentage,
+      })
+      .from(schools)
+      .where(sql`last_active_at >= ${thirtyDaysAgo.toISOString()}::timestamp`)
+      .orderBy(desc(schools.lastActiveAt));
+    
+    return activeSchools.map(school => ({
+      id: school.id,
+      name: school.name,
+      country: school.country,
+      lastActiveAt: school.lastActiveAt,
+      currentStage: school.currentStage || 'inspire',
+      progressPercentage: school.progressPercentage || 0,
+    }));
   }
 
   async getSchoolProgressAnalytics(startDate?: string, endDate?: string): Promise<{
@@ -4613,6 +4677,140 @@ export class DatabaseStorage implements IStorage {
 
   async deleteTestimonial(id: string): Promise<void> {
     await db.delete(testimonials).where(eq(testimonials.id, id));
+  }
+
+  // Email recipient groups operations
+  async createEmailRecipientGroup(group: InsertEmailRecipientGroup): Promise<EmailRecipientGroup> {
+    const [newGroup] = await db.insert(emailRecipientGroups).values(group).returning();
+    return newGroup;
+  }
+
+  async getEmailRecipientGroups(): Promise<EmailRecipientGroup[]> {
+    return await db.select().from(emailRecipientGroups).orderBy(desc(emailRecipientGroups.createdAt));
+  }
+
+  async getEmailRecipientGroup(id: string): Promise<EmailRecipientGroup | undefined> {
+    const [group] = await db.select().from(emailRecipientGroups).where(eq(emailRecipientGroups.id, id));
+    return group;
+  }
+
+  async updateEmailRecipientGroup(id: string, updates: Partial<EmailRecipientGroup>): Promise<EmailRecipientGroup | undefined> {
+    const [updated] = await db
+      .update(emailRecipientGroups)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(emailRecipientGroups.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteEmailRecipientGroup(id: string): Promise<void> {
+    await db.delete(emailRecipientGroups).where(eq(emailRecipientGroups.id, id));
+  }
+
+  async getRecipientsByPredefinedGroup(groupType: string): Promise<Array<{ email: string; schoolId: string; schoolName: string }>> {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    let schoolsQuery;
+    
+    switch (groupType) {
+      case 'active_schools_last_month':
+        schoolsQuery = db
+          .select({
+            id: schools.id,
+            name: schools.name,
+          })
+          .from(schools)
+          .where(sql`last_active_at >= ${thirtyDaysAgo.toISOString()}::timestamp`);
+        break;
+      case 'inactive_schools':
+        schoolsQuery = db
+          .select({
+            id: schools.id,
+            name: schools.name,
+          })
+          .from(schools)
+          .where(or(
+            sql`last_active_at < ${thirtyDaysAgo.toISOString()}::timestamp`,
+            isNull(schools.lastActiveAt)
+          ));
+        break;
+      case 'schools_with_pending_evidence':
+        schoolsQuery = db
+          .selectDistinct({
+            id: schools.id,
+            name: schools.name,
+          })
+          .from(schools)
+          .innerJoin(evidence, eq(evidence.schoolId, schools.id))
+          .where(eq(evidence.status, 'pending'));
+        break;
+      case 'completed_schools':
+        schoolsQuery = db
+          .select({
+            id: schools.id,
+            name: schools.name,
+          })
+          .from(schools)
+          .where(sql`rounds_completed > 0`);
+        break;
+      case 'inspire_stage':
+        schoolsQuery = db
+          .select({
+            id: schools.id,
+            name: schools.name,
+          })
+          .from(schools)
+          .where(eq(schools.currentStage, 'inspire'));
+        break;
+      case 'investigate_stage':
+        schoolsQuery = db
+          .select({
+            id: schools.id,
+            name: schools.name,
+          })
+          .from(schools)
+          .where(eq(schools.currentStage, 'investigate'));
+        break;
+      case 'act_stage':
+        schoolsQuery = db
+          .select({
+            id: schools.id,
+            name: schools.name,
+          })
+          .from(schools)
+          .where(eq(schools.currentStage, 'act'));
+        break;
+      default:
+        return [];
+    }
+    
+    const schoolResults = await schoolsQuery;
+    const schoolIds = schoolResults.map(s => s.id);
+    
+    if (schoolIds.length === 0) {
+      return [];
+    }
+    
+    const recipients = await db
+      .select({
+        email: users.email,
+        schoolId: schoolUsers.schoolId,
+        schoolName: schools.name,
+      })
+      .from(users)
+      .innerJoin(schoolUsers, eq(schoolUsers.userId, users.id))
+      .innerJoin(schools, eq(schools.id, schoolUsers.schoolId))
+      .where(and(
+        inArray(schoolUsers.schoolId, schoolIds),
+        sql`${users.email} IS NOT NULL`
+      ));
+    
+    return recipients.map(r => ({
+      email: r.email || '',
+      schoolId: r.schoolId,
+      schoolName: r.schoolName,
+    }));
   }
 
   // Audit operations

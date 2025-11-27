@@ -4608,6 +4608,33 @@ Return JSON with:
     }
   });
 
+  app.get('/api/admin/analytics/active-schools/csv', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const activeSchools = await storage.getActiveSchoolsLastMonth();
+
+      const headers = ['School Name', 'Country', 'Current Stage', 'Progress %', 'Last Active'];
+      const rows = activeSchools.map(school => [
+        `"${(school.name || '').replace(/"/g, '""')}"`,
+        `"${(school.country || '').replace(/"/g, '""')}"`,
+        `"${(school.currentStage || '').replace(/"/g, '""')}"`,
+        school.progressPercentage || 0,
+        school.lastActiveAt ? new Date(school.lastActiveAt).toLocaleDateString() : ''
+      ]);
+
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.join(','))
+      ].join('\n');
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="active-schools-last-month-${new Date().toISOString().split('T')[0]}.csv"`);
+      res.send(csvContent);
+    } catch (error) {
+      console.error("Error generating active schools CSV:", error);
+      res.status(500).json({ message: "Failed to generate CSV" });
+    }
+  });
+
   // Migration endpoints
   app.post('/api/admin/migration/run', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
@@ -8339,6 +8366,90 @@ Return JSON with:
   }, {
     message: "Recipients list is required when recipient type is 'custom'",
     path: ["recipients"],
+  });
+
+  // Email recipient groups routes
+  app.get('/api/admin/email-recipient-groups', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const groups = await storage.getEmailRecipientGroups();
+      res.json(groups);
+    } catch (error) {
+      console.error("Error fetching recipient groups:", error);
+      res.status(500).json({ message: "Failed to fetch recipient groups" });
+    }
+  });
+
+  app.post('/api/admin/email-recipient-groups', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { name, description, filters } = req.body;
+      
+      if (!name || !filters) {
+        return res.status(400).json({ message: "Name and filters are required" });
+      }
+      
+      const group = await storage.createEmailRecipientGroup({
+        name,
+        description: description || null,
+        filters,
+        createdBy: req.user.id,
+      });
+      
+      res.status(201).json(group);
+    } catch (error) {
+      console.error("Error creating recipient group:", error);
+      res.status(500).json({ message: "Failed to create recipient group" });
+    }
+  });
+
+  app.delete('/api/admin/email-recipient-groups/:id', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      await storage.deleteEmailRecipientGroup(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting recipient group:", error);
+      res.status(500).json({ message: "Failed to delete recipient group" });
+    }
+  });
+
+  app.get('/api/admin/email-recipient-groups/predefined/:groupType', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { groupType } = req.params;
+      const recipients = await storage.getRecipientsByPredefinedGroup(groupType);
+      res.json({
+        groupType,
+        recipients,
+        count: recipients.length,
+      });
+    } catch (error) {
+      console.error("Error fetching predefined group recipients:", error);
+      res.status(500).json({ message: "Failed to fetch recipients" });
+    }
+  });
+
+  app.get('/api/admin/email-recipient-groups/predefined-list', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const predefinedGroups = [
+        { id: 'active_schools_last_month', name: 'Active Schools (Last 30 Days)', description: 'Schools with activity in the past 30 days' },
+        { id: 'inactive_schools', name: 'Inactive Schools', description: 'Schools with no activity in 30+ days' },
+        { id: 'schools_with_pending_evidence', name: 'Schools with Pending Evidence', description: 'Schools waiting for evidence review' },
+        { id: 'completed_schools', name: 'Completed Schools', description: 'Schools that have completed at least one award' },
+        { id: 'inspire_stage', name: 'Inspire Stage Schools', description: 'Schools currently in the Inspire stage' },
+        { id: 'investigate_stage', name: 'Investigate Stage Schools', description: 'Schools currently in the Investigate stage' },
+        { id: 'act_stage', name: 'Act Stage Schools', description: 'Schools currently in the Act stage' },
+      ];
+      
+      const groupsWithCounts = await Promise.all(
+        predefinedGroups.map(async (group) => {
+          const recipients = await storage.getRecipientsByPredefinedGroup(group.id);
+          return { ...group, recipientCount: recipients.length };
+        })
+      );
+      
+      res.json(groupsWithCounts);
+    } catch (error) {
+      console.error("Error fetching predefined groups:", error);
+      res.status(500).json({ message: "Failed to fetch predefined groups" });
+    }
   });
 
   // Preview bulk email HTML content

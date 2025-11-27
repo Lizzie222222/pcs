@@ -701,6 +701,25 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                   </CardContent>
                 </Card>
 
+                <Card 
+                  className="cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] border-2 border-transparent hover:border-green-500"
+                  onClick={() => {
+                    window.location.href = '/api/admin/analytics/active-schools/csv';
+                  }}
+                  data-testid="card-active-schools"
+                >
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm text-gray-600 font-medium flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-green-600" />
+                      Active Schools (Last Month)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-600" data-testid="metric-active-schools">{(overviewQuery.data.activeSchoolsLastMonth || 0).toLocaleString()}</div>
+                    <p className="text-xs text-gray-500 mt-1">Schools with activity in past 30 days - Click to download CSV</p>
+                  </CardContent>
+                </Card>
+
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm text-gray-600 font-medium">Students Impacted</CardTitle>

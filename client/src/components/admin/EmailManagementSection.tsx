@@ -22,8 +22,258 @@ import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Mail, Eye, Globe, Image as ImageIcon, X, ChevronDown, ChevronUp, Users, Send, Loader2, CheckCircle2, Search, Filter } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { Mail, Eye, Globe, Image as ImageIcon, X, ChevronDown, ChevronUp, Users, Send, Loader2, CheckCircle2, Search, Filter, Save, Trash2 } from "lucide-react";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+
+interface PredefinedGroup {
+  id: string;
+  name: string;
+  description: string;
+  recipientCount: number;
+}
+
+interface SavedGroup {
+  id: string;
+  name: string;
+  description: string | null;
+  filters: any;
+  createdAt: string;
+}
+
+function PredefinedGroupSelector({ emailForm, setEmailForm }: { emailForm: any; setEmailForm: any }) {
+  const { toast } = useToast();
+  
+  const predefinedGroupsQuery = useQuery<PredefinedGroup[]>({
+    queryKey: ['/api/admin/email-recipient-groups/predefined-list'],
+  });
+
+  return (
+    <div className="space-y-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+      <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+        <Users className="h-4 w-4" />
+        Predefined Groups
+      </h4>
+      <p className="text-xs text-gray-600">
+        These groups automatically update based on current data. Select a group to target.
+      </p>
+      
+      {predefinedGroupsQuery.isLoading ? (
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Loading groups...
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <Select
+            value={emailForm.predefinedGroup || ''}
+            onValueChange={(value) => setEmailForm((prev: any) => ({ ...prev, predefinedGroup: value }))}
+          >
+            <SelectTrigger data-testid="select-predefined-group">
+              <SelectValue placeholder="Select a predefined group" />
+            </SelectTrigger>
+            <SelectContent>
+              {predefinedGroupsQuery.data?.map((group) => (
+                <SelectItem key={group.id} value={group.id}>
+                  {group.name} ({group.recipientCount} recipients)
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          {emailForm.predefinedGroup && predefinedGroupsQuery.data && (
+            <p className="text-xs text-green-700 bg-green-100 p-2 rounded">
+              {predefinedGroupsQuery.data.find(g => g.id === emailForm.predefinedGroup)?.description}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SaveFiltersButton({ schoolFilters }: { schoolFilters: any }) {
+  const { toast } = useToast();
+  const queryClientInstance = queryClient;
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [groupName, setGroupName] = useState('');
+  const [groupDescription, setGroupDescription] = useState('');
+
+  const createGroupMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('/api/admin/email-recipient-groups', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: groupName,
+          description: groupDescription || null,
+          filters: schoolFilters,
+        }),
+      });
+    },
+    onSuccess: () => {
+      queryClientInstance.invalidateQueries({ queryKey: ['/api/admin/email-recipient-groups'] });
+      toast({ title: "Group saved successfully" });
+      setDialogOpen(false);
+      setGroupName('');
+      setGroupDescription('');
+    },
+    onError: () => {
+      toast({ title: "Failed to save group", variant: "destructive" });
+    },
+  });
+
+  return (
+    <>
+      <div className="flex justify-end mt-3">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setDialogOpen(true)}
+          className="text-purple-600 border-purple-300 hover:bg-purple-50"
+          data-testid="button-save-filters-as-group"
+        >
+          <Save className="h-4 w-4 mr-2" />
+          Save as Group
+        </Button>
+      </div>
+      
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent data-testid="dialog-save-group">
+          <DialogHeader>
+            <DialogTitle>Save Filters as Group</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Group Name *</label>
+              <Input
+                value={groupName}
+                onChange={(e) => setGroupName(e.target.value)}
+                placeholder="e.g., UK Schools in Inspire Stage"
+                data-testid="input-group-name"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Description (optional)</label>
+              <Textarea
+                value={groupDescription}
+                onChange={(e) => setGroupDescription(e.target.value)}
+                placeholder="Brief description of this group"
+                rows={2}
+                data-testid="input-group-description"
+              />
+            </div>
+            <div className="p-3 bg-gray-50 rounded text-sm">
+              <p className="font-medium text-gray-700 mb-1">Current Filters:</p>
+              <ul className="text-xs text-gray-600 space-y-1">
+                {schoolFilters.search && <li>Search: {schoolFilters.search}</li>}
+                {schoolFilters.country && schoolFilters.country !== 'all' && <li>Country: {schoolFilters.country}</li>}
+                {schoolFilters.stage && schoolFilters.stage !== 'all' && <li>Stage: {schoolFilters.stage}</li>}
+                {schoolFilters.language && schoolFilters.language !== 'all' && <li>Language: {schoolFilters.language}</li>}
+                {(!schoolFilters.search && (!schoolFilters.country || schoolFilters.country === 'all') && 
+                  (!schoolFilters.stage || schoolFilters.stage === 'all') && 
+                  (!schoolFilters.language || schoolFilters.language === 'all')) && (
+                  <li className="italic">No filters applied (all schools)</li>
+                )}
+              </ul>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => createGroupMutation.mutate()}
+              disabled={!groupName.trim() || createGroupMutation.isPending}
+              data-testid="button-confirm-save-group"
+            >
+              {createGroupMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Group'
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+function SavedGroupSelector({ emailForm, setEmailForm }: { emailForm: any; setEmailForm: any }) {
+  const { toast } = useToast();
+  const queryClientInstance = queryClient;
+  
+  const savedGroupsQuery = useQuery<SavedGroup[]>({
+    queryKey: ['/api/admin/email-recipient-groups'],
+  });
+
+  const deleteGroupMutation = useMutation({
+    mutationFn: async (groupId: string) => {
+      await apiRequest(`/api/admin/email-recipient-groups/${groupId}`, { method: 'DELETE' });
+    },
+    onSuccess: () => {
+      queryClientInstance.invalidateQueries({ queryKey: ['/api/admin/email-recipient-groups'] });
+      toast({ title: "Group deleted" });
+    },
+    onError: () => {
+      toast({ title: "Failed to delete group", variant: "destructive" });
+    },
+  });
+
+  return (
+    <div className="space-y-3 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+      <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+        <Save className="h-4 w-4" />
+        Saved Custom Groups
+      </h4>
+      <p className="text-xs text-gray-600">
+        Groups you've saved with custom filter combinations.
+      </p>
+      
+      {savedGroupsQuery.isLoading ? (
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Loading saved groups...
+        </div>
+      ) : savedGroupsQuery.data && savedGroupsQuery.data.length > 0 ? (
+        <div className="space-y-2">
+          {savedGroupsQuery.data.map((group) => (
+            <div key={group.id} className="flex items-center justify-between p-2 bg-white rounded border">
+              <button
+                type="button"
+                className={`flex-1 text-left p-2 rounded transition-colors ${
+                  emailForm.savedGroup === group.id ? 'bg-purple-100 border-purple-300' : 'hover:bg-gray-50'
+                }`}
+                onClick={() => setEmailForm((prev: any) => ({ ...prev, savedGroup: group.id }))}
+              >
+                <span className="font-medium text-sm">{group.name}</span>
+                {group.description && (
+                  <span className="text-xs text-gray-500 block">{group.description}</span>
+                )}
+              </button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => deleteGroupMutation.mutate(group.id)}
+                disabled={deleteGroupMutation.isPending}
+                data-testid={`button-delete-group-${group.id}`}
+              >
+                <Trash2 className="h-4 w-4 text-red-500" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-gray-500 italic">
+          No saved groups yet. Use "Schools (with custom filters)" to create filters, then save them as a group.
+        </p>
+      )}
+    </div>
+  );
+}
 
 interface EmailManagementSectionProps {
   emailForm: any;
@@ -832,15 +1082,17 @@ export default function EmailManagementSection({
                 <label className="block text-sm font-medium mb-2">Recipients *</label>
                 <Select 
                   value={emailForm.recipientType} 
-                  onValueChange={(value) => setEmailForm((prev: any) => ({ ...prev, recipientType: value }))}
+                  onValueChange={(value) => setEmailForm((prev: any) => ({ ...prev, recipientType: value, predefinedGroup: '', savedGroup: '' }))}
                 >
                   <SelectTrigger data-testid="select-recipient-type">
                     <SelectValue placeholder="Select recipients" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all_teachers">All Teachers</SelectItem>
-                    <SelectItem value="schools">Schools (with current filters)</SelectItem>
-                    <SelectItem value="custom">Custom List</SelectItem>
+                    <SelectItem value="predefined_group">Predefined Group (auto-updating)</SelectItem>
+                    <SelectItem value="schools">Schools (with custom filters)</SelectItem>
+                    <SelectItem value="saved_group">Saved Custom Group</SelectItem>
+                    <SelectItem value="custom">Custom Email List</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -864,6 +1116,20 @@ export default function EmailManagementSection({
                 </Select>
               </div>
             </div>
+
+            {emailForm.recipientType === 'predefined_group' && (
+              <PredefinedGroupSelector 
+                emailForm={emailForm} 
+                setEmailForm={setEmailForm} 
+              />
+            )}
+
+            {emailForm.recipientType === 'saved_group' && (
+              <SavedGroupSelector 
+                emailForm={emailForm} 
+                setEmailForm={setEmailForm} 
+              />
+            )}
 
             {emailForm.recipientType === 'schools' && (
               <div className="space-y-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -947,6 +1213,8 @@ export default function EmailManagementSection({
                     </Select>
                   </div>
                 </div>
+                
+                <SaveFiltersButton schoolFilters={schoolFilters} />
               </div>
             )}
 

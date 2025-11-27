@@ -2128,3 +2128,25 @@ export type InsertPasswordResetToken = z.infer<typeof insertPasswordResetTokenSc
 export type LoginForm = z.infer<typeof loginSchema>;
 export type RegisterForm = z.infer<typeof registerSchema>;
 export type CreatePasswordUser = z.infer<typeof createPasswordUserSchema>;
+
+// Email Recipient Groups for targeting groups of recipients in bulk emails
+export const emailRecipientGroups = pgTable("email_recipient_groups", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name").notNull(),
+  description: text("description"),
+  filters: jsonb("filters").notNull(),
+  createdBy: varchar("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("idx_recipient_groups_name").on(table.name),
+]);
+
+export const insertEmailRecipientGroupSchema = createInsertSchema(emailRecipientGroups).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type EmailRecipientGroup = typeof emailRecipientGroups.$inferSelect;
+export type InsertEmailRecipientGroup = z.infer<typeof insertEmailRecipientGroupSchema>;
