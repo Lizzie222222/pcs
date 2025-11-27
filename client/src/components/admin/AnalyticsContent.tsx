@@ -54,6 +54,7 @@ interface AnalyticsOverview {
   totalUsers: number;
   totalEvidence: number;
   completedAwards: number;
+  schoolsCompleted: number;
   pendingEvidence: number;
   averageProgress: number;
   studentsImpacted: number;
@@ -678,6 +679,25 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                   <CardContent>
                     <div className="text-2xl font-bold text-pcs_teal" data-testid="metric-awards-completed">{overviewQuery.data.completedAwards.toLocaleString()}</div>
                     <p className="text-xs text-gray-500 mt-1">Total rounds completed across all schools</p>
+                  </CardContent>
+                </Card>
+
+                <Card 
+                  className="cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] border-2 border-transparent hover:border-pcs_yellow"
+                  onClick={() => {
+                    window.location.href = '/api/admin/analytics/schools-completed/csv';
+                  }}
+                  data-testid="card-schools-completed"
+                >
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm text-gray-600 font-medium flex items-center gap-2">
+                      <Trophy className="h-4 w-4 text-pcs_yellow" />
+                      Schools Completed
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-pcs_yellow" data-testid="metric-schools-completed">{overviewQuery.data.schoolsCompleted.toLocaleString()}</div>
+                    <p className="text-xs text-gray-500 mt-1">Schools with at least one award - Click to download CSV</p>
                   </CardContent>
                 </Card>
 

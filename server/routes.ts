@@ -68,7 +68,7 @@ const resubmitActionPlanSchema = z.object({
 
 import { randomUUID, randomBytes } from 'crypto';
 import { db } from "./db";
-import { eq, and, or, sql, desc, gte, lte, count, ilike, inArray } from "drizzle-orm";
+import { eq, and, or, sql, desc, asc, gte, lte, count, ilike, inArray } from "drizzle-orm";
 import { generateAnalyticsInsights } from "./lib/aiInsights";
 import { translateEmailContent, translateEvidenceRequirement, type EmailContent } from "./translationService";
 import { promises as fs } from 'fs';
@@ -4555,6 +4555,56 @@ Return JSON with:
     } catch (error) {
       console.error("Error fetching evidence analytics:", error);
       res.status(500).json({ message: "Failed to fetch evidence analytics" });
+    }
+  });
+
+  // Download CSV of schools that have completed at least one award
+  app.get('/api/admin/analytics/schools-completed/csv', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      // Query schools with at least one completed round
+      const completedSchools = await db.select({
+        id: schools.id,
+        name: schools.name,
+        country: schools.country,
+        type: schools.type,
+        studentCount: schools.studentCount,
+        roundsCompleted: schools.roundsCompleted,
+        currentRound: schools.currentRound,
+        inspireCompleted: schools.inspireCompleted,
+        investigateCompleted: schools.investigateCompleted,
+        actCompleted: schools.actCompleted,
+        createdAt: schools.createdAt,
+      })
+      .from(schools)
+      .where(sql`rounds_completed > 0`)
+      .orderBy(desc(schools.roundsCompleted), asc(schools.name));
+
+      // Generate CSV
+      const headers = ['School Name', 'Country', 'School Type', 'Student Count', 'Rounds Completed', 'Current Round', 'Inspire Completed', 'Investigate Completed', 'Act Completed', 'Joined Date'];
+      const rows = completedSchools.map(school => [
+        `"${(school.name || '').replace(/"/g, '""')}"`,
+        `"${(school.country || '').replace(/"/g, '""')}"`,
+        `"${(school.type || '').replace(/"/g, '""')}"`,
+        school.studentCount || 0,
+        school.roundsCompleted || 0,
+        school.currentRound || 1,
+        school.inspireCompleted ? 'Yes' : 'No',
+        school.investigateCompleted ? 'Yes' : 'No',
+        school.actCompleted ? 'Yes' : 'No',
+        school.createdAt ? new Date(school.createdAt).toLocaleDateString() : ''
+      ]);
+
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.join(','))
+      ].join('\n');
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="schools-completed-awards-${new Date().toISOString().split('T')[0]}.csv"`);
+      res.send(csvContent);
+    } catch (error) {
+      console.error("Error generating schools completed CSV:", error);
+      res.status(500).json({ message: "Failed to generate CSV" });
     }
   });
 

@@ -525,6 +525,7 @@ export interface IStorage {
     totalUsers: number;
     totalEvidence: number;
     completedAwards: number;
+    schoolsCompleted: number;
     pendingEvidence: number;
     averageProgress: number;
     studentsImpacted: number;
@@ -2983,6 +2984,7 @@ export class DatabaseStorage implements IStorage {
     totalUsers: number;
     totalEvidence: number;
     completedAwards: number;
+    schoolsCompleted: number;
     pendingEvidence: number;
     averageProgress: number;
     studentsImpacted: number;
@@ -3013,6 +3015,11 @@ export class DatabaseStorage implements IStorage {
       sum: sql<number>`COALESCE(SUM(rounds_completed), 0)` 
     }).from(schools).where(schoolDateFilter);
     
+    // Count schools that have completed at least one round
+    const [schoolsCompletedCount] = await db.select({ 
+      count: sql<number>`COUNT(*)` 
+    }).from(schools).where(and(schoolDateFilter, sql`rounds_completed > 0`));
+    
     const [pendingCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(evidence).where(and(eq(evidence.status, 'pending'), evidenceDateFilter));
     const [avgProgress] = await db.select({ avg: sql<number>`COALESCE(AVG(progress_percentage), 0)` }).from(schools).where(schoolDateFilter);
     const [studentsSum] = await db.select({ sum: sql<number>`COALESCE(SUM(student_count), 0)` }).from(schools).where(schoolDateFilter);
@@ -3023,6 +3030,7 @@ export class DatabaseStorage implements IStorage {
       totalUsers: usersCount?.count || 0,
       totalEvidence,
       completedAwards: completedAwardsSum?.sum || 0,
+      schoolsCompleted: schoolsCompletedCount?.count || 0,
       pendingEvidence: pendingCount?.count || 0,
       averageProgress: avgProgress?.avg || 0,
       studentsImpacted: studentsSum?.sum || 0,
