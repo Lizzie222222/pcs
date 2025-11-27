@@ -739,6 +739,117 @@ export function createEvidenceRouters(storage: IStorage): {
   });
 
   /**
+   * POST /api/evidence-requirements/seed-defaults
+   * 
+   * Seed default evidence requirements (admin only)
+   * Creates the standard set of requirements for inspire/investigate/act stages
+   * Used when setting up a new installation
+   */
+  requirementsRouter.post('/seed-defaults', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      // Check if requirements already exist
+      const existingRequirements = await evidenceStorage.getEvidenceRequirements();
+      if (existingRequirements.length > 0) {
+        return res.status(409).json({ 
+          message: "Evidence requirements already exist",
+          existingCount: existingRequirements.length
+        });
+      }
+
+      // Default requirements to seed
+      const defaultRequirements = [
+        // Inspire Stage (3 requirements)
+        {
+          stage: "inspire" as const,
+          orderIndex: 0,
+          title: "School Assembly",
+          description: "Host a school-wide assembly to introduce the Plastic Clever Schools program and raise awareness about plastic pollution",
+          requirementType: "standard" as const,
+        },
+        {
+          stage: "inspire" as const,
+          orderIndex: 1,
+          title: "Litter Audit & Cleanup",
+          description: "Conduct a litter audit around your school grounds and organize a cleanup activity. Document with photos",
+          requirementType: "standard" as const,
+        },
+        {
+          stage: "inspire" as const,
+          orderIndex: 2,
+          title: "Recycling Infrastructure",
+          description: "Set up or improve recycling bins around the school. Take photos showing the bins with clear signage",
+          requirementType: "standard" as const,
+        },
+        
+        // Investigate Stage (2 requirements)
+        {
+          stage: "investigate" as const,
+          orderIndex: 0,
+          title: "Plastic Waste Audit",
+          description: "Complete a detailed audit of plastic usage across your school. Record and analyze data about single-use plastics",
+          requirementType: "audit" as const,
+        },
+        {
+          stage: "investigate" as const,
+          orderIndex: 1,
+          title: "Action Plan Development",
+          description: "Create a comprehensive action plan outlining specific steps your school will take to reduce plastic waste",
+          requirementType: "action_plan" as const,
+        },
+        
+        // Act Stage (3 requirements)
+        {
+          stage: "act" as const,
+          orderIndex: 0,
+          title: "Plastic-Free Initiative",
+          description: "Implement a plastic-free week or month. Document changes made and student/staff participation",
+          requirementType: "standard" as const,
+        },
+        {
+          stage: "act" as const,
+          orderIndex: 1,
+          title: "Student-Led Campaign",
+          description: "Launch a student-led campaign to promote plastic reduction. Include posters, social media, or events",
+          requirementType: "standard" as const,
+        },
+        {
+          stage: "act" as const,
+          orderIndex: 2,
+          title: "Community Engagement",
+          description: "Engage with the wider community (parents, local businesses) to spread plastic reduction awareness",
+          requirementType: "standard" as const,
+        },
+      ];
+
+      // Create all requirements
+      const created = [];
+      for (const req of defaultRequirements) {
+        const requirement = await evidenceStorage.createEvidenceRequirement(req);
+        created.push(requirement);
+      }
+
+      console.log(`[Evidence Requirements Seeded] Created ${created.length} default requirements`);
+      res.status(201).json({ 
+        message: `Successfully created ${created.length} default requirements`,
+        requirements: created
+      });
+    } catch (error) {
+      console.error("Error seeding default requirements:", error);
+      res.status(500).json({ message: "Failed to seed default requirements" });
+    }
+  });
+
+  /**
    * DELETE /api/evidence-requirements/:id
    * 
    * Delete evidence requirement (admin only)

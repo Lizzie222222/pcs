@@ -133,6 +133,12 @@ export const healthCheckStatusEnum = pgEnum('health_check_status', [
   'down'
 ]);
 
+export const requirementTypeEnum = pgEnum('requirement_type', [
+  'standard',
+  'audit',
+  'action_plan'
+]);
+
 /**
  * @description Core users table supporting email/password authentication. Central entity linking to schools, evidence submissions, and all user-generated content.
  * @location shared/schema.ts#L73
@@ -389,6 +395,7 @@ export const evidenceRequirements = pgTable("evidence_requirements", {
   title: varchar("title").notNull(),
   description: text("description").notNull(),
   orderIndex: integer("order_index").notNull(),
+  requirementType: requirementTypeEnum("requirement_type").default('standard'),
   resourceIds: text("resource_ids").array().default(sql`ARRAY[]::text[]`),
   customLinks: jsonb("custom_links").default('[]'),
   translations: jsonb("translations").default('{}'),

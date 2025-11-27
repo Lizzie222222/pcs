@@ -33,7 +33,12 @@ import {
   X,
   Languages,
   Loader2,
+  ClipboardCheck,
+  Target,
+  Sparkles,
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs } from "@/components/ui/tabs";
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
 import { PDFThumbnail } from "@/components/PDFThumbnail";
@@ -64,11 +69,13 @@ export default function EvidenceRequirementsSection({
   const [requirementFormData, setRequirementFormData] = useState<{
     title: string;
     description: string;
+    requirementType: 'standard' | 'audit' | 'action_plan';
     resourceIds: string[];
     customLinks: Array<{ title: string; url: string }>;
   }>({
     title: '',
     description: '',
+    requirementType: 'standard',
     resourceIds: [],
     customLinks: [],
   });
@@ -83,7 +90,7 @@ export default function EvidenceRequirementsSection({
 
   // Evidence Requirements mutations
   const createRequirementMutation = useMutation({
-    mutationFn: async (data: { title: string; description: string; resourceIds?: string[]; customLinks?: Array<{ title: string; url: string }>; stage: string; orderIndex: number }) => {
+    mutationFn: async (data: { title: string; description: string; requirementType?: 'standard' | 'audit' | 'action_plan'; resourceIds?: string[]; customLinks?: Array<{ title: string; url: string }>; stage: string; orderIndex: number }) => {
       return await apiRequest('POST', '/api/evidence-requirements', data);
     },
     onSuccess: () => {
@@ -93,7 +100,7 @@ export default function EvidenceRequirementsSection({
       });
       queryClient.invalidateQueries({ queryKey: ['/api/evidence-requirements'] });
       setRequirementDialogOpen(false);
-      setRequirementFormData({ title: '', description: '', resourceIds: [], customLinks: [] });
+      setRequirementFormData({ title: '', description: '', requirementType: 'standard', resourceIds: [], customLinks: [] });
       setNewLinkTitle('');
       setNewLinkUrl('');
     },
@@ -107,7 +114,7 @@ export default function EvidenceRequirementsSection({
   });
 
   const updateRequirementMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<{ title: string; description: string; resourceIds: string[]; customLinks: Array<{ title: string; url: string }> }> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Partial<{ title: string; description: string; requirementType: 'standard' | 'audit' | 'action_plan'; resourceIds: string[]; customLinks: Array<{ title: string; url: string }> }> }) => {
       return await apiRequest('PATCH', `/api/evidence-requirements/${id}`, data);
     },
     onSuccess: () => {
@@ -118,7 +125,7 @@ export default function EvidenceRequirementsSection({
       queryClient.invalidateQueries({ queryKey: ['/api/evidence-requirements'] });
       setRequirementDialogOpen(false);
       setEditingRequirement(null);
-      setRequirementFormData({ title: '', description: '', resourceIds: [], customLinks: [] });
+      setRequirementFormData({ title: '', description: '', requirementType: 'standard', resourceIds: [], customLinks: [] });
       setNewLinkTitle('');
       setNewLinkUrl('');
     },
@@ -240,6 +247,27 @@ export default function EvidenceRequirementsSection({
     }
   };
 
+  // Seed default requirements mutation
+  const seedDefaultsMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('POST', '/api/evidence-requirements/seed-defaults', {});
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: t('toasts.success'),
+        description: data.message || 'Default requirements created successfully!',
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/evidence-requirements'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: t('toasts.error'),
+        description: error.message || 'Failed to create default requirements',
+        variant: "destructive",
+      });
+    },
+  });
+
   return (
     <div className="space-y-6">
       <Card className="mb-6">
@@ -274,6 +302,36 @@ export default function EvidenceRequirementsSection({
           </div>
         </CardHeader>
       </Card>
+
+      {/* Show Initialize Default Requirements button when there are no requirements */}
+      {evidenceRequirements.length === 0 && !requirementsLoading && (
+        <Alert className="mb-6 border-blue-200 bg-blue-50">
+          <Sparkles className="h-5 w-5 text-blue-600" />
+          <AlertDescription className="flex items-center justify-between">
+            <span className="text-blue-800">
+              No evidence requirements configured yet. Initialize with the default set to get started quickly.
+            </span>
+            <Button
+              onClick={() => seedDefaultsMutation.mutate()}
+              disabled={seedDefaultsMutation.isPending}
+              className="bg-blue-600 hover:bg-blue-700 ml-4"
+              data-testid="button-seed-defaults"
+            >
+              {seedDefaultsMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Initialize Default Requirements
+                </>
+              )}
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
 
       <Tabs value={activeEvidenceStage} onValueChange={(value) => setActiveEvidenceStage(value as any)}>
         <div className="bg-gray-100 p-1 rounded-lg w-fit mb-6">
@@ -321,7 +379,7 @@ export default function EvidenceRequirementsSection({
               <Button
                 onClick={() => {
                   setEditingRequirement(null);
-                  setRequirementFormData({ title: '', description: '', resourceIds: [], customLinks: [] });
+                  setRequirementFormData({ title: '', description: '', requirementType: 'standard', resourceIds: [], customLinks: [] });
                   setNewLinkTitle('');
                   setNewLinkUrl('');
                   setRequirementDialogOpen(true);
@@ -398,6 +456,18 @@ export default function EvidenceRequirementsSection({
                                   <h3 className="text-base font-semibold text-gray-900" data-testid={`text-title-${requirement.id}`}>
                                     {requirement.title}
                                   </h3>
+                                  {requirement.requirementType === 'audit' && (
+                                    <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300 text-xs" data-testid={`badge-audit-${requirement.id}`}>
+                                      <ClipboardCheck className="h-3 w-3 mr-1" />
+                                      Audit
+                                    </Badge>
+                                  )}
+                                  {requirement.requirementType === 'action_plan' && (
+                                    <Badge className="bg-teal-100 text-teal-800 border-teal-300 text-xs" data-testid={`badge-action-plan-${requirement.id}`}>
+                                      <Target className="h-3 w-3 mr-1" />
+                                      Action Plan
+                                    </Badge>
+                                  )}
                                 </div>
                                 <p className="text-sm text-gray-600 whitespace-pre-wrap" data-testid={`text-description-${requirement.id}`}>
                                   {requirement.description}
@@ -464,6 +534,7 @@ export default function EvidenceRequirementsSection({
                                 setRequirementFormData({
                                   title: requirement.title,
                                   description: requirement.description,
+                                  requirementType: requirement.requirementType || 'standard',
                                   resourceIds: requirement.resourceIds || [],
                                   customLinks: requirement.customLinks || [],
                                 });
@@ -529,6 +600,46 @@ export default function EvidenceRequirementsSection({
                 rows={4}
                 data-testid="input-description"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Requirement Type
+              </label>
+              <Select
+                value={requirementFormData.requirementType}
+                onValueChange={(value: 'standard' | 'audit' | 'action_plan') => 
+                  setRequirementFormData(prev => ({ ...prev, requirementType: value }))
+                }
+              >
+                <SelectTrigger data-testid="select-requirement-type">
+                  <SelectValue placeholder="Select requirement type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="standard">
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="h-4 w-4 text-gray-500" />
+                      <span>Standard Evidence</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="audit">
+                    <div className="flex items-center gap-2">
+                      <ClipboardCheck className="h-4 w-4 text-yellow-600" />
+                      <span>Plastic Waste Audit</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="action_plan">
+                    <div className="flex items-center gap-2">
+                      <Target className="h-4 w-4 text-teal-600" />
+                      <span>Action Plan</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500 mt-1">
+                {requirementFormData.requirementType === 'audit' && 'Users will complete the Plastic Waste Audit form instead of uploading evidence.'}
+                {requirementFormData.requirementType === 'action_plan' && 'Users will create reduction promises based on their audit results.'}
+                {requirementFormData.requirementType === 'standard' && 'Users will upload photos, videos, or documents as evidence.'}
+              </p>
             </div>
             <div className="space-y-3">
               <div>
@@ -750,7 +861,7 @@ export default function EvidenceRequirementsSection({
                 onClick={() => {
                   setRequirementDialogOpen(false);
                   setEditingRequirement(null);
-                  setRequirementFormData({ title: '', description: '', resourceIds: [], customLinks: [] });
+                  setRequirementFormData({ title: '', description: '', requirementType: 'standard', resourceIds: [], customLinks: [] });
                   setNewLinkTitle('');
                   setNewLinkUrl('');
                 }}
@@ -770,6 +881,7 @@ export default function EvidenceRequirementsSection({
                       data: {
                         title: requirementFormData.title,
                         description: requirementFormData.description,
+                        requirementType: requirementFormData.requirementType,
                         resourceIds: requirementFormData.resourceIds.length > 0 ? requirementFormData.resourceIds : undefined,
                         customLinks: requirementFormData.customLinks.length > 0 ? requirementFormData.customLinks : undefined,
                       },
@@ -783,6 +895,7 @@ export default function EvidenceRequirementsSection({
                     createRequirementMutation.mutate({
                       title: requirementFormData.title,
                       description: requirementFormData.description,
+                      requirementType: requirementFormData.requirementType,
                       resourceIds: requirementFormData.resourceIds.length > 0 ? requirementFormData.resourceIds : undefined,
                       customLinks: requirementFormData.customLinks.length > 0 ? requirementFormData.customLinks : undefined,
                       stage: activeEvidenceStage,

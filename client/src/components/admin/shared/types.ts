@@ -133,6 +133,7 @@ export interface EvidenceRequirement {
   description: string;
   stage: 'inspire' | 'investigate' | 'act';
   orderIndex: number;
+  requirementType?: 'standard' | 'audit' | 'action_plan' | null;
   resourceIds?: string[] | null;
   customLinks?: Array<{ title: string; url: string }> | null;
   createdAt: string;

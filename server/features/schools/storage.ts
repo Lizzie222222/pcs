@@ -935,11 +935,16 @@ export class SchoolStorage {
       )
       .limit(1);
 
-    // CRITICAL FIX: Also check for admin override on "Action Plan Development" requirement
-    // Action Plan Development requirement ID: 5cfb26b9-76f3-408d-8514-d892ae30d061
-    const ACTION_PLAN_REQUIREMENT_ID = '5cfb26b9-76f3-408d-8514-d892ae30d061';
+    // CRITICAL FIX: Also check for admin override on action plan requirements
+    // Dynamically look up requirements with requirementType = 'action_plan'
+    const actionPlanRequirements = await db
+      .select({ id: evidenceRequirements.id })
+      .from(evidenceRequirements)
+      .where(eq(evidenceRequirements.requirementType, 'action_plan'));
+    
+    const actionPlanRequirementIds = new Set(actionPlanRequirements.map(r => r.id));
     const hasActionPlanOverride = adminOverrides.some(
-      override => override.evidenceRequirementId === ACTION_PLAN_REQUIREMENT_ID && override.stage === 'investigate'
+      override => actionPlanRequirementIds.has(override.evidenceRequirementId) && override.stage === 'investigate'
     );
 
     const hasActionPlan = approvedActionPlans.length > 0 || hasActionPlanOverride;

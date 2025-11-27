@@ -2735,16 +2735,24 @@ export class DatabaseStorage implements IStorage {
       .select({ totalSchools: sql<number>`count(*)` })
       .from(schools);
     
-    // CRITICAL: Exclude "Action Plan Development" evidence from count
+    // CRITICAL: Exclude action plan evidence from count
     // Action plans are reviewed separately in the Action Plan Review Queue
-    const ACTION_PLAN_REQUIREMENT_ID = '5cfb26b9-76f3-408d-8514-d892ae30d061';
+    // Dynamically looks up requirements with requirementType = 'action_plan'
+    const actionPlanRequirements = await db
+      .select({ id: evidenceRequirements.id })
+      .from(evidenceRequirements)
+      .where(eq(evidenceRequirements.requirementType, 'action_plan'));
+    
+    const actionPlanIds = actionPlanRequirements.map(r => r.id);
     const [evidenceStats] = await db
       .select({ pendingEvidence: sql<number>`count(*)` })
       .from(evidence)
       .where(
         and(
           eq(evidence.status, 'pending'),
-          sql`${evidence.evidenceRequirementId} != ${ACTION_PLAN_REQUIREMENT_ID}`
+          actionPlanIds.length > 0 
+            ? sql`${evidence.evidenceRequirementId} NOT IN (${sql.join(actionPlanIds.map(id => sql`${id}`), sql`, `)})`
+            : sql`TRUE`
         )
       );
     

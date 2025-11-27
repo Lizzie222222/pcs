@@ -201,12 +201,20 @@ export class EvidenceStorage {
       conditions.push(sql`${evidence.submittedAt} <= ${filters.dateTo}`);
     }
     
-    // CRITICAL: Exclude "Action Plan Development" evidence from admin review queue
+    // CRITICAL: Exclude action plan evidence from admin review queue
     // Action plans are reviewed separately in the Action Plan Review Queue
     // This prevents double work for admins
+    // Dynamically looks up requirements with requirementType = 'action_plan'
     if (filters?.excludeActionPlanEvidence) {
-      const ACTION_PLAN_REQUIREMENT_ID = '5cfb26b9-76f3-408d-8514-d892ae30d061';
-      conditions.push(sql`${evidence.evidenceRequirementId} != ${ACTION_PLAN_REQUIREMENT_ID}`);
+      const actionPlanRequirements = await db
+        .select({ id: evidenceRequirements.id })
+        .from(evidenceRequirements)
+        .where(eq(evidenceRequirements.requirementType, 'action_plan'));
+      
+      const actionPlanIds = actionPlanRequirements.map(r => r.id);
+      if (actionPlanIds.length > 0) {
+        conditions.push(sql`${evidence.evidenceRequirementId} NOT IN (${sql.join(actionPlanIds.map(id => sql`${id}`), sql`, `)})`);
+      }
     }
     
     // Add search filter for school name, title, and description

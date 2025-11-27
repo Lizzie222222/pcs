@@ -30,6 +30,7 @@ interface EvidenceRequirement {
   title: string;
   description: string;
   orderIndex: number;
+  requirementType?: 'standard' | 'audit' | 'action_plan' | null;
   resourceIds?: string[];
   customLinks?: Array<{ title: string; url: string }>;
   translations?: Record<string, { title: string; description: string }>;
@@ -526,14 +527,23 @@ export default function ProgressTracker({
     setShowEvidenceForm(true);
   };
 
-  // Check if requirement is the Plastic Waste Audit
+  // Check if requirement is the Plastic Waste Audit (uses requirementType field, with fallback to title check for legacy data)
   const isPlasticWasteAudit = (requirement: EvidenceRequirement) => {
-    return requirement.title.includes("Plastic Waste Audit");
+    if (requirement.requirementType) {
+      return requirement.requirementType === 'audit';
+    }
+    // Fallback for legacy data without requirementType
+    return requirement.title.toLowerCase().includes("plastic waste audit") || 
+           requirement.title.toLowerCase().includes("audit");
   };
 
-  // Check if requirement is Action Plan Development
+  // Check if requirement is Action Plan Development (uses requirementType field, with fallback for legacy data)
   const isActionPlanDevelopment = (requirement: EvidenceRequirement) => {
-    return requirement.id === '5cfb26b9-76f3-408d-8514-d892ae30d061';
+    if (requirement.requirementType) {
+      return requirement.requirementType === 'action_plan';
+    }
+    // Fallback for legacy data without requirementType
+    return requirement.title.toLowerCase().includes("action plan");
   };
 
   // Get audit status for display
