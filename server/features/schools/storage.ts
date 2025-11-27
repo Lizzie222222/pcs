@@ -292,21 +292,35 @@ export class SchoolStorage {
 
   // Shared helper to get deduplicated evidence count
   // This filters out duplicate evidence created by running the backfill script multiple times
-  async getDeduplicatedEvidenceCount(): Promise<number> {
+  // Optional date parameters filter evidence by submitted_at when provided
+  async getDeduplicatedEvidenceCount(startDate?: string, endDate?: string): Promise<number> {
+    // Build date filter for evidence
+    const hasDateRange = startDate && endDate;
+    const dateFilter = hasDateRange
+      ? sql`submitted_at >= ${startDate}::timestamp AND submitted_at < (${endDate}::timestamp + INTERVAL '1 day')`
+      : sql`true`;
+    
     // Count distinct evidence by grouping on school, requirement, round
     // This automatically collapses duplicates from the backfill script
     const [deduplicatedCount] = await db
       .select({
         count: sql<number>`COUNT(DISTINCT (school_id, evidence_requirement_id, round_number))`,
       })
-      .from(evidence);
+      .from(evidence)
+      .where(dateFilter);
     
+    // Legacy stats are always lifetime (no date filtering) since they're historical imports
     const [legacyStats] = await db
       .select({
         legacyTotal: sql<number>`coalesce(sum(legacy_evidence_count), 0)`,
       })
       .from(schoolUsers);
     
+    // When filtering by date, only return evidence from that period (no legacy)
+    // When showing lifetime (no date filter), include both current evidence and legacy imports
+    if (hasDateRange) {
+      return Number(deduplicatedCount?.count || 0);
+    }
     return Number(deduplicatedCount?.count || 0) + Number(legacyStats?.legacyTotal || 0);
   }
 

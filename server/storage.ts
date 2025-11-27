@@ -3026,39 +3026,43 @@ export class DatabaseStorage implements IStorage {
     countriesReached: number;
     activeSchoolsLastMonth: number;
   }> {
-    // LIFETIME METRICS - These are NEVER filtered by date range
-    // They always show totals across all time for accurate program-wide statistics
+    // Build date filter conditions - only apply when date range is specified
+    // When undefined (All Time), these resolve to `true` which doesn't filter anything
+    const hasDateRange = startDate && endDate;
     
-    // Total schools (lifetime)
-    const [schoolsCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(schools);
+    const schoolDateFilter = hasDateRange 
+      ? sql`created_at >= ${startDate}::timestamp AND created_at < (${endDate}::timestamp + INTERVAL '1 day')`
+      : sql`true`;
     
-    // Total users (lifetime)
-    const [usersCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(users);
+    const userDateFilter = hasDateRange
+      ? sql`created_at >= ${startDate}::timestamp AND created_at < (${endDate}::timestamp + INTERVAL '1 day')`
+      : sql`true`;
     
-    // Total evidence (lifetime) - Use shared deduplication logic to ensure consistency with landing page
-    const totalEvidence = await schoolStorage.getDeduplicatedEvidenceCount();
+    const evidenceDateFilter = hasDateRange
+      ? sql`submitted_at >= ${startDate}::timestamp AND submitted_at < (${endDate}::timestamp + INTERVAL '1 day')`
+      : sql`true`;
+
+    // Get individual metrics - filtered by date range if specified, otherwise lifetime
+    const [schoolsCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(schools).where(schoolDateFilter);
+    const [usersCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(users).where(userDateFilter);
     
-    // Sum total rounds completed across all schools (lifetime)
+    // Use shared deduplication logic - pass date parameters for filtering
+    const totalEvidence = await schoolStorage.getDeduplicatedEvidenceCount(startDate, endDate);
+    
+    // Sum total rounds completed across all schools
     const [completedAwardsSum] = await db.select({ 
       sum: sql<number>`COALESCE(SUM(rounds_completed), 0)` 
-    }).from(schools);
+    }).from(schools).where(schoolDateFilter);
     
-    // Count schools that have completed at least one round (lifetime)
+    // Count schools that have completed at least one round
     const [schoolsCompletedCount] = await db.select({ 
       count: sql<number>`COUNT(*)` 
-    }).from(schools).where(sql`rounds_completed > 0`);
+    }).from(schools).where(and(schoolDateFilter, sql`rounds_completed > 0`));
     
-    // Total students impacted (lifetime)
-    const [studentsSum] = await db.select({ sum: sql<number>`COALESCE(SUM(student_count), 0)` }).from(schools);
-    
-    // Countries reached (lifetime)
-    const [countriesCount] = await db.select({ count: sql<number>`COUNT(DISTINCT country)` }).from(schools);
-    
-    // Pending evidence count (lifetime - includes all pending regardless of submitted_at)
-    const [pendingCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(evidence).where(eq(evidence.status, 'pending'));
-    
-    // Average progress (lifetime - across all schools)
-    const [avgProgress] = await db.select({ avg: sql<number>`COALESCE(AVG(progress_percentage), 0)` }).from(schools);
+    const [pendingCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(evidence).where(and(eq(evidence.status, 'pending'), evidenceDateFilter));
+    const [avgProgress] = await db.select({ avg: sql<number>`COALESCE(AVG(progress_percentage), 0)` }).from(schools).where(schoolDateFilter);
+    const [studentsSum] = await db.select({ sum: sql<number>`COALESCE(SUM(student_count), 0)` }).from(schools).where(schoolDateFilter);
+    const [countriesCount] = await db.select({ count: sql<number>`COUNT(DISTINCT country)` }).from(schools).where(schoolDateFilter);
     
     // Count schools with activity in the last 30 days (based on lastActiveAt) - always 30 days
     const thirtyDaysAgo = new Date();

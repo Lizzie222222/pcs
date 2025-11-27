@@ -802,7 +802,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
 
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Interacted Users</CardTitle>
+                    <CardTitle className="text-sm font-medium">Ever Logged In</CardTitle>
                     <UserCheck className="h-4 w-4 text-green-600" />
                   </CardHeader>
                   <CardContent>
@@ -810,14 +810,14 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                       {(overviewQuery.data.interactedUsers || 0).toLocaleString()}
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      {overviewQuery.data.interactionRate || 0}% interaction rate
+                      {overviewQuery.data.interactionRate || 0}% of all users (lifetime)
                     </p>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Not Interacted</CardTitle>
+                    <CardTitle className="text-sm font-medium">Never Logged In</CardTitle>
                     <UserMinus className="h-4 w-4 text-amber-600" />
                   </CardHeader>
                   <CardContent>
@@ -827,7 +827,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                     <p className="text-xs text-gray-500 mt-1">
                       {overviewQuery.data.totalUsers > 0 
                         ? Math.round(((overviewQuery.data.notInteractedUsers || 0) / overviewQuery.data.totalUsers) * 100)
-                        : 0}% not yet active
+                        : 0}% awaiting first login
                     </p>
                   </CardContent>
                 </Card>
