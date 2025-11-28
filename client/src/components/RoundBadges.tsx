@@ -32,7 +32,7 @@ export function RoundBadges({ roundsCompleted, showAll = true, size = 'md' }: Ro
   const sizeClasses = {
     sm: 'w-12 h-12',
     md: 'w-16 h-16 sm:w-20 sm:h-20',
-    lg: 'w-20 h-20 sm:w-28 sm:h-28',
+    lg: 'w-24 h-24 sm:w-32 sm:h-32',
   };
 
   const badgesToShow = showAll ? badges : badges.filter(b => b.round <= roundsCompleted);
