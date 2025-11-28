@@ -13,6 +13,7 @@ import {
   settings,
   duplicateSchoolGroups,
   notifications,
+  passwordResetTokens,
   type School,
   type InsertSchool,
   type SchoolUser,
@@ -2163,6 +2164,236 @@ export class SchoolStorage {
       actionUrl: `/admin?tab=schools&filter=duplicates`,
       isRead: false
     });
+  }
+
+  /**
+   * Get merge preview with user analysis for two schools
+   * Returns user counts, potential duplicate users, and non-duplicate users
+   */
+  async getMergePreview(
+    targetSchoolId: string,
+    sourceSchoolId: string
+  ): Promise<{
+    targetSchool: School | undefined;
+    sourceSchool: School | undefined;
+    targetUsers: Array<{ id: string; email: string | null; firstName: string | null; lastName: string | null; role: string | null; lastActiveAt: Date | null }>;
+    sourceUsers: Array<{ id: string; email: string | null; firstName: string | null; lastName: string | null; role: string | null; lastActiveAt: Date | null }>;
+    duplicateUsers: Array<{
+      targetUser: { id: string; email: string | null; firstName: string | null; lastName: string | null; role: string | null; lastActiveAt: Date | null };
+      sourceUser: { id: string; email: string | null; firstName: string | null; lastName: string | null; role: string | null; lastActiveAt: Date | null };
+      matchReason: string;
+      recommendedSurvivor: 'target' | 'source';
+    }>;
+    nonDuplicateSourceUsers: Array<{ id: string; email: string | null; firstName: string | null; lastName: string | null; role: string | null; lastActiveAt: Date | null }>;
+  }> {
+    const targetSchool = await this.getSchool(targetSchoolId);
+    const sourceSchool = await this.getSchool(sourceSchoolId);
+
+    // Get users for both schools
+    const targetSchoolUsers = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        role: schoolUsers.role,
+        lastActiveAt: users.lastActiveAt
+      })
+      .from(schoolUsers)
+      .innerJoin(users, eq(schoolUsers.userId, users.id))
+      .where(eq(schoolUsers.schoolId, targetSchoolId));
+
+    const sourceSchoolUsers = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        role: schoolUsers.role,
+        lastActiveAt: users.lastActiveAt
+      })
+      .from(schoolUsers)
+      .innerJoin(users, eq(schoolUsers.userId, users.id))
+      .where(eq(schoolUsers.schoolId, sourceSchoolId));
+
+    // Detect duplicate users by email matching
+    const duplicateUsers: Array<{
+      targetUser: typeof targetSchoolUsers[0];
+      sourceUser: typeof sourceSchoolUsers[0];
+      matchReason: string;
+      recommendedSurvivor: 'target' | 'source';
+    }> = [];
+
+    const matchedSourceUserIds = new Set<string>();
+
+    for (const targetUser of targetSchoolUsers) {
+      // Check for email matches (exact or domain match for admin/primary contact emails)
+      for (const sourceUser of sourceSchoolUsers) {
+        if (matchedSourceUserIds.has(sourceUser.id)) continue;
+
+        // Check for exact email match (handle nulls)
+        if (targetUser.email && sourceUser.email && 
+            targetUser.email.toLowerCase() === sourceUser.email.toLowerCase()) {
+          const targetActiveTime = targetUser.lastActiveAt?.getTime() || 0;
+          const sourceActiveTime = sourceUser.lastActiveAt?.getTime() || 0;
+          
+          duplicateUsers.push({
+            targetUser,
+            sourceUser,
+            matchReason: 'Same email address',
+            recommendedSurvivor: sourceActiveTime > targetActiveTime ? 'source' : 'target'
+          });
+          matchedSourceUserIds.add(sourceUser.id);
+          continue;
+        }
+
+        // Check for matching name (case-insensitive)
+        const targetName = `${(targetUser.firstName || '').toLowerCase()} ${(targetUser.lastName || '').toLowerCase()}`.trim();
+        const sourceName = `${(sourceUser.firstName || '').toLowerCase()} ${(sourceUser.lastName || '').toLowerCase()}`.trim();
+        
+        if (targetName && sourceName && targetName === sourceName) {
+          const targetActiveTime = targetUser.lastActiveAt?.getTime() || 0;
+          const sourceActiveTime = sourceUser.lastActiveAt?.getTime() || 0;
+          
+          duplicateUsers.push({
+            targetUser,
+            sourceUser,
+            matchReason: 'Same name',
+            recommendedSurvivor: sourceActiveTime > targetActiveTime ? 'source' : 'target'
+          });
+          matchedSourceUserIds.add(sourceUser.id);
+        }
+      }
+    }
+
+    // Non-duplicate source users (will be transferred to target school)
+    const nonDuplicateSourceUsers = sourceSchoolUsers.filter(
+      u => !matchedSourceUserIds.has(u.id)
+    );
+
+    return {
+      targetSchool,
+      sourceSchool,
+      targetUsers: targetSchoolUsers,
+      sourceUsers: sourceSchoolUsers,
+      duplicateUsers,
+      nonDuplicateSourceUsers
+    };
+  }
+
+  /**
+   * Merge two user accounts - keep survivor, deactivate duplicate
+   * Returns the survivor user ID and a reset token for password reset
+   */
+  async mergeUsers(
+    survivorUserId: string,
+    duplicateUserId: string,
+    adminUserId: string
+  ): Promise<{ success: boolean; error?: string; survivorUserId?: string; resetToken?: string }> {
+    try {
+      // Get both users
+      const [survivor] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, survivorUserId));
+
+      const [duplicate] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, duplicateUserId));
+
+      if (!survivor || !duplicate) {
+        return { success: false, error: 'One or both users not found' };
+      }
+
+      // Transfer all school memberships from duplicate to survivor
+      // First, get the school IDs where duplicate is a member but survivor is not
+      const duplicateSchools = await db
+        .select({ schoolId: schoolUsers.schoolId })
+        .from(schoolUsers)
+        .where(eq(schoolUsers.userId, duplicateUserId));
+
+      const survivorSchools = await db
+        .select({ schoolId: schoolUsers.schoolId })
+        .from(schoolUsers)
+        .where(eq(schoolUsers.userId, survivorUserId));
+
+      const survivorSchoolIds = new Set(survivorSchools.map(s => s.schoolId));
+
+      for (const { schoolId } of duplicateSchools) {
+        if (!survivorSchoolIds.has(schoolId)) {
+          // Transfer membership - update duplicate's membership to point to survivor
+          await db
+            .update(schoolUsers)
+            .set({ userId: survivorUserId, updatedAt: new Date() })
+            .where(
+              and(
+                eq(schoolUsers.userId, duplicateUserId),
+                eq(schoolUsers.schoolId, schoolId)
+              )
+            );
+        } else {
+          // Both are members - remove duplicate's membership
+          await db
+            .delete(schoolUsers)
+            .where(
+              and(
+                eq(schoolUsers.userId, duplicateUserId),
+                eq(schoolUsers.schoolId, schoolId)
+              )
+            );
+        }
+      }
+
+      // Transfer evidence submissions from duplicate to survivor
+      await db
+        .update(evidence)
+        .set({ submittedBy: survivorUserId, updatedAt: new Date() })
+        .where(eq(evidence.submittedBy, duplicateUserId));
+
+      // Update any schools where duplicate is primary contact
+      await db
+        .update(schools)
+        .set({ primaryContactId: survivorUserId, updatedAt: new Date() })
+        .where(eq(schools.primaryContactId, duplicateUserId));
+
+      // Deactivate the duplicate user (soft delete with modified email to avoid unique constraint)
+      await db
+        .update(users)
+        .set({
+          deletedAt: new Date(),
+          email: `[MERGED-${Date.now()}]${duplicate.email || 'no-email'}`,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, duplicateUserId));
+
+      // Mark survivor as needing password reset
+      await db
+        .update(users)
+        .set({
+          needsPasswordReset: true,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, survivorUserId));
+
+      // Generate a password reset token in the passwordResetTokens table
+      const crypto = require('crypto');
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 24); // 24 hour expiry
+      
+      await db.insert(passwordResetTokens).values({
+        id: crypto.randomUUID(),
+        email: survivor.email || '',
+        token: resetToken,
+        expiresAt
+      });
+
+      return { success: true, survivorUserId, resetToken };
+    } catch (error) {
+      console.error('Error merging users:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
   }
 }
 
