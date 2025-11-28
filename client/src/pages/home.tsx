@@ -1067,7 +1067,7 @@ export default function Home() {
                     </a>
                   </div>
                   {/* Round Badges Section */}
-                  <div className="mt-2 pt-2 border-t border-gray-100">
+                  <div className="mt-1">
                     <RoundBadges roundsCompleted={school.roundsCompleted ?? 0} showAll={true} size="lg" />
                   </div>
                 </div>
