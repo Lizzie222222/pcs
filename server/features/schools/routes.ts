@@ -2014,6 +2014,63 @@ schoolsRouter.post('/api/admin/duplicates/:id/dismiss', isAuthenticated, require
   }
 });
 
+// GET /api/admin/duplicates/merge-preview - Get merge preview with user analysis
+schoolsRouter.get('/api/admin/duplicates/merge-preview', isAuthenticated, requireAdmin, async (req: any, res) => {
+  try {
+    const { targetSchoolId, sourceSchoolId } = req.query;
+
+    if (!targetSchoolId || !sourceSchoolId) {
+      return res.status(400).json({ message: "Both targetSchoolId and sourceSchoolId are required" });
+    }
+
+    const preview = await schoolStorage.getMergePreview(targetSchoolId, sourceSchoolId);
+    
+    res.json(preview);
+  } catch (error) {
+    console.error("[Admin Duplicates] Error getting merge preview:", error);
+    res.status(500).json({ message: "Failed to get merge preview" });
+  }
+});
+
+// POST /api/admin/users/merge - Merge two user accounts
+const mergeUsersSchema = z.object({
+  survivorUserId: z.string().uuid(),
+  duplicateUserId: z.string().uuid()
+});
+
+schoolsRouter.post('/api/admin/users/merge', isAuthenticated, requireAdmin, async (req: any, res) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const parsed = mergeUsersSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: "Invalid data", errors: parsed.error.errors });
+    }
+
+    const { survivorUserId, duplicateUserId } = parsed.data;
+
+    const result = await schoolStorage.mergeUsers(survivorUserId, duplicateUserId, userId);
+
+    if (!result.success) {
+      return res.status(400).json({ message: result.error || "Failed to merge users" });
+    }
+
+    console.log(`[Admin Users] Users merged: ${duplicateUserId} -> ${survivorUserId} by admin ${userId}`);
+    res.json({
+      message: "Users merged successfully",
+      survivorUserId: result.survivorUserId,
+      resetToken: result.resetToken
+    });
+  } catch (error) {
+    console.error("[Admin Users] Error merging users:", error);
+    res.status(500).json({ message: "Failed to merge users" });
+  }
+});
+
 // POST /api/admin/duplicates/:id/merge - Merge schools in a duplicate group
 const mergeSchoolsSchema = z.object({
   targetSchoolId: z.string().uuid(),
