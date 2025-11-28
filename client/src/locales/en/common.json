@@ -45,6 +45,16 @@
     "join_now": "Join Now",
     "view_all": "View All"
   },
+  "actions": {
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "edit": "Edit",
+    "confirm": "Confirm",
+    "close": "Close"
+  },
   "status": {
     "loading": "Loading...",
     "error": "An error occurred",

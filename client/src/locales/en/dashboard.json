@@ -198,7 +198,21 @@
     "delete_confirmation_description": "This will permanently delete this evidence submission. This action cannot be undone.",
     "delete_success": "Evidence deleted successfully",
     "delete_error": "Failed to delete evidence",
-    "reviewed_by": "Reviewed by {{name}}"
+    "reviewed_by": "Reviewed by {{name}}",
+    "edit_button": "Edit",
+    "edit_title": "Edit Evidence",
+    "edit_description": "Update your evidence submission. You can add more files or change details.",
+    "edit_success_title": "Evidence updated",
+    "edit_success_message": "Your evidence has been updated successfully.",
+    "edit_error_title": "Update failed",
+    "edit_error_message": "Failed to update evidence. Please try again.",
+    "delete_success_title": "Evidence deleted",
+    "delete_success_message": "Your evidence has been deleted successfully.",
+    "delete_error_title": "Delete failed",
+    "delete_error_message": "Failed to delete evidence. Please try again.",
+    "delete_confirm_title": "Delete Evidence?",
+    "delete_confirm_message": "This action cannot be undone. This will permanently delete your evidence submission.",
+    "revision_feedback": "Revision Requested"
   },
   "action_plan": {
     "empty_title": "Ready to create your action plan?",
