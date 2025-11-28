@@ -702,18 +702,21 @@ export default function DuplicateSchoolsManager() {
                     <RadioGroup
                       value={mergeOptions.targetSchoolId}
                       onValueChange={(value) => {
-                        const otherSchool = selectedGroup.schoolDetails.find(s => s.id !== value);
+                        const remainingSchools = selectedGroup.schoolDetails.filter(s => s.id !== value);
+                        const newSourceId = remainingSchools.length === 1 
+                          ? remainingSchools[0].id 
+                          : (remainingSchools.find(s => s.id === mergeOptions.sourceSchoolId)?.id || remainingSchools[0]?.id || '');
                         setMergeOptions(prev => ({
                           ...prev,
                           targetSchoolId: value,
-                          sourceSchoolId: otherSchool?.id || prev.sourceSchoolId,
+                          sourceSchoolId: newSourceId,
                         }));
                       }}
                     >
                       {selectedGroup.schoolDetails.map((school) => (
                         <div key={school.id} className="flex items-center space-x-2 p-3 border rounded-lg">
-                          <RadioGroupItem value={school.id} id={school.id} data-testid={`radio-target-${school.id}`} />
-                          <Label htmlFor={school.id} className="flex-1 cursor-pointer">
+                          <RadioGroupItem value={school.id} id={`target-${school.id}`} data-testid={`radio-target-${school.id}`} />
+                          <Label htmlFor={`target-${school.id}`} className="flex-1 cursor-pointer">
                             <div className="font-medium">{school.name}</div>
                             <div className="text-sm text-gray-500">
                               {school.evidenceCount} evidence, {school.teamMemberCount} team members
@@ -723,6 +726,39 @@ export default function DuplicateSchoolsManager() {
                       ))}
                     </RadioGroup>
                   </div>
+
+                  {selectedGroup.schoolDetails.length > 2 && (
+                    <div className="space-y-3">
+                      <Label>Select Source School (to merge into target)</Label>
+                      <p className="text-sm text-muted-foreground">
+                        This group has {selectedGroup.schoolDetails.length} schools. Select which one to merge first. 
+                        After this merge, you can merge the remaining school(s).
+                      </p>
+                      <RadioGroup
+                        value={mergeOptions.sourceSchoolId}
+                        onValueChange={(value) => {
+                          setMergeOptions(prev => ({
+                            ...prev,
+                            sourceSchoolId: value,
+                          }));
+                        }}
+                      >
+                        {selectedGroup.schoolDetails
+                          .filter(s => s.id !== mergeOptions.targetSchoolId)
+                          .map((school) => (
+                            <div key={school.id} className="flex items-center space-x-2 p-3 border rounded-lg">
+                              <RadioGroupItem value={school.id} id={`source-${school.id}`} data-testid={`radio-source-${school.id}`} />
+                              <Label htmlFor={`source-${school.id}`} className="flex-1 cursor-pointer">
+                                <div className="font-medium">{school.name}</div>
+                                <div className="text-sm text-gray-500">
+                                  {school.evidenceCount} evidence, {school.teamMemberCount} team members
+                                </div>
+                              </Label>
+                            </div>
+                          ))}
+                      </RadioGroup>
+                    </div>
+                  )}
 
                   {isMergePreviewLoading && (
                     <div className="flex items-center justify-center py-8" data-testid="loading-merge-preview">

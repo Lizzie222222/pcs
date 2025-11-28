@@ -2026,10 +2026,15 @@ export class SchoolStorage {
       }
 
       // Mark source school as merged (soft delete)
+      // Only add [MERGED] prefix if not already present
+      const mergedName = sourceSchool.name.startsWith('[MERGED]') 
+        ? sourceSchool.name 
+        : `[MERGED] ${sourceSchool.name}`;
+      
       await db
         .update(schools)
         .set({
-          name: `[MERGED] ${sourceSchool.name}`,
+          name: mergedName,
           showOnMap: false,
           updatedAt: new Date()
         })
