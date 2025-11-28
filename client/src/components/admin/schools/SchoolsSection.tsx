@@ -5,6 +5,7 @@ import SchoolsFilters from "./SchoolsFilters";
 import SchoolsTable from "./SchoolsTable";
 import BulkSchoolActions from "./BulkSchoolActions";
 import AwardCompletionBanner from "../AwardCompletionBanner";
+import DuplicateSchoolsManager from "./DuplicateSchoolsManager";
 import type { AdminStats, SchoolData } from "@/components/admin/shared/types";
 import { useTranslation } from 'react-i18next';
 
@@ -27,6 +28,7 @@ interface SchoolsSectionProps {
     joinedYear: string;
     interactionStatus: string;
     completionStatus: string;
+    viewMode?: string;
   };
   setSchoolFilters: (filters: any) => void;
   countryOptions: any[];
@@ -87,6 +89,21 @@ export default function SchoolsSection({
     );
   };
 
+  // Duplicate counts query
+  const { data: duplicateCounts } = useQuery<{
+    new: number;
+    reviewed: number;
+    dismissed: number;
+    merged: number;
+    total: number;
+  }>({
+    queryKey: ['/api/admin/duplicates/counts'],
+    enabled: activeTab === 'schools',
+  });
+
+  // Check if we're in duplicates view mode
+  const isDuplicatesView = schoolFilters.viewMode === 'duplicates';
+
   // Schools query - uses debounced filters to prevent refetch on every keystroke
   const { data: paginatedData, isLoading: schoolsLoading } = useQuery<{
     schools: SchoolData[];
@@ -113,7 +130,7 @@ export default function SchoolsSection({
       if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
       return res.json();
     },
-    enabled: activeTab === 'schools',
+    enabled: activeTab === 'schools' && !isDuplicatesView,
     retry: false,
   });
   
@@ -158,46 +175,68 @@ export default function SchoolsSection({
     <>
       <AwardCompletionBanner activeTab={activeTab} />
       
-      <Card>
-        <SchoolsFilters
-          schoolFilters={schoolFilters}
-          setSchoolFilters={setSchoolFilters}
-          countryOptions={countryOptions}
-          selectedSchools={selectedSchools}
-          schoolsCount={totalSchools}
-          toggleSelectAllSchools={toggleSelectAllSchools}
-          onBulkUpdate={handleBulkUpdate}
-          onBulkDelete={handleBulkDelete}
-        />
-        <SchoolsTable
-          schools={schools}
-          schoolsLoading={schoolsLoading}
-          selectedSchools={selectedSchools}
-          setSelectedSchools={setSelectedSchools}
-          setDeletingSchool={setDeletingSchool}
-          expandedSchools={expandedSchools}
-          setExpandedSchools={setExpandedSchools}
-          sortBy={sortBy}
-          sortOrder={sortOrder}
-          onSort={handleSort}
-          page={page}
-          totalPages={totalPages}
-          totalSchools={totalSchools}
-          limit={limit}
-          onPageChange={setPage}
-        />
-      </Card>
+      {isDuplicatesView ? (
+        <>
+          <Card className="mb-4">
+            <SchoolsFilters
+              schoolFilters={schoolFilters}
+              setSchoolFilters={setSchoolFilters}
+              countryOptions={countryOptions}
+              selectedSchools={[]}
+              schoolsCount={0}
+              toggleSelectAllSchools={() => {}}
+              onBulkUpdate={() => {}}
+              onBulkDelete={() => {}}
+              duplicateCount={duplicateCounts?.new || 0}
+            />
+          </Card>
+          <DuplicateSchoolsManager />
+        </>
+      ) : (
+        <>
+          <Card>
+            <SchoolsFilters
+              schoolFilters={schoolFilters}
+              setSchoolFilters={setSchoolFilters}
+              countryOptions={countryOptions}
+              selectedSchools={selectedSchools}
+              schoolsCount={totalSchools}
+              toggleSelectAllSchools={toggleSelectAllSchools}
+              onBulkUpdate={handleBulkUpdate}
+              onBulkDelete={handleBulkDelete}
+              duplicateCount={duplicateCounts?.new || 0}
+            />
+            <SchoolsTable
+              schools={schools}
+              schoolsLoading={schoolsLoading}
+              selectedSchools={selectedSchools}
+              setSelectedSchools={setSelectedSchools}
+              setDeletingSchool={setDeletingSchool}
+              expandedSchools={expandedSchools}
+              setExpandedSchools={setExpandedSchools}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              onSort={handleSort}
+              page={page}
+              totalPages={totalPages}
+              totalSchools={totalSchools}
+              limit={limit}
+              onPageChange={setPage}
+            />
+          </Card>
 
-      <BulkSchoolActions
-        selectedSchools={selectedSchools}
-        setSelectedSchools={setSelectedSchools}
-        bulkSchoolDialogOpen={bulkSchoolDialogOpen}
-        setBulkSchoolDialogOpen={setBulkSchoolDialogOpen}
-        bulkAction={bulkAction}
-        setBulkAction={setBulkAction}
-        deletingSchool={deletingSchool}
-        setDeletingSchool={setDeletingSchool}
-      />
+          <BulkSchoolActions
+            selectedSchools={selectedSchools}
+            setSelectedSchools={setSelectedSchools}
+            bulkSchoolDialogOpen={bulkSchoolDialogOpen}
+            setBulkSchoolDialogOpen={setBulkSchoolDialogOpen}
+            bulkAction={bulkAction}
+            setBulkAction={setBulkAction}
+            deletingSchool={deletingSchool}
+            setDeletingSchool={setDeletingSchool}
+          />
+        </>
+      )}
     </>
   );
 }

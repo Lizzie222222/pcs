@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { School, Search, Edit, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { School, Search, Edit, Trash2, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from 'react-i18next';
 
@@ -16,6 +17,7 @@ interface SchoolsFiltersProps {
     joinedYear: string;
     interactionStatus: string;
     completionStatus: string;
+    viewMode?: string;
   };
   setSchoolFilters: (filters: any) => void;
   countryOptions: Array<{ value: string; label: string }>;
@@ -24,6 +26,7 @@ interface SchoolsFiltersProps {
   toggleSelectAllSchools: () => void;
   onBulkUpdate: () => void;
   onBulkDelete: () => void;
+  duplicateCount?: number;
 }
 
 export default function SchoolsFilters({
@@ -35,6 +38,7 @@ export default function SchoolsFilters({
   toggleSelectAllSchools,
   onBulkUpdate,
   onBulkDelete,
+  duplicateCount = 0,
 }: SchoolsFiltersProps) {
   const { t } = useTranslation('admin');
   
@@ -81,6 +85,33 @@ export default function SchoolsFilters({
         )}
 
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+          <Select 
+            value={schoolFilters.viewMode || 'all'} 
+            onValueChange={(value) => setSchoolFilters((prev: typeof schoolFilters) => ({ ...prev, viewMode: value }))}
+          >
+            <SelectTrigger className="w-full sm:w-52 min-h-11" data-testid="select-view-mode">
+              <SelectValue placeholder="View Mode" />
+            </SelectTrigger>
+            <SelectContent position="popper" sideOffset={5}>
+              <SelectItem value="all">
+                <div className="flex items-center gap-2">
+                  <School className="h-4 w-4" />
+                  All Schools
+                </div>
+              </SelectItem>
+              <SelectItem value="duplicates">
+                <div className="flex items-center gap-2">
+                  <Copy className="h-4 w-4" />
+                  Potential Duplicates
+                  {duplicateCount > 0 && (
+                    <Badge variant="destructive" className="ml-1 text-xs px-1.5 py-0">
+                      {duplicateCount}
+                    </Badge>
+                  )}
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
           <div className="relative flex-1">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Input
@@ -89,11 +120,13 @@ export default function SchoolsFilters({
               onChange={(e) => setSchoolFilters((prev: typeof schoolFilters) => ({ ...prev, search: e.target.value }))}
               className="pl-10 w-full min-h-11"
               data-testid="input-search-schools"
+              disabled={schoolFilters.viewMode === 'duplicates'}
             />
           </div>
           <Select 
             value={schoolFilters.country} 
             onValueChange={(value) => setSchoolFilters((prev: typeof schoolFilters) => ({ ...prev, country: value }))}
+            disabled={schoolFilters.viewMode === 'duplicates'}
           >
             <SelectTrigger className="w-full sm:w-48 min-h-11" data-testid="select-country-filter">
               <SelectValue placeholder={t('schools.filters.allCountries')} />
