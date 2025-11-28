@@ -266,6 +266,7 @@ export const schools = pgTable("schools", {
   photoConsentApprovedAt: timestamp("photo_consent_approved_at"),
   photoConsentApprovedBy: varchar("photo_consent_approved_by").references(() => users.id),
   photoConsentReviewNotes: text("photo_consent_review_notes"),
+  roundCelebrationDismissed: boolean("round_celebration_dismissed").default(false),
   isMigrated: boolean("is_migrated").default(false),
   legacyDistrict: varchar("legacy_district"),
   legacyEvidenceCount: integer("legacy_evidence_count").default(0),

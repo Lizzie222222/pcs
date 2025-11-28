@@ -1024,28 +1024,23 @@ export class SchoolStorage {
       updates.actCompleted = true;
       hasChanges = true;
       
-      // CRITICAL FIX: Only advance round if ALL stages (Inspire, Investigate, Act) are complete
-      // This prevents schools from skipping the action plan requirement
+      // Check if ALL stages (Inspire, Investigate, Act) are complete
       const finalInspireCompleted = updates.inspireCompleted ?? school.inspireCompleted;
       const finalInvestigateCompleted = updates.investigateCompleted ?? school.investigateCompleted;
       
       if (finalInspireCompleted && finalInvestigateCompleted) {
-        // All three stages are now complete - advance to next round
+        // All three stages are now complete - mark round as completed but DON'T auto-advance
+        // Schools can stay in "completed" status and manually choose to start the next round
         justCompletedRound = true;
         
-        const roundsCompleted = (school.roundsCompleted || 0) + 1;
-        updates.roundsCompleted = roundsCompleted;
-        
-        const nextRound = (school.currentRound || 1) + 1;
-        updates.currentRound = nextRound;
-        updates.currentStage = 'inspire';
-        updates.inspireCompleted = false;
-        updates.investigateCompleted = false;
-        updates.actCompleted = false;
-        updates.awardCompleted = false;
-        updates.auditQuizCompleted = false;
-        
-        console.log(`[Round Progression] School ${schoolId} completed round ${completedRound}, advancing to round ${nextRound}`);
+        if (!school.awardCompleted) {
+          updates.awardCompleted = true;
+          updates.roundsCompleted = (school.roundsCompleted || 0) + 1;
+          // Reset celebration dismissed flag so they see the celebration
+          updates.roundCelebrationDismissed = false;
+          
+          console.log(`[Round Completion] School ${schoolId} completed round ${completedRound}. Staying in completed status - school can manually start next round.`);
+        }
       } else {
         console.log(`[Round Progression] School ${schoolId} completed Act stage, but Inspire (${finalInspireCompleted}) or Investigate (${finalInvestigateCompleted}) not complete. Not advancing round yet.`);
       }
@@ -1076,20 +1071,13 @@ export class SchoolStorage {
         hasChanges = true;
         justCompletedRound = true;
         
-        // FIX: Always increment roundsCompleted when completing a round via catch-up path
-        // This ensures Round 2, Round 3, etc. all properly increment the counter
+        // Increment roundsCompleted but DON'T auto-advance to next round
+        // Schools can stay in "completed" status and manually choose to start the next round
         updates.roundsCompleted = (school.roundsCompleted ?? 0) + 1;
+        // Reset celebration dismissed flag so they see the celebration
+        updates.roundCelebrationDismissed = false;
         
-        const nextRound = (school.currentRound || 1) + 1;
-        updates.currentRound = nextRound;
-        updates.currentStage = 'inspire';
-        updates.inspireCompleted = false;
-        updates.investigateCompleted = false;
-        updates.actCompleted = false;
-        updates.awardCompleted = false;
-        updates.auditQuizCompleted = false;
-        
-        console.log(`[Round Progression] School ${schoolId} completed round ${completedRound} (catch-up), advancing to round ${nextRound}`);
+        console.log(`[Round Completion] School ${schoolId} completed round ${completedRound} (catch-up). Staying in completed status - school can manually start next round.`);
       }
     }
 
@@ -1320,6 +1308,22 @@ export class SchoolStorage {
         awardCompleted: false,
         auditQuizCompleted: false,
         progressPercentage: 0,
+        updatedAt: new Date()
+      })
+      .where(eq(schools.id, schoolId))
+      .returning();
+    
+    return updated;
+  }
+
+  async dismissRoundCelebration(schoolId: string): Promise<School | undefined> {
+    const school = await this.getSchool(schoolId);
+    if (!school) return undefined;
+
+    const [updated] = await db
+      .update(schools)
+      .set({
+        roundCelebrationDismissed: true,
         updatedAt: new Date()
       })
       .where(eq(schools.id, schoolId))

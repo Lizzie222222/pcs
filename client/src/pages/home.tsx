@@ -184,6 +184,7 @@ interface DashboardData {
     roundsCompleted?: number;
     totalRequired?: number;
     totalApproved?: number;
+    roundCelebrationDismissed?: boolean;
   };
   recentEvidence: Array<{
     id: string;
@@ -1453,9 +1454,37 @@ export default function Home() {
               </Card>
             </div>
 
-            {/* Round Completion Celebration */}
-            {school.awardCompleted && (
-              <div className="mb-8">
+            {/* Round Completion Celebration - Full celebration with confetti (not dismissed) */}
+            {school.awardCompleted && !school.roundCelebrationDismissed && (
+              <div className="mb-8 relative overflow-hidden">
+                {/* Confetti Animation */}
+                <div className="absolute inset-0 pointer-events-none z-10">
+                  {[...Array(50)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="absolute animate-confetti"
+                      style={{
+                        left: `${Math.random() * 100}%`,
+                        animationDelay: `${Math.random() * 3}s`,
+                        animationDuration: `${3 + Math.random() * 2}s`,
+                        backgroundColor: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'][Math.floor(Math.random() * 8)],
+                        width: `${6 + Math.random() * 8}px`,
+                        height: `${6 + Math.random() * 8}px`,
+                        borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+                        transform: `rotate(${Math.random() * 360}deg)`,
+                      }}
+                    />
+                  ))}
+                </div>
+                <style>{`
+                  @keyframes confetti-fall {
+                    0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+                    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+                  }
+                  .animate-confetti {
+                    animation: confetti-fall 5s ease-in-out infinite;
+                  }
+                `}</style>
                 <Card className={`${
                   school.currentRound === 1 ? 'bg-gradient-to-br from-blue-50 via-white to-blue-50' :
                   school.currentRound === 2 ? 'bg-gradient-to-br from-purple-50 via-white to-purple-50' :
@@ -1464,8 +1493,30 @@ export default function Home() {
                   school.currentRound === 1 ? 'border-blue-300' :
                   school.currentRound === 2 ? 'border-purple-300' :
                   'border-green-300'
-                } shadow-2xl`} data-testid="round-completion-card">
-                  <CardContent className="p-8 text-center">
+                } shadow-2xl relative z-0`} data-testid="round-completion-card">
+                  <CardContent className="p-8 text-center relative">
+                    {/* Dismiss button */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+                      onClick={async () => {
+                        try {
+                          const response = await fetch(`/api/schools/${school.id}/dismiss-celebration`, {
+                            method: 'POST',
+                            credentials: 'include',
+                          });
+                          if (response.ok) {
+                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
+                          }
+                        } catch (error) {
+                          console.error('Failed to dismiss celebration:', error);
+                        }
+                      }}
+                      data-testid="button-dismiss-celebration"
+                    >
+                      <X className="h-5 w-5" />
+                    </Button>
                     <div className="mb-6">
                       <div className="w-24 h-24 mx-auto bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center shadow-xl animate-bounce">
                         <Award className="h-14 w-14 text-navy" />
@@ -1519,6 +1570,60 @@ export default function Home() {
                           {t('round.start_warning', { ns: 'dashboard' })}
                         </p>
                       </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Compact Start Round Card - shown after celebration is dismissed */}
+            {school.awardCompleted && school.roundCelebrationDismissed && (
+              <div className="mb-8">
+                <Card className="bg-gradient-to-r from-green-50 to-teal-50 border-2 border-green-200 shadow-lg" data-testid="start-round-card">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between flex-wrap gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 bg-gradient-to-br from-green-400 to-teal-500 rounded-full flex items-center justify-center shadow-lg">
+                          <CheckCircle className="h-8 w-8 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-navy">
+                            Round {school.currentRound} Complete!
+                          </h3>
+                          <p className="text-sm text-gray-600">
+                            Ready to continue your plastic reduction journey?
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                        onClick={async () => {
+                          try {
+                            const response = await fetch(`/api/schools/${school.id}/start-round`, {
+                              method: 'POST',
+                              credentials: 'include',
+                            });
+                            if (response.ok) {
+                              window.location.reload();
+                            } else {
+                              toast({
+                                title: t('errors.unexpected_error', { ns: 'dashboard' }),
+                                description: t('errors.start_round_failed', { ns: 'dashboard' }),
+                                variant: "destructive",
+                              });
+                            }
+                          } catch (error) {
+                            toast({
+                              title: t('errors.unexpected_error', { ns: 'dashboard' }),
+                              description: t('errors.start_round_failed', { ns: 'dashboard' }),
+                              variant: "destructive",
+                            });
+                          }
+                        }}
+                        data-testid="button-start-round-compact"
+                      >
+                        Start Round {(school.currentRound || 1) + 1}
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>

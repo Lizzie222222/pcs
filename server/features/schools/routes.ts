@@ -688,6 +688,24 @@ schoolsRouter.post('/api/schools/:schoolId/start-round', isAuthenticated, isScho
   }
 });
 
+// POST /api/schools/:schoolId/dismiss-celebration - Dismiss round completion celebration
+schoolsRouter.post('/api/schools/:schoolId/dismiss-celebration', isAuthenticated, isSchoolMember, async (req: any, res) => {
+  try {
+    const { schoolId } = req.params;
+
+    const school = await schoolStorage.dismissRoundCelebration(schoolId);
+    
+    if (!school) {
+      return res.status(404).json({ message: "School not found" });
+    }
+
+    res.json(school);
+  } catch (error) {
+    console.error("Error dismissing celebration:", error);
+    res.status(500).json({ message: "Failed to dismiss celebration" });
+  }
+});
+
 // GET /api/schools/:schoolId/certificates - Get certificates for a school
 schoolsRouter.get('/api/schools/:schoolId/certificates', isAuthenticated, isSchoolMember, async (req, res) => {
   try {
