@@ -67,7 +67,7 @@ Core entities include Users, Schools, Evidence, Audit Logs, Reduction Promises (
 -   **Database**: Neon PostgreSQL
 -   **File Storage**: Google Cloud Storage
 -   **Authentication**: Google OAuth
--   **Email Services**: SendGrid
+-   **Email Services**: SendGrid (with automatic contact sync to Marketing Contacts)
 -   **Build Tool**: Vite
 -   **Hosting/Deployment**: Replit
 -   **AI Integration**: OpenAI GPT-4o-mini

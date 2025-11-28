@@ -1,4 +1,5 @@
 import { MailService } from '@sendgrid/mail';
+import { Client } from '@sendgrid/client';
 import { storage } from './storage';
 import { translateEmailContent, type EmailContent } from './translationService';
 
@@ -7,8 +8,76 @@ if (!process.env.SENDGRID_API_KEY) {
 }
 
 const mailService = new MailService();
+const sgClient = new Client();
 if (process.env.SENDGRID_API_KEY) {
   mailService.setApiKey(process.env.SENDGRID_API_KEY);
+  sgClient.setApiKey(process.env.SENDGRID_API_KEY);
+}
+
+interface SendGridContactData {
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  city?: string;
+  country?: string;
+  custom_fields?: Record<string, string>;
+}
+
+export async function syncContactToSendGrid(contact: SendGridContactData): Promise<void> {
+  if (!process.env.SENDGRID_API_KEY) {
+    console.log('[SendGrid Contacts] Skipping contact sync - no API key configured');
+    return;
+  }
+
+  try {
+    const request = {
+      url: '/v3/marketing/contacts' as '/v3/marketing/contacts',
+      method: 'PUT' as const,
+      body: {
+        contacts: [contact]
+      }
+    };
+
+    const [response] = await sgClient.request(request);
+    
+    if (response.statusCode === 202) {
+      console.log(`[SendGrid Contacts] Contact queued for sync: ${contact.email}`);
+    } else {
+      console.warn(`[SendGrid Contacts] Unexpected status code: ${response.statusCode}`);
+    }
+  } catch (error: any) {
+    console.error('[SendGrid Contacts] Error syncing contact:', contact.email);
+    if (error.response?.body?.errors) {
+      console.error('[SendGrid Contacts] Error details:', JSON.stringify(error.response.body.errors, null, 2));
+    }
+  }
+}
+
+export async function syncContactsToSendGrid(contacts: SendGridContactData[]): Promise<void> {
+  if (!process.env.SENDGRID_API_KEY || contacts.length === 0) {
+    return;
+  }
+
+  try {
+    const request = {
+      url: '/v3/marketing/contacts' as '/v3/marketing/contacts',
+      method: 'PUT' as const,
+      body: {
+        contacts
+      }
+    };
+
+    const [response] = await sgClient.request(request);
+    
+    if (response.statusCode === 202) {
+      console.log(`[SendGrid Contacts] ${contacts.length} contacts queued for sync`);
+    }
+  } catch (error: any) {
+    console.error('[SendGrid Contacts] Error syncing contacts batch');
+    if (error.response?.body?.errors) {
+      console.error('[SendGrid Contacts] Error details:', JSON.stringify(error.response.body.errors, null, 2));
+    }
+  }
 }
 
 export function getBaseUrl(): string {
@@ -231,6 +300,12 @@ async function sendTranslatedEmail(params: {
   callToActionText?: string;
   callToActionUrl?: string;
   footerText?: string;
+  contactInfo?: {
+    firstName?: string;
+    lastName?: string;
+    schoolName?: string;
+    country?: string;
+  };
 }): Promise<boolean> {
   const {
     to,
@@ -238,7 +313,8 @@ async function sendTranslatedEmail(params: {
     englishContent,
     callToActionText,
     callToActionUrl,
-    footerText
+    footerText,
+    contactInfo
   } = params;
   
   // Translate content if not English
@@ -258,12 +334,27 @@ async function sendTranslatedEmail(params: {
     footerText: content.footerText || footerText
   });
   
-  return await sendEmail({
+  const result = await sendEmail({
     to,
     from: getFromAddress(),
     subject: content.subject,
     html
   });
+  
+  // Sync contact to SendGrid Marketing in the background (non-blocking)
+  // Always sync the email recipient as a contact, using available info
+  if (result) {
+    syncContactToSendGrid({
+      email: to,
+      first_name: contactInfo?.firstName,
+      last_name: contactInfo?.lastName,
+      country: contactInfo?.country,
+    }).catch(err => {
+      console.error('[SendGrid Contacts] Background sync failed:', err);
+    });
+  }
+  
+  return result;
 }
 
 interface EmailParams {
@@ -398,6 +489,9 @@ export async function sendWelcomeEmail(
     userLanguage,
     englishContent,
     callToActionUrl: baseUrl,
+    contactInfo: {
+      schoolName,
+    },
   });
 }
 
@@ -510,6 +604,10 @@ export async function sendMigratedUserWelcomeEmail(
     userLanguage,
     englishContent,
     callToActionUrl: loginUrl,
+    contactInfo: {
+      firstName,
+      schoolName,
+    },
   });
 }
 
@@ -594,6 +692,10 @@ export async function sendMigratedUserStandardWelcomeEmail(
     userLanguage,
     englishContent,
     callToActionUrl: loginUrl,
+    contactInfo: {
+      firstName,
+      schoolName,
+    },
   });
 }
 
@@ -1005,6 +1107,9 @@ export async function sendTeacherInvitationEmail(
     userLanguage,
     englishContent,
     callToActionUrl: acceptUrl,
+    contactInfo: {
+      schoolName,
+    },
   });
 }
 
@@ -1090,6 +1195,7 @@ export async function sendAdminInvitationEmail(
     userLanguage,
     englishContent,
     callToActionUrl: acceptUrl,
+    contactInfo: {},
   });
 }
 
@@ -1171,6 +1277,7 @@ export async function sendPartnerInvitationEmail(
     userLanguage,
     englishContent,
     callToActionUrl: acceptUrl,
+    contactInfo: {},
   });
 }
 
@@ -1857,6 +1964,11 @@ export async function sendBulkEmail(params: BulkEmailParams): Promise<{ sent: nu
       if (success) {
         results.sent++;
         results.details.push({ email, success: true });
+        
+        // Sync contact to SendGrid Marketing in the background (non-blocking)
+        syncContactToSendGrid({ email }).catch(err => {
+          console.error('[SendGrid Contacts] Background sync failed:', err);
+        });
       } else {
         results.failed++;
         results.details.push({ email, success: false });
@@ -2031,12 +2143,25 @@ export async function sendEventRegistrationEmail(
     </html>
   `;
 
-  return await sendEmail({
+  const result = await sendEmail({
     to: to,
     from: getFromAddress(),
     subject: `Registration Confirmed: ${event.title}`,
     html: html,
   });
+  
+  // Sync contact to SendGrid Marketing in the background (non-blocking)
+  if (result) {
+    syncContactToSendGrid({
+      email: to,
+      first_name: user.firstName,
+      last_name: user.lastName,
+    }).catch(err => {
+      console.error('[SendGrid Contacts] Background sync failed:', err);
+    });
+  }
+  
+  return result;
 }
 
 export async function sendEventCancellationEmail(
