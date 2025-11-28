@@ -42,17 +42,17 @@ export function RoundBadges({ roundsCompleted, showAll = true, size = 'md' }: Ro
   }
 
   return (
-    <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap" data-testid="round-badges-container">
-      {badgesToShow.map(({ round, image }) => {
+    <div className="flex items-center flex-wrap" data-testid="round-badges-container">
+      {badgesToShow.map(({ round, image }, index) => {
         const isEarned = round <= roundsCompleted;
         
         return (
           <Tooltip key={round}>
             <TooltipTrigger asChild>
               <div 
-                className={`relative ${sizeClasses[size]} transition-all duration-300 ${
+                className={`relative ${sizeClasses[size]} transition-all duration-300 ${index > 0 ? '-ml-4 sm:-ml-6' : ''} ${
                   isEarned 
-                    ? 'cursor-pointer hover:scale-110' 
+                    ? 'cursor-pointer hover:scale-110 hover:z-10' 
                     : 'cursor-default'
                 }`}
                 data-testid={`badge-round-${round}${isEarned ? '-earned' : '-locked'}`}
