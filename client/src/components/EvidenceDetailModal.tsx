@@ -2,11 +2,12 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Clock, X, Calendar, User, Pencil, AlertCircle } from "lucide-react";
+import { CheckCircle, Clock, X, Calendar, Pencil, AlertCircle } from "lucide-react";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
 import { TeacherEvidenceEditDialog } from "@/components/TeacherEvidenceEditDialog";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 import type { Evidence } from "@shared/schema";
 
 interface EvidenceDetailModalProps {
@@ -16,9 +17,22 @@ interface EvidenceDetailModalProps {
   canEdit?: boolean;
 }
 
-export function EvidenceDetailModal({ evidence, isOpen, onClose, canEdit = true }: EvidenceDetailModalProps) {
+export function EvidenceDetailModal({ evidence: initialEvidence, isOpen, onClose, canEdit = true }: EvidenceDetailModalProps) {
   const { t } = useTranslation('dashboard');
   const [showEditDialog, setShowEditDialog] = useState(false);
+
+  // Fetch fresh evidence data to stay in sync with updates
+  // Use the specific evidence endpoint for individual record fetching
+  const evidenceId = initialEvidence?.id;
+  const { data: freshEvidence } = useQuery<Evidence>({
+    queryKey: [`/api/evidence/${evidenceId}`],
+    enabled: isOpen && !!evidenceId,
+    staleTime: 0, // Always consider data stale so it refetches on invalidation
+    refetchOnMount: 'always', // Refetch when modal reopens
+  });
+
+  // Use fresh data if available, otherwise fall back to initial prop for instant display
+  const evidence = freshEvidence || initialEvidence;
 
   if (!evidence) return null;
 

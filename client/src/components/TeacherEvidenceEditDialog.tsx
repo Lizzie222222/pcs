@@ -49,6 +49,7 @@ interface TeacherEvidenceEditDialogProps {
     status: string;
   } | null;
   onDeleted?: () => void;
+  onUpdated?: () => void;
 }
 
 interface EvidenceFile {
@@ -67,6 +68,7 @@ export function TeacherEvidenceEditDialog({
   onOpenChange,
   evidence,
   onDeleted,
+  onUpdated,
 }: TeacherEvidenceEditDialogProps) {
   const { t } = useTranslation(['forms', 'common', 'dashboard']);
   const { toast } = useToast();
@@ -214,9 +216,14 @@ export function TeacherEvidenceEditDialog({
         title: t('dashboard:evidence.edit_success_title', 'Evidence updated'),
         description: t('dashboard:evidence.edit_success_message', 'Your evidence has been updated successfully'),
       });
+      // Invalidate both the list and the specific evidence item
       queryClient.invalidateQueries({ queryKey: ["/api/evidence"] });
+      if (evidence?.id) {
+        queryClient.invalidateQueries({ queryKey: [`/api/evidence/${evidence.id}`] });
+      }
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
       onOpenChange(false);
+      onUpdated?.();
     },
     onError: (error: Error) => {
       toast({
