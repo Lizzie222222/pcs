@@ -152,26 +152,45 @@ export function createEvidenceRouters(storage: IStorage): {
   /**
    * GET /api/evidence/:id
    * 
-   * View single evidence by ID (public endpoint for approved evidence)
+   * View single evidence by ID
    * - Public can view approved evidence
    * - Admins can view any evidence
+   * - School members can view their own school's evidence (any status)
    * 
    * Migrated from server/routes.ts:1230-1248
    */
   evidenceRouter.get('/:id', async (req: any, res) => {
     try {
-      const evidence = await evidenceStorage.getEvidenceById(req.params.id);
-      if (!evidence) {
+      const evidenceRecord = await evidenceStorage.getEvidenceById(req.params.id);
+      if (!evidenceRecord) {
         return res.status(404).json({ message: "Evidence not found" });
       }
       
-      // Only allow viewing approved evidence publicly (non-admins)
-      const isAdmin = req.isAuthenticated && req.isAuthenticated() && req.user?.isAdmin;
-      if (evidence.status !== 'approved' && !isAdmin) {
-        return res.status(404).json({ message: "Evidence not found" });
+      // Check permissions for non-approved evidence
+      const isAuthenticated = req.isAuthenticated && req.isAuthenticated();
+      const isAdmin = isAuthenticated && req.user?.isAdmin;
+      
+      // Allow viewing approved evidence publicly
+      if (evidenceRecord.status === 'approved') {
+        return res.json(evidenceRecord);
       }
       
-      res.json(evidence);
+      // Admins can view any evidence
+      if (isAdmin) {
+        return res.json(evidenceRecord);
+      }
+      
+      // School members can view their own school's evidence
+      if (isAuthenticated && req.user?.id) {
+        const userSchools = await schoolStorage.getUserSchools(req.user.id);
+        const isMember = userSchools.some((school: { id: string }) => school.id === evidenceRecord.schoolId);
+        if (isMember) {
+          return res.json(evidenceRecord);
+        }
+      }
+      
+      // Not authorized to view this evidence
+      return res.status(404).json({ message: "Evidence not found" });
     } catch (error) {
       console.error("Error fetching evidence:", error);
       res.status(500).json({ message: "Failed to fetch evidence" });

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,6 @@ import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
 import { TeacherEvidenceEditDialog } from "@/components/TeacherEvidenceEditDialog";
 import { useTranslation } from "react-i18next";
-import { useQuery } from "@tanstack/react-query";
 import type { Evidence } from "@shared/schema";
 
 interface EvidenceDetailModalProps {
@@ -20,19 +19,31 @@ interface EvidenceDetailModalProps {
 export function EvidenceDetailModal({ evidence: initialEvidence, isOpen, onClose, canEdit = true }: EvidenceDetailModalProps) {
   const { t } = useTranslation('dashboard');
   const [showEditDialog, setShowEditDialog] = useState(false);
+  
+  // Local state to hold evidence data that can be updated in-place
+  const [localEvidence, setLocalEvidence] = useState<Evidence | null>(null);
+  
+  // Update local evidence when initial evidence changes (e.g., modal opens with new evidence)
+  useEffect(() => {
+    if (isOpen && initialEvidence) {
+      setLocalEvidence(initialEvidence);
+    }
+  }, [isOpen, initialEvidence?.id]);
+  
+  // Reset local state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setLocalEvidence(null);
+    }
+  }, [isOpen]);
 
-  // Fetch fresh evidence data to stay in sync with updates
-  // Use the specific evidence endpoint for individual record fetching
-  const evidenceId = initialEvidence?.id;
-  const { data: freshEvidence } = useQuery<Evidence>({
-    queryKey: [`/api/evidence/${evidenceId}`],
-    enabled: isOpen && !!evidenceId,
-    staleTime: 0, // Always consider data stale so it refetches on invalidation
-    refetchOnMount: 'always', // Refetch when modal reopens
-  });
-
-  // Use fresh data if available, otherwise fall back to initial prop for instant display
-  const evidence = freshEvidence || initialEvidence;
+  // Use local evidence for display, with initial evidence as fallback
+  const evidence = localEvidence || initialEvidence;
+  
+  // Callback to update evidence after edits
+  const handleEvidenceUpdated = (updatedEvidence: Evidence) => {
+    setLocalEvidence(updatedEvidence);
+  };
 
   if (!evidence) return null;
 
@@ -223,6 +234,7 @@ export function EvidenceDetailModal({ evidence: initialEvidence, isOpen, onClose
           status: evidence.status || 'pending',
         } : null}
         onDeleted={onClose}
+        onUpdated={handleEvidenceUpdated}
       />
     </Dialog>
   );

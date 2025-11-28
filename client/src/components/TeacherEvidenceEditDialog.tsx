@@ -49,7 +49,7 @@ interface TeacherEvidenceEditDialogProps {
     status: string;
   } | null;
   onDeleted?: () => void;
-  onUpdated?: () => void;
+  onUpdated?: (updatedEvidence: any) => void;
 }
 
 interface EvidenceFile {
@@ -184,7 +184,7 @@ export function TeacherEvidenceEditDialog({
 
   const updateMutation = useMutation({
     mutationFn: async () => {
-      if (!evidence) return;
+      if (!evidence) return null;
       
       const normalizedFiles = uploadedFiles.map(f => {
         const fileName = f.name || f.originalName || 'file';
@@ -203,27 +203,28 @@ export function TeacherEvidenceEditDialog({
         };
       });
       
-      return await apiRequest("PATCH", `/api/evidence/${evidence.id}`, {
+      const response = await apiRequest("PATCH", `/api/evidence/${evidence.id}`, {
         title,
         description,
         visibility,
         files: normalizedFiles,
         videoLinks: videoLinks || null,
       });
+      return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (updatedEvidence) => {
       toast({
         title: t('dashboard:evidence.edit_success_title', 'Evidence updated'),
         description: t('dashboard:evidence.edit_success_message', 'Your evidence has been updated successfully'),
       });
-      // Invalidate both the list and the specific evidence item
+      // Also invalidate lists to ensure they refresh
       queryClient.invalidateQueries({ queryKey: ["/api/evidence"] });
-      if (evidence?.id) {
-        queryClient.invalidateQueries({ queryKey: [`/api/evidence/${evidence.id}`] });
-      }
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
       onOpenChange(false);
-      onUpdated?.();
+      // Pass updated evidence back to parent for immediate display
+      if (updatedEvidence) {
+        onUpdated?.(updatedEvidence);
+      }
     },
     onError: (error: Error) => {
       toast({
