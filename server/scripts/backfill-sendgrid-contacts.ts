@@ -70,11 +70,20 @@ async function createCustomFields(): Promise<boolean> {
     return false;
   }
 
+  // All custom fields for segmentation
   const fieldsToCreate = [
     { name: 'has_interacted', field_type: 'Text' },
     { name: 'school_name', field_type: 'Text' },
     { name: 'school_stage', field_type: 'Text' },
     { name: 'user_role', field_type: 'Text' },
+    { name: 'is_active', field_type: 'Text' },
+    { name: 'user_language', field_type: 'Text' },
+    { name: 'school_type', field_type: 'Text' },
+    { name: 'inspire_completed', field_type: 'Text' },
+    { name: 'investigate_completed', field_type: 'Text' },
+    { name: 'act_completed', field_type: 'Text' },
+    { name: 'rounds_completed', field_type: 'Number' },
+    { name: 'is_migrated', field_type: 'Text' },
   ];
 
   const existingFields = await getCustomFieldIds();
@@ -138,6 +147,9 @@ async function fetchUsersWithSchoolInfo(offset: number, limit: number) {
       role: users.role,
       hasInteracted: users.hasInteracted,
       deletedAt: users.deletedAt,
+      preferredLanguage: users.preferredLanguage,
+      lastActiveAt: users.lastActiveAt,
+      isMigrated: users.isMigrated,
     })
     .from(users)
     .where(and(
@@ -157,6 +169,13 @@ async function fetchUsersWithSchoolInfo(offset: number, limit: number) {
         schoolCountry: schools.country,
         schoolStage: schools.currentStage,
         schoolRole: schoolUsers.role,
+        schoolType: schools.type,
+        schoolPrimaryLanguage: schools.primaryLanguage,
+        inspireCompleted: schools.inspireCompleted,
+        investigateCompleted: schools.investigateCompleted,
+        actCompleted: schools.actCompleted,
+        roundsCompleted: schools.roundsCompleted,
+        schoolLastActiveAt: schools.lastActiveAt,
       })
       .from(schoolUsers)
       .innerJoin(schools, eq(schoolUsers.schoolId, schools.id))
@@ -169,10 +188,44 @@ async function fetchUsersWithSchoolInfo(offset: number, limit: number) {
       schoolCountry: schoolAssociation[0]?.schoolCountry || null,
       schoolStage: schoolAssociation[0]?.schoolStage || null,
       schoolRole: schoolAssociation[0]?.schoolRole || null,
+      schoolType: schoolAssociation[0]?.schoolType || null,
+      schoolPrimaryLanguage: schoolAssociation[0]?.schoolPrimaryLanguage || null,
+      inspireCompleted: schoolAssociation[0]?.inspireCompleted || false,
+      investigateCompleted: schoolAssociation[0]?.investigateCompleted || false,
+      actCompleted: schoolAssociation[0]?.actCompleted || false,
+      roundsCompleted: schoolAssociation[0]?.roundsCompleted || 0,
+      schoolLastActiveAt: schoolAssociation[0]?.schoolLastActiveAt || null,
     });
   }
 
   return enrichedUsers;
+}
+
+function determineActiveStatus(user: any): string {
+  // User is active if:
+  // 1. Not deleted
+  // 2. Has interacted OR was active recently (last 90 days)
+  if (user.deletedAt) {
+    return 'no';
+  }
+  
+  if (user.hasInteracted) {
+    return 'yes';
+  }
+  
+  // Check if user was active in the last 90 days
+  const ninetyDaysAgo = new Date();
+  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+  
+  if (user.lastActiveAt && new Date(user.lastActiveAt) > ninetyDaysAgo) {
+    return 'yes';
+  }
+  
+  if (user.schoolLastActiveAt && new Date(user.schoolLastActiveAt) > ninetyDaysAgo) {
+    return 'yes';
+  }
+  
+  return 'no';
 }
 
 async function countTotalUsers(): Promise<number> {
@@ -208,7 +261,20 @@ async function runBackfill(dryRun: boolean = false) {
   const customFieldIds = await getCustomFieldIds();
   console.log('[SendGrid Backfill] Custom field IDs:', customFieldIds);
 
-  const requiredFields = ['has_interacted', 'school_name', 'school_stage', 'user_role'];
+  const requiredFields = [
+    'has_interacted', 
+    'school_name', 
+    'school_stage', 
+    'user_role',
+    'is_active',
+    'user_language',
+    'school_type',
+    'inspire_completed',
+    'investigate_completed',
+    'act_completed',
+    'rounds_completed',
+    'is_migrated',
+  ];
   const missingFields = requiredFields.filter(f => !customFieldIds || !customFieldIds[f]);
   
   if (missingFields.length > 0 && !dryRun) {
@@ -254,21 +320,67 @@ async function runBackfill(dryRun: boolean = false) {
         country: user.schoolCountry || undefined,
       };
 
-      const hasValidCustomFields = customFieldIds && Object.keys(customFieldIds).length === 4;
-      if (hasValidCustomFields) {
+      // Build custom fields for segmentation
+      if (customFieldIds && Object.keys(customFieldIds).length > 0) {
         contact.custom_fields = {};
         
+        // has_interacted - whether user has interacted with the platform
         if (customFieldIds['has_interacted']) {
           contact.custom_fields[customFieldIds['has_interacted']] = user.hasInteracted ? 'yes' : 'no';
         }
+        
+        // is_active - active status based on interaction/recency
+        if (customFieldIds['is_active']) {
+          contact.custom_fields[customFieldIds['is_active']] = determineActiveStatus(user);
+        }
+        
+        // user_language - preferred language for segmentation
+        if (customFieldIds['user_language']) {
+          const language = user.preferredLanguage || user.schoolPrimaryLanguage || 'en';
+          contact.custom_fields[customFieldIds['user_language']] = language;
+        }
+        
+        // school_name
         if (customFieldIds['school_name'] && user.schoolName) {
           contact.custom_fields[customFieldIds['school_name']] = user.schoolName;
         }
+        
+        // school_stage - current stage in the program
         if (customFieldIds['school_stage'] && user.schoolStage) {
           contact.custom_fields[customFieldIds['school_stage']] = user.schoolStage;
         }
+        
+        // user_role - role in their school
         if (customFieldIds['user_role'] && user.schoolRole) {
           contact.custom_fields[customFieldIds['user_role']] = user.schoolRole;
+        }
+        
+        // school_type - type of school
+        if (customFieldIds['school_type'] && user.schoolType) {
+          contact.custom_fields[customFieldIds['school_type']] = user.schoolType;
+        }
+        
+        // Stage completion statuses
+        if (customFieldIds['inspire_completed']) {
+          contact.custom_fields[customFieldIds['inspire_completed']] = user.inspireCompleted ? 'yes' : 'no';
+        }
+        
+        if (customFieldIds['investigate_completed']) {
+          contact.custom_fields[customFieldIds['investigate_completed']] = user.investigateCompleted ? 'yes' : 'no';
+        }
+        
+        if (customFieldIds['act_completed']) {
+          contact.custom_fields[customFieldIds['act_completed']] = user.actCompleted ? 'yes' : 'no';
+        }
+        
+        // rounds_completed - number of rounds completed (Number field)
+        if (customFieldIds['rounds_completed']) {
+          contact.custom_fields[customFieldIds['rounds_completed']] = String(user.roundsCompleted || 0);
+        }
+        
+        // is_migrated - whether user was migrated from legacy system
+        if (customFieldIds['is_migrated']) {
+          contact.custom_fields[customFieldIds['is_migrated']] = user.isMigrated ? 'yes' : 'no';
         }
       }
 
