@@ -204,6 +204,42 @@ schoolsRouter.post('/api/schools/register', async (req, res) => {
     const school = await schoolStorage.createSchool(schoolData);
     console.log('[School Registration] School created:', school.id);
 
+    // Check for potential duplicates (non-blocking)
+    try {
+      const domain = schoolData.adminEmail?.split('@')[1]?.toLowerCase();
+      if (domain) {
+        const domainGroups = await schoolStorage.findSchoolsByEmailDomainGroups();
+        const matchingGroup = domainGroups.find(group => 
+          group.some(s => s.id === school.id) && group.length > 1
+        );
+        if (matchingGroup) {
+          await schoolStorage.createDuplicateGroup({
+            schoolIds: matchingGroup.map(s => s.id),
+            matchType: 'email_domain',
+            matchValue: domain,
+          });
+          console.log('[School Registration] Potential duplicate detected by email domain:', domain);
+        }
+      }
+      // Also check by postcode (only if not already grouped by email domain)
+      if (school.postcode && !matchingGroup) {
+        const postcodeGroups = await schoolStorage.findSchoolsByPostcodeGroups();
+        const matchingPostcodeGroup = postcodeGroups.find(group =>
+          group.some(s => s.id === school.id) && group.length > 1
+        );
+        if (matchingPostcodeGroup) {
+          await schoolStorage.createDuplicateGroup({
+            schoolIds: matchingPostcodeGroup.map(s => s.id),
+            matchType: 'same_postcode',
+            matchValue: school.postcode,
+          });
+          console.log('[School Registration] Potential duplicate detected by postcode:', school.postcode);
+        }
+      }
+    } catch (duplicateError) {
+      console.error('[School Registration] Error checking for duplicates:', duplicateError);
+    }
+
     // Send welcome email (non-blocking)
     if (schoolData.adminEmail) {
       try {
@@ -278,6 +314,42 @@ schoolsRouter.post('/api/schools/register-multi-step', isAuthenticated, async (r
       isVerified: true,
     });
     console.log('[Multi-step Registration] User added as head teacher');
+
+    // Check for potential duplicates (non-blocking)
+    try {
+      const domain = (schoolData.adminEmail || req.user.email)?.split('@')[1]?.toLowerCase();
+      if (domain) {
+        const domainGroups = await schoolStorage.findSchoolsByEmailDomainGroups();
+        const matchingGroup = domainGroups.find(group => 
+          group.some(s => s.id === school.id) && group.length > 1
+        );
+        if (matchingGroup) {
+          await schoolStorage.createDuplicateGroup({
+            schoolIds: matchingGroup.map(s => s.id),
+            matchType: 'email_domain',
+            matchValue: domain,
+          });
+          console.log('[Multi-step Registration] Potential duplicate detected by email domain:', domain);
+        }
+      }
+      // Also check by postcode (only if not already grouped by email domain)
+      if (school.postcode && !matchingGroup) {
+        const postcodeGroups = await schoolStorage.findSchoolsByPostcodeGroups();
+        const matchingPostcodeGroup = postcodeGroups.find(group =>
+          group.some(s => s.id === school.id) && group.length > 1
+        );
+        if (matchingPostcodeGroup) {
+          await schoolStorage.createDuplicateGroup({
+            schoolIds: matchingPostcodeGroup.map(s => s.id),
+            matchType: 'same_postcode',
+            matchValue: school.postcode,
+          });
+          console.log('[Multi-step Registration] Potential duplicate detected by postcode:', school.postcode);
+        }
+      }
+    } catch (duplicateError) {
+      console.error('[Multi-step Registration] Error checking for duplicates:', duplicateError);
+    }
 
     // Send welcome email (non-blocking)
     if (req.user.email) {
