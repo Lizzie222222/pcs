@@ -173,18 +173,28 @@ export function TeacherEvidenceEditDialog({
     mutationFn: async () => {
       if (!evidence) return;
       
+      const normalizedFiles = uploadedFiles.map(f => {
+        const fileName = f.name || f.originalName || 'file';
+        const fileType = f.type || f.mimeType || 'application/octet-stream';
+        const fileUrl = f.url || '';
+        const fileSize = typeof f.size === 'number' ? f.size : parseInt(String(f.size)) || 0;
+        const filePath = f.storagePath || fileUrl;
+        
+        return {
+          id: f.id,
+          originalName: fileName,
+          url: fileUrl,
+          size: fileSize,
+          mimeType: fileType,
+          storagePath: filePath,
+        };
+      });
+      
       return await apiRequest("PATCH", `/api/evidence/${evidence.id}`, {
         title,
         description,
         visibility,
-        files: uploadedFiles.map(f => ({
-          id: f.id,
-          originalName: getFileName(f),
-          url: f.url,
-          size: f.size,
-          mimeType: getFileType(f),
-          storagePath: f.storagePath || f.url,
-        })),
+        files: normalizedFiles,
         videoLinks: videoLinks || null,
       });
     },

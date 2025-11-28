@@ -20,15 +20,26 @@ import { db } from '../../db';
 import { sql, and, eq } from 'drizzle-orm';
 
 // Validation schemas for resubmission
-// Proper file validation schema matching NormalizedFile structure
+// File validation schema that accepts both database format and normalized format
+// Database format: { name, url, size, type }
+// Normalized format: { originalName, url, size, mimeType, storagePath }
 const fileSchema = z.object({
   id: z.string().optional(),
-  originalName: z.string(),
+  name: z.string().optional(),
+  originalName: z.string().optional(),
   url: z.string(),
-  size: z.number(),
-  mimeType: z.string(),
-  storagePath: z.string(),
-});
+  size: z.union([z.number(), z.string()]).transform(val => typeof val === 'number' ? val : parseInt(val) || 0),
+  type: z.string().optional(),
+  mimeType: z.string().optional(),
+  storagePath: z.string().optional(),
+}).transform(file => ({
+  id: file.id,
+  originalName: file.originalName || file.name || 'file',
+  url: file.url,
+  size: file.size,
+  mimeType: file.mimeType || file.type || 'application/octet-stream',
+  storagePath: file.storagePath || file.url,
+}));
 
 const resubmitEvidenceSchema = z.object({
   title: z.string().min(1).max(200).optional(),
