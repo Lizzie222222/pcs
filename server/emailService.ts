@@ -670,6 +670,80 @@ export async function sendPasswordResetEmail(
   });
 }
 
+/**
+ * Send notification email to a user whose account was merged
+ * This notifies them that their duplicate account was consolidated
+ */
+export async function sendMergedUserNotificationEmail(
+  userEmail: string,
+  resetToken: string,
+  firstName?: string,
+  mergedFromEmail?: string,
+  userLanguage?: string
+): Promise<boolean> {
+  const baseUrl = getBaseUrl();
+  const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
+  
+  const englishContent: EmailContent = {
+    subject: `🔗 Your Plastic Clever Schools Account Has Been Consolidated`,
+    title: `Account Consolidated${firstName ? `, ${firstName}` : ''}`,
+    preTitle: `Important Account Update`,
+    messageContent: `
+      <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 20px; margin: 0 0 25px 0; border-radius: 8px;">
+        <p style="margin: 0; color: #1e40af; font-size: 18px; font-weight: 700;">
+          🔗 Your accounts have been merged
+        </p>
+      </div>
+      
+      <p style="margin: 0 0 20px 0; font-size: 16px;">
+        We've consolidated your Plastic Clever Schools accounts to give you a single, unified experience.${mergedFromEmail ? ` Your account previously associated with <strong>${mergedFromEmail}</strong> has been merged into this account.` : ''}
+      </p>
+      
+      <div style="background: #f0fdf4; border-left: 4px solid #22c55e; padding: 20px; margin: 0 0 25px 0; border-radius: 8px;">
+        <p style="margin: 0 0 10px 0; color: #166534; font-weight: 700;">
+          ✅ What this means for you:
+        </p>
+        <ul style="margin: 0; padding-left: 20px; color: #166534;">
+          <li>All your school associations are now in one place</li>
+          <li>Your evidence submissions have been preserved</li>
+          <li>You'll use this email address to log in going forward</li>
+        </ul>
+      </div>
+      
+      <div style="background: #fef3c7; border-left: 5px solid #f59e0b; padding: 20px; border-radius: 8px; margin: 25px 0;">
+        <p style="margin: 0 0 10px 0; color: #92400e; font-weight: 700;">
+          🔐 Please set a new password
+        </p>
+        <p style="margin: 0; color: #92400e;">
+          For your security, please click the button below to set a new password for your consolidated account.
+        </p>
+      </div>
+      
+      <p style="margin: 25px 0 10px 0; color: #666; text-align: center; font-size: 14px;">
+        Or copy and paste this link into your browser:
+      </p>
+      
+      <p style="margin: 0 0 25px 0; color: #3b82f6; font-size: 14px; word-break: break-all; text-align: center; background: #f0f9ff; padding: 15px; border-radius: 8px;">
+        ${resetUrl}
+      </p>
+      
+      <p style="margin: 20px 0 0 0; color: #666; text-align: center;">
+        <strong>Questions about this change?</strong><br>
+        Contact us at <a href="mailto:education@commonseas.com" style="color: #02BBB4; text-decoration: none;">education@commonseas.com</a>
+      </p>
+    `,
+    callToActionText: 'Set New Password',
+    footerText: 'You received this email because your Plastic Clever Schools account was consolidated.'
+  };
+  
+  return await sendTranslatedEmail({
+    to: userEmail,
+    userLanguage,
+    englishContent,
+    callToActionUrl: resetUrl,
+  });
+}
+
 
 export async function sendEvidenceApprovalEmail(
   userEmail: string, 

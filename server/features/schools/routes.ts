@@ -2053,17 +2053,39 @@ schoolsRouter.post('/api/admin/users/merge', isAuthenticated, requireAdmin, asyn
 
     const { survivorUserId, duplicateUserId } = parsed.data;
 
+    // Get user details before merge for email notification
+    const survivorUser = await storage.getUser(survivorUserId);
+    const duplicateUser = await storage.getUser(duplicateUserId);
+
     const result = await schoolStorage.mergeUsers(survivorUserId, duplicateUserId, userId);
 
     if (!result.success) {
       return res.status(400).json({ message: result.error || "Failed to merge users" });
     }
 
+    // Send notification email to survivor user
+    if (result.resetToken && survivorUser?.email) {
+      try {
+        const { sendMergedUserNotificationEmail } = await import('../../emailService');
+        await sendMergedUserNotificationEmail(
+          survivorUser.email,
+          result.resetToken,
+          survivorUser.firstName || undefined,
+          duplicateUser?.email || undefined,
+          survivorUser.preferredLanguage || undefined
+        );
+        console.log(`[Admin Users] Merge notification email sent to ${survivorUser.email}`);
+      } catch (emailError) {
+        console.error(`[Admin Users] Failed to send merge notification email:`, emailError);
+        // Don't fail the merge if email fails
+      }
+    }
+
     console.log(`[Admin Users] Users merged: ${duplicateUserId} -> ${survivorUserId} by admin ${userId}`);
     res.json({
       message: "Users merged successfully",
       survivorUserId: result.survivorUserId,
-      resetToken: result.resetToken
+      emailSent: !!result.resetToken && !!survivorUser?.email
     });
   } catch (error) {
     console.error("[Admin Users] Error merging users:", error);
