@@ -940,7 +940,24 @@ export class SchoolStorage {
       )
       .limit(1);
 
-    const hasQuiz = approvedAudit.length > 0;
+    // CRITICAL FIX: Also check for admin override on audit requirements
+    // Look up by title since database may have 'standard' as requirement_type
+    const auditRequirements = await db
+      .select({ id: evidenceRequirements.id })
+      .from(evidenceRequirements)
+      .where(
+        and(
+          eq(evidenceRequirements.stage, 'investigate'),
+          sql`LOWER(${evidenceRequirements.title}) LIKE '%audit%'`
+        )
+      );
+    
+    const auditRequirementIds = new Set(auditRequirements.map(r => r.id));
+    const hasAuditOverride = adminOverrides.some(
+      override => auditRequirementIds.has(override.evidenceRequirementId) && override.stage === 'investigate'
+    );
+
+    const hasQuiz = approvedAudit.length > 0 || hasAuditOverride;
 
     const approvedActionPlans = await db
       .select()
@@ -955,11 +972,16 @@ export class SchoolStorage {
       .limit(1);
 
     // CRITICAL FIX: Also check for admin override on action plan requirements
-    // Dynamically look up requirements with requirementType = 'action_plan'
+    // Look up by title since database may have 'standard' as requirement_type
     const actionPlanRequirements = await db
       .select({ id: evidenceRequirements.id })
       .from(evidenceRequirements)
-      .where(eq(evidenceRequirements.requirementType, 'action_plan'));
+      .where(
+        and(
+          eq(evidenceRequirements.stage, 'investigate'),
+          sql`LOWER(${evidenceRequirements.title}) LIKE '%action plan%'`
+        )
+      );
     
     const actionPlanRequirementIds = new Set(actionPlanRequirements.map(r => r.id));
     const hasActionPlanOverride = adminOverrides.some(
@@ -1149,7 +1171,7 @@ export class SchoolStorage {
       const totalRequired = inspireRequirements + investigateRequirements + actRequirements;
       
       if (totalRequired > 0) {
-        currentRoundProgress = Math.round((totalApproved / totalRequired) * 100);
+        currentRoundProgress = Math.min(100, Math.round((totalApproved / totalRequired) * 100));
       } else {
         const inspireComplete = updates.inspireCompleted ?? school.inspireCompleted;
         const investigateComplete = updates.investigateCompleted ?? school.investigateCompleted;
@@ -1166,7 +1188,8 @@ export class SchoolStorage {
     }
     
     const completedRounds = updates.roundsCompleted ?? school.roundsCompleted ?? 0;
-    const progressPercentage = currentRoundProgress;
+    // Cap progress at 100% to prevent over-counting from bonus evidence or admin overrides
+    const progressPercentage = Math.min(100, currentRoundProgress);
     
     if (process.env.NODE_ENV === 'development') {
       console.log(`[Progress] School ${schoolId}: Current round progress: ${currentRoundProgress}%, Completed rounds: ${completedRounds}, Progress: ${progressPercentage}%`);
