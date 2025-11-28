@@ -102,26 +102,26 @@ export function RoundBadges({ roundsCompleted, showAll = true, size = 'md' }: Ro
       </div>
 
       <Dialog open={!!selectedBadge} onOpenChange={() => setSelectedBadge(null)}>
-        <DialogContent className="sm:max-w-md p-0 bg-transparent border-none shadow-none">
+        <DialogContent className="sm:max-w-md p-6 bg-white rounded-xl shadow-2xl">
           {selectedBadge && (
             <div className="flex flex-col items-center">
               <img
                 src={selectedBadge.image}
                 alt={`Round ${selectedBadge.round} Badge`}
-                className={`w-72 h-72 sm:w-96 sm:h-96 object-contain ${
+                className={`w-64 h-64 sm:w-80 sm:h-80 object-contain ${
                   selectedBadge.isEarned ? '' : 'opacity-40 grayscale'
                 }`}
               />
-              <div className="bg-white rounded-lg px-6 py-3 shadow-lg mt-2 text-center">
+              <div className="mt-4 text-center">
                 {selectedBadge.isEarned ? (
                   <>
-                    <p className="font-bold text-lg text-green-600">Round {selectedBadge.round} Complete!</p>
-                    <p className="text-sm text-gray-600">You've earned this badge</p>
+                    <p className="font-bold text-xl text-green-600">Round {selectedBadge.round} Complete!</p>
+                    <p className="text-sm text-gray-600 mt-1">You've earned this badge</p>
                   </>
                 ) : (
                   <>
-                    <p className="font-bold text-lg text-gray-600">Round {selectedBadge.round} Locked</p>
-                    <p className="text-sm text-gray-500">Complete Round {selectedBadge.round} to unlock this badge</p>
+                    <p className="font-bold text-xl text-gray-600">Round {selectedBadge.round} Locked</p>
+                    <p className="text-sm text-gray-500 mt-1">Complete Round {selectedBadge.round} to unlock this badge</p>
                   </>
                 )}
               </div>
