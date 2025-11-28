@@ -1,9 +1,14 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 import { Lock } from "lucide-react";
 
 import round1Badge from "@assets/round-1-badge.png";
@@ -28,6 +33,7 @@ interface RoundBadgesProps {
 
 export function RoundBadges({ roundsCompleted, showAll = true, size = 'md' }: RoundBadgesProps) {
   const { t } = useTranslation('dashboard');
+  const [selectedBadge, setSelectedBadge] = useState<{ round: number; image: string; isEarned: boolean } | null>(null);
 
   const sizeClasses = {
     sm: 'w-12 h-12',
@@ -42,56 +48,88 @@ export function RoundBadges({ roundsCompleted, showAll = true, size = 'md' }: Ro
   }
 
   return (
-    <div className="flex items-center flex-wrap" data-testid="round-badges-container">
-      {badgesToShow.map(({ round, image }, index) => {
-        const isEarned = round <= roundsCompleted;
-        
-        return (
-          <Tooltip key={round}>
-            <TooltipTrigger asChild>
-              <div 
-                className={`relative ${sizeClasses[size]} transition-all duration-300 ${index > 0 ? '-ml-4 sm:-ml-6' : ''} ${
-                  isEarned 
-                    ? 'cursor-pointer hover:scale-110 hover:z-10' 
-                    : 'cursor-default'
-                }`}
-                data-testid={`badge-round-${round}${isEarned ? '-earned' : '-locked'}`}
-              >
-                <img
-                  src={image}
-                  alt={`Round ${round} ${isEarned ? 'Complete' : 'Locked'}`}
-                  className={`w-full h-full object-contain transition-all duration-300 ${
+    <>
+      <div className="flex items-center flex-wrap" data-testid="round-badges-container">
+        {badgesToShow.map(({ round, image }, index) => {
+          const isEarned = round <= roundsCompleted;
+          
+          return (
+            <Tooltip key={round}>
+              <TooltipTrigger asChild>
+                <div 
+                  className={`relative ${sizeClasses[size]} transition-all duration-300 ${index > 0 ? '-ml-4 sm:-ml-6' : ''} ${
                     isEarned 
-                      ? 'opacity-100 drop-shadow-lg' 
-                      : 'opacity-30 grayscale'
+                      ? 'cursor-pointer hover:scale-110 hover:z-10' 
+                      : 'cursor-pointer hover:scale-105'
                   }`}
-                />
-                {!isEarned && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-gray-800/60 rounded-full p-1.5">
-                      <Lock className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                  onClick={() => setSelectedBadge({ round, image, isEarned })}
+                  data-testid={`badge-round-${round}${isEarned ? '-earned' : '-locked'}`}
+                >
+                  <img
+                    src={image}
+                    alt={`Round ${round} ${isEarned ? 'Complete' : 'Locked'}`}
+                    className={`w-full h-full object-contain transition-all duration-300 ${
+                      isEarned 
+                        ? 'opacity-100 drop-shadow-lg' 
+                        : 'opacity-30 grayscale'
+                    }`}
+                  />
+                  {!isEarned && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="bg-gray-800/60 rounded-full p-1.5">
+                        <Lock className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                      </div>
                     </div>
+                  )}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-xs">
+                {isEarned ? (
+                  <div className="text-center">
+                    <p className="font-semibold text-green-600">Round {round} Complete!</p>
+                    <p className="text-xs text-gray-500">Click to view</p>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <p className="font-semibold text-gray-600">Round {round} Locked</p>
+                    <p className="text-xs text-gray-500">Complete Round {round} to unlock</p>
                   </div>
                 )}
+              </TooltipContent>
+            </Tooltip>
+          );
+        })}
+      </div>
+
+      <Dialog open={!!selectedBadge} onOpenChange={() => setSelectedBadge(null)}>
+        <DialogContent className="sm:max-w-md p-0 bg-transparent border-none shadow-none">
+          {selectedBadge && (
+            <div className="flex flex-col items-center">
+              <img
+                src={selectedBadge.image}
+                alt={`Round ${selectedBadge.round} Badge`}
+                className={`w-72 h-72 sm:w-96 sm:h-96 object-contain ${
+                  selectedBadge.isEarned ? '' : 'opacity-40 grayscale'
+                }`}
+              />
+              <div className="bg-white rounded-lg px-6 py-3 shadow-lg mt-2 text-center">
+                {selectedBadge.isEarned ? (
+                  <>
+                    <p className="font-bold text-lg text-green-600">Round {selectedBadge.round} Complete!</p>
+                    <p className="text-sm text-gray-600">You've earned this badge</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-bold text-lg text-gray-600">Round {selectedBadge.round} Locked</p>
+                    <p className="text-sm text-gray-500">Complete Round {selectedBadge.round} to unlock this badge</p>
+                  </>
+                )}
               </div>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="max-w-xs">
-              {isEarned ? (
-                <div className="text-center">
-                  <p className="font-semibold text-green-600">Round {round} Complete!</p>
-                  <p className="text-xs text-gray-500">You've earned this badge</p>
-                </div>
-              ) : (
-                <div className="text-center">
-                  <p className="font-semibold text-gray-600">Round {round} Locked</p>
-                  <p className="text-xs text-gray-500">Complete Round {round} to unlock</p>
-                </div>
-              )}
-            </TooltipContent>
-          </Tooltip>
-        );
-      })}
-    </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
