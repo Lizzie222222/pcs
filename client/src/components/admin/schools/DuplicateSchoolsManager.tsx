@@ -262,6 +262,43 @@ export default function DuplicateSchoolsManager() {
     },
   });
 
+  const mergeAllMutation = useMutation({
+    mutationFn: async ({ groupId, targetSchoolId, sourceSchoolIds, options }: { 
+      groupId: string; 
+      targetSchoolId: string; 
+      sourceSchoolIds: string[]; 
+      options: typeof mergeOptions;
+    }) => {
+      const res = await apiRequest('POST', `/api/admin/duplicates/${groupId}/merge-all`, {
+        targetSchoolId,
+        sourceSchoolIds,
+        mergeOptions: {
+          useTargetName: options.useTargetName,
+          useTargetAddress: options.useTargetAddress,
+          useTargetStudentCount: options.useTargetStudentCount,
+          notes,
+        },
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/duplicates'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/duplicates/counts'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
+      setMergeDialogOpen(false);
+      setSelectedGroup(null);
+      setNotes("");
+      setDuplicateUserSelections([]);
+      toast({ 
+        title: "Bulk Merge Complete", 
+        description: `Successfully merged ${data.mergedCount} school(s) into the target.`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
   const reviewMutation = useMutation({
     mutationFn: async ({ groupId, notes }: { groupId: string; notes?: string }) => {
       const res = await apiRequest('POST', `/api/admin/duplicates/${groupId}/reviewed`, { notes });
@@ -324,6 +361,30 @@ export default function DuplicateSchoolsManager() {
     } catch {
     } finally {
       setIsMergingUsers(false);
+    }
+  };
+
+  const handleMergeAllSchools = async () => {
+    if (!selectedGroup) return;
+
+    const sourceSchoolIds = selectedGroup.schoolDetails
+      .filter(s => s.id !== mergeOptions.targetSchoolId)
+      .map(s => s.id);
+
+    if (sourceSchoolIds.length === 0) {
+      toast({ title: "Error", description: "No source schools to merge.", variant: "destructive" });
+      return;
+    }
+
+    try {
+      await mergeAllMutation.mutateAsync({
+        groupId: selectedGroup.id,
+        targetSchoolId: mergeOptions.targetSchoolId,
+        sourceSchoolIds,
+        options: mergeOptions,
+      });
+    } catch {
+      // Error is handled by mutation onError
     }
   };
 
@@ -1007,7 +1068,7 @@ export default function DuplicateSchoolsManager() {
               )}
             </div>
           </ScrollArea>
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button
               variant="outline"
               onClick={() => setMergeDialogOpen(false)}
@@ -1015,6 +1076,24 @@ export default function DuplicateSchoolsManager() {
             >
               Cancel
             </Button>
+            {selectedGroup && selectedGroup.schoolDetails.length > 2 && (
+              <Button
+                onClick={handleMergeAllSchools}
+                disabled={mergeAllMutation.isPending || !mergeOptions.targetSchoolId}
+                variant="secondary"
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+                data-testid="button-merge-all"
+              >
+                {mergeAllMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Merging All...
+                  </>
+                ) : (
+                  `Merge All ${selectedGroup.schoolDetails.length - 1} Schools into Target`
+                )}
+              </Button>
+            )}
             <Button
               onClick={handleMergeSchools}
               disabled={mergeMutation.isPending || isMergingUsers || !mergeOptions.targetSchoolId || !mergeOptions.sourceSchoolId}
@@ -1026,6 +1105,8 @@ export default function DuplicateSchoolsManager() {
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Merging...
                 </>
+              ) : selectedGroup && selectedGroup.schoolDetails.length > 2 ? (
+                'Merge Selected Only'
               ) : (
                 'Merge Schools'
               )}

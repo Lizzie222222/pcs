@@ -2048,6 +2048,43 @@ export class SchoolStorage {
   }
 
   /**
+   * Merge multiple source schools into a single target school
+   */
+  async mergeMultipleSchools(
+    targetSchoolId: string,
+    sourceSchoolIds: string[],
+    userId: string,
+    mergeOptions: {
+      useTargetName?: boolean;
+      useTargetAddress?: boolean;
+      useTargetStudentCount?: boolean;
+      notes?: string;
+    }
+  ): Promise<{ success: boolean; mergedCount: number; errors: string[] }> {
+    const errors: string[] = [];
+    let mergedCount = 0;
+
+    for (const sourceSchoolId of sourceSchoolIds) {
+      try {
+        const result = await this.mergeSchools(targetSchoolId, sourceSchoolId, userId, mergeOptions);
+        if (result.success) {
+          mergedCount++;
+        } else {
+          errors.push(`Failed to merge school ${sourceSchoolId}: ${result.error}`);
+        }
+      } catch (error) {
+        errors.push(`Error merging school ${sourceSchoolId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }
+
+    return {
+      success: mergedCount > 0,
+      mergedCount,
+      errors
+    };
+  }
+
+  /**
    * Mark a duplicate group as merged
    */
   async markDuplicateGroupMerged(

@@ -2148,6 +2148,65 @@ schoolsRouter.post('/api/admin/duplicates/:id/merge', isAuthenticated, requireAd
   }
 });
 
+// POST /api/admin/duplicates/:id/merge-all - Merge all schools in a duplicate group into one target
+const mergeAllSchoolsSchema = z.object({
+  targetSchoolId: z.string().uuid(),
+  sourceSchoolIds: z.array(z.string().uuid()).min(1),
+  mergeOptions: z.object({
+    useTargetName: z.boolean().optional(),
+    useTargetAddress: z.boolean().optional(),
+    useTargetStudentCount: z.boolean().optional(),
+    notes: z.string().optional()
+  }).optional()
+});
+
+schoolsRouter.post('/api/admin/duplicates/:id/merge-all', isAuthenticated, requireAdmin, async (req: any, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const parsed = mergeAllSchoolsSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: "Invalid data", errors: parsed.error.errors });
+    }
+
+    const { targetSchoolId, sourceSchoolIds, mergeOptions } = parsed.data;
+
+    // Perform the bulk merge
+    const mergeResult = await schoolStorage.mergeMultipleSchools(
+      targetSchoolId,
+      sourceSchoolIds,
+      userId,
+      mergeOptions || {}
+    );
+
+    if (!mergeResult.success) {
+      return res.status(400).json({ 
+        message: "Failed to merge any schools",
+        errors: mergeResult.errors
+      });
+    }
+
+    // Mark the duplicate group as merged
+    await schoolStorage.markDuplicateGroupMerged(id, userId, targetSchoolId, mergeOptions?.notes);
+
+    console.log(`[Admin Duplicates] Bulk merge: ${mergeResult.mergedCount} schools merged into ${targetSchoolId} by user ${userId}`);
+    res.json({ 
+      message: `Successfully merged ${mergeResult.mergedCount} school(s) into target`,
+      targetSchoolId,
+      mergedCount: mergeResult.mergedCount,
+      errors: mergeResult.errors
+    });
+  } catch (error) {
+    console.error("[Admin Duplicates] Error in bulk merge:", error);
+    res.status(500).json({ message: "Failed to merge schools" });
+  }
+});
+
 // POST /api/admin/duplicates/:id/reviewed - Mark a duplicate group as reviewed (but not dismissed or merged)
 schoolsRouter.post('/api/admin/duplicates/:id/reviewed', isAuthenticated, requireAdmin, async (req: any, res) => {
   try {
