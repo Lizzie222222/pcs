@@ -44,7 +44,7 @@ const fileSchema = z.object({
 const resubmitEvidenceSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   description: z.string().min(10).optional(),
-  videoLinks: z.string().optional(),
+  videoLinks: z.string().nullable().optional(),
   files: z.array(fileSchema).optional(),
   visibility: z.enum(['public', 'private']).optional(),
 });
