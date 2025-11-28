@@ -444,6 +444,89 @@ export function createEvidenceRouters(storage: IStorage): {
   });
 
   /**
+   * PATCH /api/evidence/:id
+   * 
+   * Update pending evidence (for teachers to edit their submissions)
+   * - Only pending evidence can be edited
+   * - Verifies user is a member of the school
+   * - Allows updating title, description, files, videoLinks, visibility
+   * - Logs update activity
+   */
+  evidenceRouter.patch('/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+
+      // Validate input - only allow whitelisted fields (same schema as resubmit)
+      const validatedUpdates = resubmitEvidenceSchema.parse(req.body);
+
+      // Get evidence by ID
+      const evidence = await evidenceStorage.getEvidence(id);
+      if (!evidence) {
+        return res.status(404).json({ message: "Evidence not found" });
+      }
+
+      // Check if evidence status is 'pending' - only pending evidence can be edited
+      if (evidence.status !== 'pending') {
+        return res.status(403).json({ message: "Only pending evidence can be edited. Use resubmit for rejected evidence." });
+      }
+
+      // Verify user is a member of the school that submitted the evidence
+      const userSchools = await schoolStorage.getUserSchools(userId);
+      const hasPermission = userSchools.some((school: { id: string }) => school.id === evidence.schoolId);
+      
+      if (!hasPermission) {
+        return res.status(403).json({ message: "You don't have permission to edit this evidence" });
+      }
+
+      // Prepare update data: only use validated fields
+      // SMART FILE HANDLING:
+      // - If files are provided in request, use them (already validated by schema)
+      // - If files are NOT provided (undefined), don't include files key - backend preserves existing
+      const updateData = {
+        ...(validatedUpdates.title !== undefined ? { title: validatedUpdates.title } : {}),
+        ...(validatedUpdates.description !== undefined ? { description: validatedUpdates.description } : {}),
+        ...(validatedUpdates.videoLinks !== undefined ? { videoLinks: validatedUpdates.videoLinks } : {}),
+        ...(validatedUpdates.visibility !== undefined ? { visibility: validatedUpdates.visibility } : {}),
+        ...(validatedUpdates.files !== undefined ? { files: validatedUpdates.files } : {}),
+        updatedAt: new Date(),
+      };
+
+      // Update the evidence
+      const updatedEvidence = await evidenceStorage.updateEvidence(id, updateData);
+      if (!updatedEvidence) {
+        return res.status(500).json({ message: "Failed to update evidence" });
+      }
+
+      // Log evidence update
+      const user = await storage.getUser(userId);
+      await logUserActivity(
+        userId,
+        user?.email || undefined,
+        'evidence_update',
+        {
+          evidenceId: updatedEvidence.id,
+          title: updatedEvidence.title,
+          stage: updatedEvidence.stage,
+          schoolId: updatedEvidence.schoolId,
+          fieldsUpdated: Object.keys(updateData).filter(k => k !== 'updatedAt'),
+        },
+        updatedEvidence.id,
+        'evidence',
+        req
+      );
+
+      res.json(updatedEvidence);
+    } catch (error) {
+      console.error("Error updating evidence:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update evidence" });
+    }
+  });
+
+  /**
    * PATCH /api/evidence/:id/resubmit
    * 
    * Resubmit rejected or revision_requested evidence with updates
