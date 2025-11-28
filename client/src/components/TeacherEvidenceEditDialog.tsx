@@ -72,6 +72,9 @@ export function TeacherEvidenceEditDialog({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Track which evidence ID we've initialized for to prevent resetting on re-renders
+  const initializedForRef = useRef<string | null>(null);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -81,15 +84,23 @@ export function TeacherEvidenceEditDialog({
   const [isUploading, setIsUploading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  // Only initialize form when dialog opens with new evidence
+  // Don't reset if already initialized for this evidence ID
   useEffect(() => {
-    if (evidence) {
+    if (open && evidence && initializedForRef.current !== evidence.id) {
       setTitle(evidence.title || "");
       setDescription(evidence.description || "");
       setVisibility(evidence.visibility as "public" | "private");
       setVideoLinks(evidence.videoLinks || "");
       setUploadedFiles(evidence.files || []);
+      initializedForRef.current = evidence.id;
     }
-  }, [evidence]);
+    
+    // Reset tracker when dialog closes
+    if (!open) {
+      initializedForRef.current = null;
+    }
+  }, [open, evidence]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -255,6 +266,15 @@ export function TeacherEvidenceEditDialog({
       toast({
         title: t('forms:validation.required', 'Required'),
         description: t('forms:evidence_submission.description_min_length', 'Description must be at least 10 characters'),
+        variant: "destructive",
+      });
+      return;
+    }
+    // Validate at least one file is present
+    if (uploadedFiles.length === 0) {
+      toast({
+        title: t('forms:validation.required', 'Required'),
+        description: t('forms:evidence_submission.files_required', 'Please upload at least one file'),
         variant: "destructive",
       });
       return;

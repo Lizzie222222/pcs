@@ -185,6 +185,7 @@
     "private": "Private",
     "public": "Public",
     "title_required": "Please enter a title",
+    "files_required": "Please upload at least one file",
     "files": "Supporting Files",
     "files_description": "Upload photos, documents, or other evidence (optional)",
     "description_help": "Describe what you did, how you did it, and what impact it had.",
