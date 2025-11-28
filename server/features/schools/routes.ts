@@ -22,7 +22,8 @@ import {
   schoolUsers,
   certificates,
   evidence,
-  users
+  users,
+  duplicateSchoolGroups
 } from '@shared/schema';
 import { nanoid } from 'nanoid';
 import { z } from 'zod';
@@ -1853,5 +1854,180 @@ schoolsRouter.delete('/api/admin/schools/:schoolId/teachers/:userId', isAuthenti
   } catch (error) {
     console.error("[Admin Remove Teacher] Error:", error);
     res.status(500).json({ message: "Failed to remove teacher" });
+  }
+});
+
+// ============= DUPLICATE SCHOOL MANAGEMENT ROUTES =============
+
+// GET /api/admin/duplicates - Get all duplicate groups
+schoolsRouter.get('/api/admin/duplicates', isAuthenticated, requireAdmin, async (req, res) => {
+  try {
+    const { status } = req.query;
+    const groups = await schoolStorage.getDuplicateGroups({
+      status: status as string | undefined
+    });
+    res.json(groups);
+  } catch (error) {
+    console.error("[Admin Duplicates] Error fetching duplicate groups:", error);
+    res.status(500).json({ message: "Failed to fetch duplicate groups" });
+  }
+});
+
+// GET /api/admin/duplicates/counts - Get duplicate group counts by status
+schoolsRouter.get('/api/admin/duplicates/counts', isAuthenticated, requireAdmin, async (req, res) => {
+  try {
+    const counts = await schoolStorage.getDuplicateGroupCounts();
+    res.json(counts);
+  } catch (error) {
+    console.error("[Admin Duplicates] Error fetching duplicate counts:", error);
+    res.status(500).json({ message: "Failed to fetch duplicate counts" });
+  }
+});
+
+// GET /api/admin/duplicates/:id - Get a single duplicate group with full details
+schoolsRouter.get('/api/admin/duplicates/:id', isAuthenticated, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const group = await schoolStorage.getDuplicateGroup(id);
+    
+    if (!group) {
+      return res.status(404).json({ message: "Duplicate group not found" });
+    }
+    
+    res.json(group);
+  } catch (error) {
+    console.error("[Admin Duplicates] Error fetching duplicate group:", error);
+    res.status(500).json({ message: "Failed to fetch duplicate group" });
+  }
+});
+
+// POST /api/admin/duplicates/scan - Scan all schools for duplicates
+schoolsRouter.post('/api/admin/duplicates/scan', isAuthenticated, requireAdmin, async (req: any, res) => {
+  try {
+    console.log("[Admin Duplicates] Starting duplicate scan...");
+    const result = await schoolStorage.scanAndCreateDuplicateGroups();
+    console.log(`[Admin Duplicates] Scan complete: ${result.emailDomainGroups} email domain groups, ${result.postcodeGroups} postcode groups`);
+    res.json({
+      message: "Duplicate scan completed",
+      ...result
+    });
+  } catch (error) {
+    console.error("[Admin Duplicates] Error scanning for duplicates:", error);
+    res.status(500).json({ message: "Failed to scan for duplicates" });
+  }
+});
+
+// POST /api/admin/duplicates/:id/dismiss - Dismiss a duplicate group
+schoolsRouter.post('/api/admin/duplicates/:id/dismiss', isAuthenticated, requireAdmin, async (req: any, res) => {
+  try {
+    const { id } = req.params;
+    const { notes } = req.body;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const updated = await schoolStorage.dismissDuplicateGroup(id, userId, notes);
+    
+    if (!updated) {
+      return res.status(404).json({ message: "Duplicate group not found" });
+    }
+
+    console.log(`[Admin Duplicates] Group ${id} dismissed by user ${userId}`);
+    res.json({ message: "Duplicate group dismissed", group: updated });
+  } catch (error) {
+    console.error("[Admin Duplicates] Error dismissing duplicate group:", error);
+    res.status(500).json({ message: "Failed to dismiss duplicate group" });
+  }
+});
+
+// POST /api/admin/duplicates/:id/merge - Merge schools in a duplicate group
+const mergeSchoolsSchema = z.object({
+  targetSchoolId: z.string().uuid(),
+  sourceSchoolId: z.string().uuid(),
+  mergeOptions: z.object({
+    useTargetName: z.boolean().optional(),
+    useTargetAddress: z.boolean().optional(),
+    useTargetStudentCount: z.boolean().optional(),
+    notes: z.string().optional()
+  }).optional()
+});
+
+schoolsRouter.post('/api/admin/duplicates/:id/merge', isAuthenticated, requireAdmin, async (req: any, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const parsed = mergeSchoolsSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: "Invalid data", errors: parsed.error.errors });
+    }
+
+    const { targetSchoolId, sourceSchoolId, mergeOptions } = parsed.data;
+
+    // Perform the merge
+    const mergeResult = await schoolStorage.mergeSchools(
+      targetSchoolId,
+      sourceSchoolId,
+      userId,
+      mergeOptions || {}
+    );
+
+    if (!mergeResult.success) {
+      return res.status(400).json({ message: mergeResult.error || "Failed to merge schools" });
+    }
+
+    // Mark the duplicate group as merged
+    await schoolStorage.markDuplicateGroupMerged(id, userId, targetSchoolId, mergeOptions?.notes);
+
+    console.log(`[Admin Duplicates] Schools merged: ${sourceSchoolId} -> ${targetSchoolId} by user ${userId}`);
+    res.json({ 
+      message: "Schools merged successfully",
+      targetSchoolId,
+      sourceSchoolId
+    });
+  } catch (error) {
+    console.error("[Admin Duplicates] Error merging schools:", error);
+    res.status(500).json({ message: "Failed to merge schools" });
+  }
+});
+
+// POST /api/admin/duplicates/:id/reviewed - Mark a duplicate group as reviewed (but not dismissed or merged)
+schoolsRouter.post('/api/admin/duplicates/:id/reviewed', isAuthenticated, requireAdmin, async (req: any, res) => {
+  try {
+    const { id } = req.params;
+    const { notes } = req.body;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const [updated] = await db
+      .update(duplicateSchoolGroups)
+      .set({
+        status: 'reviewed',
+        resolvedBy: userId,
+        resolvedAt: new Date(),
+        notes: notes || null,
+        updatedAt: new Date()
+      })
+      .where(eq(duplicateSchoolGroups.id, id))
+      .returning();
+
+    if (!updated) {
+      return res.status(404).json({ message: "Duplicate group not found" });
+    }
+
+    console.log(`[Admin Duplicates] Group ${id} marked as reviewed by user ${userId}`);
+    res.json({ message: "Duplicate group marked as reviewed", group: updated });
+  } catch (error) {
+    console.error("[Admin Duplicates] Error marking duplicate group as reviewed:", error);
+    res.status(500).json({ message: "Failed to mark duplicate group as reviewed" });
   }
 });

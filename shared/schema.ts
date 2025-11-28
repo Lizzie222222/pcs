@@ -2150,3 +2150,50 @@ export const insertEmailRecipientGroupSchema = createInsertSchema(emailRecipient
 
 export type EmailRecipientGroup = typeof emailRecipientGroups.$inferSelect;
 export type InsertEmailRecipientGroup = z.infer<typeof insertEmailRecipientGroupSchema>;
+
+// Duplicate School Detection - Status enum for tracking duplicate group resolution
+export const duplicateGroupStatusEnum = pgEnum('duplicate_group_status', [
+  'new',
+  'reviewed',
+  'dismissed',
+  'merged'
+]);
+
+// Duplicate School Detection - Match type enum
+export const duplicateMatchTypeEnum = pgEnum('duplicate_match_type', [
+  'email_domain',
+  'similar_name',
+  'same_postcode',
+  'same_address'
+]);
+
+/**
+ * @description Tracks groups of potentially duplicate schools for admin review.
+ * Schools are grouped by matching criteria (email domain, similar name, same postcode).
+ * Admins can dismiss false positives or merge actual duplicates.
+ */
+export const duplicateSchoolGroups = pgTable("duplicate_school_groups", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  matchType: duplicateMatchTypeEnum("match_type").notNull(),
+  matchValue: varchar("match_value").notNull(),
+  schoolIds: text("school_ids").array().notNull(),
+  status: duplicateGroupStatusEnum("status").default('new'),
+  resolvedBy: varchar("resolved_by").references(() => users.id),
+  resolvedAt: timestamp("resolved_at"),
+  mergedIntoSchoolId: varchar("merged_into_school_id").references(() => schools.id),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("idx_duplicate_groups_status").on(table.status),
+  index("idx_duplicate_groups_match").on(table.matchType, table.matchValue),
+]);
+
+export const insertDuplicateSchoolGroupSchema = createInsertSchema(duplicateSchoolGroups).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type DuplicateSchoolGroup = typeof duplicateSchoolGroups.$inferSelect;
+export type InsertDuplicateSchoolGroup = z.infer<typeof insertDuplicateSchoolGroupSchema>;

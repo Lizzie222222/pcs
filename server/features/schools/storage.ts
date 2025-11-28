@@ -11,6 +11,8 @@ import {
   auditResponses,
   reductionPromises,
   settings,
+  duplicateSchoolGroups,
+  notifications,
   type School,
   type InsertSchool,
   type SchoolUser,
@@ -21,6 +23,8 @@ import {
   type Evidence,
   type AdminEvidenceOverride,
   type InsertAdminEvidenceOverride,
+  type DuplicateSchoolGroup,
+  type InsertDuplicateSchoolGroup,
 } from '@shared/schema';
 import { 
   eq, 
@@ -1590,6 +1594,575 @@ export class SchoolStorage {
       latestAudit: audits[0] || null,
       trends: []
     };
+  }
+
+  // ============= DUPLICATE SCHOOL DETECTION METHODS =============
+
+  /**
+   * Get the email domain from an email address
+   */
+  private extractEmailDomain(email: string | null): string | null {
+    if (!email) return null;
+    const parts = email.toLowerCase().split('@');
+    return parts.length === 2 ? parts[1] : null;
+  }
+
+  /**
+   * Find all schools grouped by email domain (for duplicate detection)
+   */
+  async findSchoolsByEmailDomainGroups(): Promise<Map<string, School[]>> {
+    const allSchools = await db
+      .select()
+      .from(schools)
+      .orderBy(asc(schools.createdAt));
+
+    const domainMap = new Map<string, School[]>();
+
+    for (const school of allSchools) {
+      const domain = this.extractEmailDomain(school.adminEmail);
+      if (domain) {
+        if (!domainMap.has(domain)) {
+          domainMap.set(domain, []);
+        }
+        domainMap.get(domain)!.push(school);
+      }
+    }
+
+    // Only return domains with more than one school
+    const duplicates = new Map<string, School[]>();
+    Array.from(domainMap.entries()).forEach(([domain, schoolList]) => {
+      if (schoolList.length > 1) {
+        duplicates.set(domain, schoolList);
+      }
+    });
+
+    return duplicates;
+  }
+
+  /**
+   * Find schools with the same postcode
+   */
+  async findSchoolsByPostcodeGroups(): Promise<Map<string, School[]>> {
+    const allSchools = await db
+      .select()
+      .from(schools)
+      .orderBy(asc(schools.createdAt));
+
+    const postcodeMap = new Map<string, School[]>();
+
+    for (const school of allSchools) {
+      const postcode = (school.postcode || school.zipCode || '').toLowerCase().trim();
+      if (postcode && postcode.length >= 3) {
+        if (!postcodeMap.has(postcode)) {
+          postcodeMap.set(postcode, []);
+        }
+        postcodeMap.get(postcode)!.push(school);
+      }
+    }
+
+    // Only return postcodes with more than one school
+    const duplicates = new Map<string, School[]>();
+    Array.from(postcodeMap.entries()).forEach(([postcode, schoolList]) => {
+      if (schoolList.length > 1) {
+        duplicates.set(postcode, schoolList);
+      }
+    });
+
+    return duplicates;
+  }
+
+  /**
+   * Find potential duplicates for a newly registered school
+   */
+  async findPotentialDuplicatesForSchool(schoolId: string): Promise<Array<{
+    matchType: 'email_domain' | 'similar_name' | 'same_postcode';
+    matchValue: string;
+    matchingSchools: School[];
+  }>> {
+    const school = await this.getSchool(schoolId);
+    if (!school) return [];
+
+    const results: Array<{
+      matchType: 'email_domain' | 'similar_name' | 'same_postcode';
+      matchValue: string;
+      matchingSchools: School[];
+    }> = [];
+
+    // Check email domain matches
+    const domain = this.extractEmailDomain(school.adminEmail);
+    if (domain) {
+      const domainMatches = await db
+        .select()
+        .from(schools)
+        .where(
+          and(
+            sql`LOWER(SUBSTRING(${schools.adminEmail} FROM POSITION('@' IN ${schools.adminEmail}) + 1)) = ${domain}`,
+            sql`${schools.id} != ${schoolId}`
+          )
+        );
+
+      if (domainMatches.length > 0) {
+        results.push({
+          matchType: 'email_domain',
+          matchValue: domain,
+          matchingSchools: domainMatches
+        });
+      }
+    }
+
+    // Check postcode matches
+    const postcode = (school.postcode || school.zipCode || '').toLowerCase().trim();
+    if (postcode && postcode.length >= 3) {
+      const postcodeMatches = await db
+        .select()
+        .from(schools)
+        .where(
+          and(
+            or(
+              sql`LOWER(TRIM(${schools.postcode})) = ${postcode}`,
+              sql`LOWER(TRIM(${schools.zipCode})) = ${postcode}`
+            ),
+            sql`${schools.id} != ${schoolId}`
+          )
+        );
+
+      if (postcodeMatches.length > 0) {
+        results.push({
+          matchType: 'same_postcode',
+          matchValue: postcode,
+          matchingSchools: postcodeMatches
+        });
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Get all duplicate school groups
+   */
+  async getDuplicateGroups(filters?: { status?: string }): Promise<Array<DuplicateSchoolGroup & { 
+    schoolDetails: Array<School & { 
+      evidenceCount: number; 
+      teamMemberCount: number;
+      primaryContactEmail: string | null;
+    }>;
+  }>> {
+    const conditions = [];
+    if (filters?.status && filters.status !== 'all') {
+      conditions.push(eq(duplicateSchoolGroups.status, filters.status as any));
+    }
+
+    const groups = await db
+      .select()
+      .from(duplicateSchoolGroups)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(duplicateSchoolGroups.createdAt));
+
+    // Enrich with school details
+    const enrichedGroups = await Promise.all(
+      groups.map(async (group) => {
+        const schoolIds = group.schoolIds || [];
+        
+        const schoolDetails = await Promise.all(
+          schoolIds.map(async (schoolId) => {
+            const school = await this.getSchool(schoolId);
+            if (!school) return null;
+
+            // Get evidence count
+            const [evidenceCountResult] = await db
+              .select({ count: count() })
+              .from(evidence)
+              .where(eq(evidence.schoolId, schoolId));
+
+            // Get team member count
+            const [teamCountResult] = await db
+              .select({ count: count() })
+              .from(schoolUsers)
+              .where(eq(schoolUsers.schoolId, schoolId));
+
+            return {
+              ...school,
+              evidenceCount: Number(evidenceCountResult?.count || 0),
+              teamMemberCount: Number(teamCountResult?.count || 0),
+            };
+          })
+        );
+
+        return {
+          ...group,
+          schoolDetails: schoolDetails.filter((s): s is NonNullable<typeof s> => s !== null)
+        };
+      })
+    );
+
+    return enrichedGroups;
+  }
+
+  /**
+   * Get a single duplicate group with full details
+   */
+  async getDuplicateGroup(groupId: string): Promise<(DuplicateSchoolGroup & {
+    schoolDetails: Array<School & {
+      evidenceCount: number;
+      teamMemberCount: number;
+      certificateCount: number;
+      primaryContactEmail: string | null;
+      primaryContactName: string | null;
+    }>;
+    resolvedByUser?: { id: string; email: string | null; firstName: string | null; lastName: string | null } | null;
+  }) | null> {
+    const [group] = await db
+      .select()
+      .from(duplicateSchoolGroups)
+      .where(eq(duplicateSchoolGroups.id, groupId));
+
+    if (!group) return null;
+
+    const schoolIds = group.schoolIds || [];
+
+    const schoolDetails = await Promise.all(
+      schoolIds.map(async (schoolId) => {
+        const school = await this.getSchool(schoolId);
+        if (!school) return null;
+
+        // Get evidence count
+        const [evidenceCountResult] = await db
+          .select({ count: count() })
+          .from(evidence)
+          .where(eq(evidence.schoolId, schoolId));
+
+        // Get team member count
+        const [teamCountResult] = await db
+          .select({ count: count() })
+          .from(schoolUsers)
+          .where(eq(schoolUsers.schoolId, schoolId));
+
+        // Get certificate count
+        const [certCountResult] = await db
+          .select({ count: count() })
+          .from(certificates)
+          .where(eq(certificates.schoolId, schoolId));
+
+        return {
+          ...school,
+          evidenceCount: Number(evidenceCountResult?.count || 0),
+          teamMemberCount: Number(teamCountResult?.count || 0),
+          certificateCount: Number(certCountResult?.count || 0),
+          primaryContactName: school.primaryContactFirstName && school.primaryContactLastName 
+            ? `${school.primaryContactFirstName} ${school.primaryContactLastName}`.trim()
+            : null
+        };
+      })
+    );
+
+    let resolvedByUser = null;
+    if (group.resolvedBy) {
+      const [user] = await db
+        .select({
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName
+        })
+        .from(users)
+        .where(eq(users.id, group.resolvedBy));
+      resolvedByUser = user || null;
+    }
+
+    return {
+      ...group,
+      schoolDetails: schoolDetails.filter((s): s is NonNullable<typeof s> => s !== null),
+      resolvedByUser
+    };
+  }
+
+  /**
+   * Create a duplicate school group
+   */
+  async createDuplicateGroup(data: InsertDuplicateSchoolGroup): Promise<DuplicateSchoolGroup> {
+    // Check if a group with same match type and value already exists
+    const [existing] = await db
+      .select()
+      .from(duplicateSchoolGroups)
+      .where(
+        and(
+          eq(duplicateSchoolGroups.matchType, data.matchType as any),
+          eq(duplicateSchoolGroups.matchValue, data.matchValue),
+          eq(duplicateSchoolGroups.status, 'new')
+        )
+      );
+
+    if (existing) {
+      // Update existing group with new school IDs
+      const existingIds = new Set(existing.schoolIds || []);
+      const newIds = data.schoolIds || [];
+      newIds.forEach(id => existingIds.add(id));
+      
+      const [updated] = await db
+        .update(duplicateSchoolGroups)
+        .set({
+          schoolIds: Array.from(existingIds),
+          updatedAt: new Date()
+        })
+        .where(eq(duplicateSchoolGroups.id, existing.id))
+        .returning();
+      
+      return updated;
+    }
+
+    const [group] = await db
+      .insert(duplicateSchoolGroups)
+      .values(data)
+      .returning();
+
+    return group;
+  }
+
+  /**
+   * Dismiss a duplicate group (mark as not duplicates)
+   */
+  async dismissDuplicateGroup(groupId: string, userId: string, notes?: string): Promise<DuplicateSchoolGroup | null> {
+    const [updated] = await db
+      .update(duplicateSchoolGroups)
+      .set({
+        status: 'dismissed',
+        resolvedBy: userId,
+        resolvedAt: new Date(),
+        notes: notes || null,
+        updatedAt: new Date()
+      })
+      .where(eq(duplicateSchoolGroups.id, groupId))
+      .returning();
+
+    return updated || null;
+  }
+
+  /**
+   * Merge schools - transfer all data from source to target school
+   */
+  async mergeSchools(
+    targetSchoolId: string,
+    sourceSchoolId: string,
+    userId: string,
+    mergeOptions: {
+      useTargetName?: boolean;
+      useTargetAddress?: boolean;
+      useTargetStudentCount?: boolean;
+      notes?: string;
+    }
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const targetSchool = await this.getSchool(targetSchoolId);
+      const sourceSchool = await this.getSchool(sourceSchoolId);
+
+      if (!targetSchool || !sourceSchool) {
+        return { success: false, error: 'One or both schools not found' };
+      }
+
+      // Transfer school users
+      await db
+        .update(schoolUsers)
+        .set({ schoolId: targetSchoolId, updatedAt: new Date() })
+        .where(eq(schoolUsers.schoolId, sourceSchoolId));
+
+      // Transfer evidence
+      await db
+        .update(evidence)
+        .set({ schoolId: targetSchoolId, updatedAt: new Date() })
+        .where(eq(evidence.schoolId, sourceSchoolId));
+
+      // Transfer audit responses
+      await db
+        .update(auditResponses)
+        .set({ schoolId: targetSchoolId, updatedAt: new Date() })
+        .where(eq(auditResponses.schoolId, sourceSchoolId));
+
+      // Transfer reduction promises
+      await db
+        .update(reductionPromises)
+        .set({ schoolId: targetSchoolId, updatedAt: new Date() })
+        .where(eq(reductionPromises.schoolId, sourceSchoolId));
+
+      // Transfer certificates
+      await db
+        .update(certificates)
+        .set({ schoolId: targetSchoolId, updatedAt: new Date() })
+        .where(eq(certificates.schoolId, sourceSchoolId));
+
+      // Transfer admin evidence overrides
+      await db
+        .update(adminEvidenceOverrides)
+        .set({ schoolId: targetSchoolId, updatedAt: new Date() })
+        .where(eq(adminEvidenceOverrides.schoolId, sourceSchoolId));
+
+      // Optionally update target school with source school data
+      const updates: Partial<School> = {};
+      if (!mergeOptions.useTargetName && sourceSchool.name) {
+        updates.name = sourceSchool.name;
+      }
+      if (!mergeOptions.useTargetAddress && sourceSchool.address) {
+        updates.address = sourceSchool.address;
+      }
+      if (!mergeOptions.useTargetStudentCount && sourceSchool.studentCount) {
+        updates.studentCount = sourceSchool.studentCount;
+      }
+
+      // Update higher progression values from source if applicable
+      const sourceProgress = sourceSchool.progressPercentage || 0;
+      const targetProgress = targetSchool.progressPercentage || 0;
+      if (sourceProgress > targetProgress) {
+        updates.progressPercentage = sourceProgress;
+        updates.currentStage = sourceSchool.currentStage;
+        updates.inspireCompleted = sourceSchool.inspireCompleted || targetSchool.inspireCompleted;
+        updates.investigateCompleted = sourceSchool.investigateCompleted || targetSchool.investigateCompleted;
+        updates.actCompleted = sourceSchool.actCompleted || targetSchool.actCompleted;
+        updates.awardCompleted = sourceSchool.awardCompleted || targetSchool.awardCompleted;
+      }
+
+      if (Object.keys(updates).length > 0) {
+        await this.updateSchool(targetSchoolId, updates);
+      }
+
+      // Mark source school as merged (soft delete)
+      await db
+        .update(schools)
+        .set({
+          name: `[MERGED] ${sourceSchool.name}`,
+          showOnMap: false,
+          updatedAt: new Date()
+        })
+        .where(eq(schools.id, sourceSchoolId));
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error merging schools:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
+  /**
+   * Mark a duplicate group as merged
+   */
+  async markDuplicateGroupMerged(
+    groupId: string,
+    userId: string,
+    targetSchoolId: string,
+    notes?: string
+  ): Promise<DuplicateSchoolGroup | null> {
+    const [updated] = await db
+      .update(duplicateSchoolGroups)
+      .set({
+        status: 'merged',
+        resolvedBy: userId,
+        resolvedAt: new Date(),
+        mergedIntoSchoolId: targetSchoolId,
+        notes: notes || null,
+        updatedAt: new Date()
+      })
+      .where(eq(duplicateSchoolGroups.id, groupId))
+      .returning();
+
+    return updated || null;
+  }
+
+  /**
+   * Scan all schools and create duplicate groups
+   */
+  async scanAndCreateDuplicateGroups(): Promise<{
+    emailDomainGroups: number;
+    postcodeGroups: number;
+    totalSchoolsAffected: number;
+  }> {
+    let emailDomainGroups = 0;
+    let postcodeGroups = 0;
+    const affectedSchools = new Set<string>();
+
+    // Find email domain duplicates
+    const emailDuplicates = await this.findSchoolsByEmailDomainGroups();
+    for (const entry of Array.from(emailDuplicates.entries())) {
+      const [domain, schoolList] = entry;
+      const schoolIds = schoolList.map((s: School) => s.id);
+      await this.createDuplicateGroup({
+        matchType: 'email_domain',
+        matchValue: domain,
+        schoolIds,
+        status: 'new'
+      });
+      emailDomainGroups++;
+      schoolIds.forEach((id: string) => affectedSchools.add(id));
+    }
+
+    // Find postcode duplicates
+    const postcodeDuplicates = await this.findSchoolsByPostcodeGroups();
+    for (const entry of Array.from(postcodeDuplicates.entries())) {
+      const [postcode, schoolList] = entry;
+      const schoolIds = schoolList.map((s: School) => s.id);
+      await this.createDuplicateGroup({
+        matchType: 'same_postcode',
+        matchValue: postcode,
+        schoolIds,
+        status: 'new'
+      });
+      postcodeGroups++;
+      schoolIds.forEach((id: string) => affectedSchools.add(id));
+    }
+
+    return {
+      emailDomainGroups,
+      postcodeGroups,
+      totalSchoolsAffected: affectedSchools.size
+    };
+  }
+
+  /**
+   * Get count of duplicate groups by status
+   */
+  async getDuplicateGroupCounts(): Promise<{
+    new: number;
+    reviewed: number;
+    dismissed: number;
+    merged: number;
+    total: number;
+  }> {
+    const counts = await db
+      .select({
+        status: duplicateSchoolGroups.status,
+        count: count()
+      })
+      .from(duplicateSchoolGroups)
+      .groupBy(duplicateSchoolGroups.status);
+
+    const result = {
+      new: 0,
+      reviewed: 0,
+      dismissed: 0,
+      merged: 0,
+      total: 0
+    };
+
+    for (const row of counts) {
+      const status = row.status as keyof typeof result;
+      result[status] = Number(row.count);
+      result.total += Number(row.count);
+    }
+
+    return result;
+  }
+
+  /**
+   * Create admin notification for duplicate detection
+   */
+  async createDuplicateNotification(schoolId: string, matchType: string, matchCount: number): Promise<void> {
+    await db.insert(notifications).values({
+      schoolId: null,
+      userId: null,
+      type: 'general',
+      title: 'Potential Duplicate School Detected',
+      message: `A new school registration may be a duplicate. Found ${matchCount} existing school(s) with matching ${matchType.replace('_', ' ')}.`,
+      actionUrl: `/admin?tab=schools&filter=duplicates`,
+      isRead: false
+    });
   }
 }
 
