@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Tooltip,
@@ -34,6 +34,15 @@ interface RoundBadgesProps {
 export function RoundBadges({ roundsCompleted, showAll = true, size = 'md' }: RoundBadgesProps) {
   const { t } = useTranslation('dashboard');
   const [selectedBadge, setSelectedBadge] = useState<{ round: number; image: string; isEarned: boolean } | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  useEffect(() => {
+    if (selectedBadge?.isEarned) {
+      setShowConfetti(true);
+      const timer = setTimeout(() => setShowConfetti(false), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedBadge]);
 
   const sizeClasses = {
     sm: 'w-12 h-12',
@@ -102,17 +111,47 @@ export function RoundBadges({ roundsCompleted, showAll = true, size = 'md' }: Ro
       </div>
 
       <Dialog open={!!selectedBadge} onOpenChange={() => setSelectedBadge(null)}>
-        <DialogContent className="sm:max-w-md p-6 bg-white rounded-xl shadow-2xl">
+        <DialogContent className="sm:max-w-md p-6 bg-white rounded-xl shadow-2xl overflow-hidden">
           {selectedBadge && (
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center relative">
+              {showConfetti && selectedBadge.isEarned && (
+                <>
+                  <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+                    {[...Array(40)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="absolute animate-badge-confetti"
+                        style={{
+                          left: `${Math.random() * 100}%`,
+                          animationDelay: `${Math.random() * 2}s`,
+                          animationDuration: `${2 + Math.random() * 1.5}s`,
+                          backgroundColor: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'][Math.floor(Math.random() * 8)],
+                          width: `${6 + Math.random() * 6}px`,
+                          height: `${6 + Math.random() * 6}px`,
+                          borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <style>{`
+                    @keyframes badge-confetti-fall {
+                      0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
+                      100% { transform: translateY(400px) rotate(720deg); opacity: 0; }
+                    }
+                    .animate-badge-confetti {
+                      animation: badge-confetti-fall 3s ease-in-out forwards;
+                    }
+                  `}</style>
+                </>
+              )}
               <img
                 src={selectedBadge.image}
                 alt={`Round ${selectedBadge.round} Badge`}
-                className={`w-64 h-64 sm:w-80 sm:h-80 object-contain ${
-                  selectedBadge.isEarned ? '' : 'opacity-40 grayscale'
+                className={`w-64 h-64 sm:w-80 sm:h-80 object-contain relative z-0 ${
+                  selectedBadge.isEarned ? 'animate-pulse' : 'opacity-40 grayscale'
                 }`}
               />
-              <div className="mt-4 text-center">
+              <div className="mt-4 text-center relative z-0">
                 {selectedBadge.isEarned ? (
                   <>
                     <p className="font-bold text-xl text-green-600">Round {selectedBadge.round} Complete!</p>

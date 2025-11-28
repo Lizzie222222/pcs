@@ -1318,7 +1318,12 @@ export class SchoolStorage {
 
     if (!school.awardCompleted) return undefined;
 
-    const nextRound = (school.currentRound || 1) + 1;
+    const currentRound = school.currentRound || 1;
+    const nextRound = currentRound + 1;
+    
+    // Ensure roundsCompleted reflects the completed round
+    // Since awardCompleted is true, we know currentRound was completed
+    const updatedRoundsCompleted = Math.max(school.roundsCompleted || 0, currentRound);
 
     const [updated] = await db
       .update(schools)
@@ -1331,6 +1336,7 @@ export class SchoolStorage {
         awardCompleted: false,
         auditQuizCompleted: false,
         progressPercentage: 0,
+        roundsCompleted: updatedRoundsCompleted,
         updatedAt: new Date()
       })
       .where(eq(schools.id, schoolId))
