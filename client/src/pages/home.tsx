@@ -87,6 +87,20 @@ import {
 import { PDFThumbnail } from "@/components/PDFThumbnail";
 import { MigratedUserNotice } from "@/components/MigratedUserNotice";
 import { RoundBadges } from "@/components/RoundBadges";
+
+import round1Badge from "@assets/round-1-badge.png";
+import round2Badge from "@assets/round-2-badge.png";
+import round3Badge from "@assets/round-3-badge.png";
+import round4Badge from "@assets/round-4-badge.png";
+import round5Badge from "@assets/round-5-badge.png";
+
+const roundBadgeImages: Record<number, string> = {
+  1: round1Badge,
+  2: round2Badge,
+  3: round3Badge,
+  4: round4Badge,
+  5: round5Badge,
+};
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -1072,9 +1086,11 @@ export default function Home() {
                   <X className="h-5 w-5" />
                 </Button>
                 <div className="mb-6">
-                  <div className="w-24 h-24 mx-auto bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center shadow-xl animate-bounce">
-                    <Award className="h-14 w-14 text-navy" />
-                  </div>
+                  <img 
+                    src={roundBadgeImages[school.currentRound || 1] || round1Badge}
+                    alt={`Round ${school.currentRound || 1} Complete Badge`}
+                    className="w-32 h-32 mx-auto object-contain drop-shadow-xl animate-bounce"
+                  />
                 </div>
                 <h2 className="text-3xl font-bold text-navy mb-3">
                   {t('round.congratulations_title', { ns: 'dashboard' })}
@@ -1189,8 +1205,12 @@ export default function Home() {
                       </Button>
                     </a>
                   </div>
-                  {/* Round Badges Section */}
-                  <RoundBadges roundsCompleted={school.roundsCompleted ?? 0} showAll={true} size="lg" />
+                  {/* Round Badges Section - show current round as completed when awardCompleted is true */}
+                  <RoundBadges 
+                    roundsCompleted={(school.roundsCompleted ?? 0) + (school.awardCompleted ? 1 : 0)} 
+                    showAll={true} 
+                    size="lg" 
+                  />
                 </div>
                 <div className="text-center">
                   <div className="relative inline-flex items-center justify-center w-28 h-28 mb-3">
