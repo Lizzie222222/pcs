@@ -101,6 +101,7 @@ const AnalyticsContent = lazy(() => import("@/components/admin/AnalyticsContent"
 const CaseStudyManagement = lazy(() => import("@/components/admin/CaseStudyManagement"));
 const ReviewsSection = lazy(() => import("@/components/admin/reviews/ReviewsSection"));
 const SchoolsSection = lazy(() => import('@/components/admin/schools/SchoolsSection'));
+import DuplicateSchoolsAlert from '@/components/admin/DuplicateSchoolsAlert';
 const EventsSection = lazy(() => import('@/components/admin/events/EventsSection'));
 const CertificatesSection = lazy(() => import('@/components/admin/CertificatesSection'));
 import EmailManagementSection from "@/components/admin/EmailManagementSection";
@@ -205,6 +206,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
     joinedYear: 'all',
     interactionStatus: 'all',
     completionStatus: 'all',
+    viewMode: 'all',
   });
 
   // Check for welcomed parameter in URL
@@ -996,6 +998,12 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
         {/* Overview Tab (Analytics Content) */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
+            <DuplicateSchoolsAlert 
+              onViewDuplicates={() => {
+                setSchoolFilters((prev: typeof schoolFilters) => ({ ...prev, viewMode: 'duplicates' }));
+                setActiveTab('schools');
+              }} 
+            />
             <Suspense fallback={
               <div className="flex items-center justify-center py-12">
                 <div className="animate-spin h-8 w-8 border-4 border-pcs_blue border-t-transparent rounded-full" />
