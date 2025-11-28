@@ -28,6 +28,15 @@ interface BackfillStats {
 const BATCH_SIZE = 1000;
 const DELAY_BETWEEN_BATCHES_MS = 500;
 
+function isValidEmail(email: string): boolean {
+  if (!email.includes('@')) return false;
+  if (email.startsWith('.') || email.startsWith('-')) return false;
+  if (email.includes('..')) return false;
+  const [local, domain] = email.split('@');
+  if (!local || !domain || !domain.includes('.')) return false;
+  return true;
+}
+
 async function getCustomFieldIds(): Promise<Record<string, string> | null> {
   if (!process.env.SENDGRID_API_KEY) {
     return null;
@@ -62,10 +71,10 @@ async function createCustomFields(): Promise<boolean> {
   }
 
   const fieldsToCreate = [
-    { name: 'has_interacted', field_type: 'text' },
-    { name: 'school_name', field_type: 'text' },
-    { name: 'school_stage', field_type: 'text' },
-    { name: 'user_role', field_type: 'text' },
+    { name: 'has_interacted', field_type: 'Text' },
+    { name: 'school_name', field_type: 'Text' },
+    { name: 'school_stage', field_type: 'Text' },
+    { name: 'user_role', field_type: 'Text' },
   ];
 
   const existingFields = await getCustomFieldIds();
@@ -192,6 +201,8 @@ async function runBackfill(dryRun: boolean = false) {
   console.log('[SendGrid Backfill] Setting up custom fields...');
   if (!dryRun) {
     await createCustomFields();
+    console.log('[SendGrid Backfill] Waiting for custom fields to propagate...');
+    await new Promise(resolve => setTimeout(resolve, 5000));
   }
 
   const customFieldIds = await getCustomFieldIds();
@@ -230,19 +241,21 @@ async function runBackfill(dryRun: boolean = false) {
     for (const user of userBatch) {
       stats.processedUsers++;
 
-      if (!user.email) {
+      const email = user.email?.toLowerCase().trim();
+      if (!email || email.length === 0 || !isValidEmail(email)) {
         stats.skippedNoEmail++;
         continue;
       }
 
       const contact: SendGridContactData = {
-        email: user.email.toLowerCase().trim(),
+        email: email,
         first_name: user.firstName || undefined,
         last_name: user.lastName || undefined,
         country: user.schoolCountry || undefined,
       };
 
-      if (customFieldIds) {
+      const hasValidCustomFields = customFieldIds && Object.keys(customFieldIds).length === 4;
+      if (hasValidCustomFields) {
         contact.custom_fields = {};
         
         if (customFieldIds['has_interacted']) {
