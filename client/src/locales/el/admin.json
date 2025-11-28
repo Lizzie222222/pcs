@@ -142,6 +142,42 @@
       "progress": "Πρόοδος Προγράμματος",
       "evidence_history": "Ιστορικό Αποδεικτικών",
       "last_activity": "Τελευταία Δραστηριότητα"
+    },
+    "bulkActions": {
+      "dialogs": {
+        "update": {
+          "title": "Bulk Update Schools",
+          "description": "This action will affect <strong>{{count}}</strong> schools.",
+          "selectFieldLabel": "Select field to update",
+          "fieldOptions": {
+            "stage": "Programme Stage",
+            "language": "Language",
+            "type": "Type of School"
+          },
+          "updateStageLabel": "New Stage",
+          "updateStageHelpText": "All selected schools will be moved to this programme stage.",
+          "updateLanguageLabel": "New Language",
+          "updateLanguageHelpText": "All selected schools will have their preferred language updated.",
+          "updateTypeLabel": "New School Type",
+          "updateTypeHelpText": "All selected schools will have their type updated."
+        },
+        "delete": {
+          "title": "Bulk Delete Schools",
+          "description": "This action will affect <strong>{{count}}</strong> schools.",
+          "warningTitle": "Warning:",
+          "warningDescription": "This action cannot be undone. All selected schools and their associated data will be permanently deleted."
+        },
+        "deleteSchool": {
+          "title": "Delete School",
+          "description": "Are you sure you want to delete <strong>{{name}}</strong>? This action cannot be undone and will permanently remove the school and all associated data.",
+          "loadingUsers": "Loading school users...",
+          "warningUsers": "Warning: This school has {{count}} associated user{{plural}}.",
+          "associatedUsers": "Associated Users:",
+          "deleteUsersLabel": "Also delete all associated user accounts",
+          "deleteUsersDescription": "If unchecked, the user accounts will remain in the system and can be reassigned to other schools. If checked, the users will be permanently deleted and won't be able to register again with the same email addresses.",
+          "noUsers": "This school has no associated users."
+        }
+      }
     }
   },
   "permissions": {

@@ -1029,8 +1029,18 @@
         "update": {
           "title": "Atualização em Massa de Escolas",
           "description": "Esta ação afetará <strong>{{count}}</strong> escolas.",
-          "updateStageLabel": "Atualizar Etapa Atual",
-          "updateStageHelpText": "Todas as escolas selecionadas serão movidas para esta etapa do programa."
+          "selectFieldLabel": "Select field to update",
+          "fieldOptions": {
+            "stage": "Programme Stage",
+            "language": "Language",
+            "type": "Type of School"
+          },
+          "updateStageLabel": "New Stage",
+          "updateStageHelpText": "All selected schools will be moved to this programme stage.",
+          "updateLanguageLabel": "New Language",
+          "updateLanguageHelpText": "All selected schools will have their preferred language updated.",
+          "updateTypeLabel": "New School Type",
+          "updateTypeHelpText": "All selected schools will have their type updated."
         },
         "delete": {
           "title": "Exclusão em Massa de Escolas",

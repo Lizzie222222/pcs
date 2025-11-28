@@ -1029,8 +1029,18 @@
         "update": {
           "title": "تحديث جماعي للمدارس",
           "description": "سيؤثر هذا الإجراء على <strong>{{count}}</strong> مدرسة.",
-          "updateStageLabel": "تحديث المرحلة الحالية",
-          "updateStageHelpText": "سيتم نقل جميع المدارس المحددة إلى هذه المرحلة من البرنامج."
+          "selectFieldLabel": "Select field to update",
+          "fieldOptions": {
+            "stage": "Programme Stage",
+            "language": "Language",
+            "type": "Type of School"
+          },
+          "updateStageLabel": "New Stage",
+          "updateStageHelpText": "All selected schools will be moved to this programme stage.",
+          "updateLanguageLabel": "New Language",
+          "updateLanguageHelpText": "All selected schools will have their preferred language updated.",
+          "updateTypeLabel": "New School Type",
+          "updateTypeHelpText": "All selected schools will have their type updated."
         },
         "delete": {
           "title": "حذف جماعي للمدارس",

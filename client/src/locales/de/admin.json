@@ -1205,8 +1205,18 @@
         "update": {
           "title": "Schulen Massenaktualisierung",
           "description": "Diese Aktion betrifft <strong>{{count}}</strong> Schulen.",
-          "updateStageLabel": "Aktuelle Phase Aktualisieren",
-          "updateStageHelpText": "Alle ausgewählten Schulen werden in diese Programmphase verschoben."
+          "selectFieldLabel": "Select field to update",
+          "fieldOptions": {
+            "stage": "Programme Stage",
+            "language": "Language",
+            "type": "Type of School"
+          },
+          "updateStageLabel": "New Stage",
+          "updateStageHelpText": "All selected schools will be moved to this programme stage.",
+          "updateLanguageLabel": "New Language",
+          "updateLanguageHelpText": "All selected schools will have their preferred language updated.",
+          "updateTypeLabel": "New School Type",
+          "updateTypeHelpText": "All selected schools will have their type updated."
         },
         "delete": {
           "title": "Schulen Massenlöschen",

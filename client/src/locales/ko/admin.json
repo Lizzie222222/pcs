@@ -1029,8 +1029,18 @@
         "update": {
           "title": "학교 일괄 업데이트",
           "description": "이 작업은 <strong>{{count}}</strong>개 학교에 영향을 미칩니다.",
-          "updateStageLabel": "현재 단계 업데이트",
-          "updateStageHelpText": "선택한 모든 학교가 이 프로그램 단계로 이동됩니다."
+          "selectFieldLabel": "Select field to update",
+          "fieldOptions": {
+            "stage": "Programme Stage",
+            "language": "Language",
+            "type": "Type of School"
+          },
+          "updateStageLabel": "New Stage",
+          "updateStageHelpText": "All selected schools will be moved to this programme stage.",
+          "updateLanguageLabel": "New Language",
+          "updateLanguageHelpText": "All selected schools will have their preferred language updated.",
+          "updateTypeLabel": "New School Type",
+          "updateTypeHelpText": "All selected schools will have their type updated."
         },
         "delete": {
           "title": "학교 일괄 삭제",

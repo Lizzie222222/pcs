@@ -1029,8 +1029,18 @@
         "update": {
           "title": "批量更新学校",
           "description": "此操作将影响 <strong>{{count}}</strong> 所学校。",
-          "updateStageLabel": "更新当前阶段",
-          "updateStageHelpText": "所有选定的学校将被移至此项目阶段。"
+          "selectFieldLabel": "Select field to update",
+          "fieldOptions": {
+            "stage": "Programme Stage",
+            "language": "Language",
+            "type": "Type of School"
+          },
+          "updateStageLabel": "New Stage",
+          "updateStageHelpText": "All selected schools will be moved to this programme stage.",
+          "updateLanguageLabel": "New Language",
+          "updateLanguageHelpText": "All selected schools will have their preferred language updated.",
+          "updateTypeLabel": "New School Type",
+          "updateTypeHelpText": "All selected schools will have their type updated."
         },
         "delete": {
           "title": "批量删除学校",

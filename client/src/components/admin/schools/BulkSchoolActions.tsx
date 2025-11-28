@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -7,6 +7,34 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { AlertTriangle } from "lucide-react";
 import type { SchoolData } from "@/components/admin/shared/types";
 import { useTranslation } from 'react-i18next';
+
+type BulkUpdateField = 'stage' | 'language' | 'type';
+
+const LANGUAGE_OPTIONS = [
+  { value: 'en', label: 'English' },
+  { value: 'es', label: 'Spanish' },
+  { value: 'fr', label: 'French' },
+  { value: 'de', label: 'German' },
+  { value: 'it', label: 'Italian' },
+  { value: 'pt', label: 'Portuguese' },
+  { value: 'nl', label: 'Dutch' },
+  { value: 'el', label: 'Greek' },
+  { value: 'ar', label: 'Arabic' },
+  { value: 'zh', label: 'Chinese' },
+  { value: 'ko', label: 'Korean' },
+  { value: 'ru', label: 'Russian' },
+  { value: 'id', label: 'Indonesian' },
+  { value: 'cy', label: 'Welsh' },
+];
+
+const SCHOOL_TYPE_OPTIONS = [
+  { value: 'kindergarten', label: 'Kindergarten' },
+  { value: 'primary', label: 'Primary School' },
+  { value: 'secondary', label: 'Secondary School' },
+  { value: 'high_school', label: 'High School' },
+  { value: 'international', label: 'International School' },
+  { value: 'other', label: 'Other' },
+];
 
 interface BulkSchoolActionsProps {
   selectedSchools: string[];
@@ -36,6 +64,28 @@ export default function BulkSchoolActions({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [deleteSchoolUsers, setDeleteSchoolUsers] = useState(false);
+  const [bulkUpdateField, setBulkUpdateField] = useState<BulkUpdateField>('stage');
+
+  useEffect(() => {
+    if (bulkSchoolDialogOpen && bulkAction?.type === 'update') {
+      setBulkUpdateField('stage');
+      setBulkAction({
+        ...bulkAction,
+        updates: { currentStage: 'inspire' }
+      });
+    }
+  }, [bulkSchoolDialogOpen]);
+
+  const handleFieldChange = (field: BulkUpdateField) => {
+    setBulkUpdateField(field);
+    if (field === 'stage') {
+      setBulkAction({ type: 'update', updates: { currentStage: 'inspire' } });
+    } else if (field === 'language') {
+      setBulkAction({ type: 'update', updates: { primaryLanguage: 'en' } });
+    } else if (field === 'type') {
+      setBulkAction({ type: 'update', updates: { type: 'primary' } });
+    }
+  };
 
   // Fetch school users preview when deletion dialog opens
   const { data: schoolUsersPreview, isLoading: isLoadingSchoolUsers } = useQuery<{
@@ -155,30 +205,110 @@ export default function BulkSchoolActions({
               </div>
               
               {bulkAction.type === 'update' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('schools.bulkActions.dialogs.update.updateStageLabel')}
-                  </label>
-                  <select
-                    value={bulkAction.updates?.currentStage || 'inspire'}
-                    onChange={(e) => {
-                      if (bulkAction) {
-                        setBulkAction({ 
-                          ...bulkAction, 
-                          updates: { ...bulkAction.updates, currentStage: e.target.value } 
-                        });
-                      }
-                    }}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    data-testid="select-bulk-stage"
-                  >
-                    <option value="inspire">{t('schools.school_details.stages.inspire')}</option>
-                    <option value="investigate">{t('schools.school_details.stages.investigate')}</option>
-                    <option value="act">{t('schools.school_details.stages.act')}</option>
-                  </select>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {t('schools.bulkActions.dialogs.update.updateStageHelpText')}
-                  </p>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t('schools.bulkActions.dialogs.update.selectFieldLabel')}
+                    </label>
+                    <select
+                      value={bulkUpdateField}
+                      onChange={(e) => handleFieldChange(e.target.value as BulkUpdateField)}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      data-testid="select-bulk-field"
+                    >
+                      <option value="stage">{t('schools.bulkActions.dialogs.update.fieldOptions.stage')}</option>
+                      <option value="language">{t('schools.bulkActions.dialogs.update.fieldOptions.language')}</option>
+                      <option value="type">{t('schools.bulkActions.dialogs.update.fieldOptions.type')}</option>
+                    </select>
+                  </div>
+
+                  {bulkUpdateField === 'stage' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        {t('schools.bulkActions.dialogs.update.updateStageLabel')}
+                      </label>
+                      <select
+                        value={bulkAction.updates?.currentStage || 'inspire'}
+                        onChange={(e) => {
+                          if (bulkAction) {
+                            setBulkAction({ 
+                              ...bulkAction, 
+                              updates: { currentStage: e.target.value } 
+                            });
+                          }
+                        }}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                        data-testid="select-bulk-stage"
+                      >
+                        <option value="inspire">{t('schools.school_details.stages.inspire')}</option>
+                        <option value="investigate">{t('schools.school_details.stages.investigate')}</option>
+                        <option value="act">{t('schools.school_details.stages.act')}</option>
+                      </select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {t('schools.bulkActions.dialogs.update.updateStageHelpText')}
+                      </p>
+                    </div>
+                  )}
+
+                  {bulkUpdateField === 'language' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        {t('schools.bulkActions.dialogs.update.updateLanguageLabel')}
+                      </label>
+                      <select
+                        value={bulkAction.updates?.primaryLanguage || 'en'}
+                        onChange={(e) => {
+                          if (bulkAction) {
+                            setBulkAction({ 
+                              ...bulkAction, 
+                              updates: { primaryLanguage: e.target.value } 
+                            });
+                          }
+                        }}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                        data-testid="select-bulk-language"
+                      >
+                        {LANGUAGE_OPTIONS.map((lang) => (
+                          <option key={lang.value} value={lang.value}>
+                            {lang.label}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {t('schools.bulkActions.dialogs.update.updateLanguageHelpText')}
+                      </p>
+                    </div>
+                  )}
+
+                  {bulkUpdateField === 'type' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        {t('schools.bulkActions.dialogs.update.updateTypeLabel')}
+                      </label>
+                      <select
+                        value={bulkAction.updates?.type || 'primary'}
+                        onChange={(e) => {
+                          if (bulkAction) {
+                            setBulkAction({ 
+                              ...bulkAction, 
+                              updates: { type: e.target.value } 
+                            });
+                          }
+                        }}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                        data-testid="select-bulk-type"
+                      >
+                        {SCHOOL_TYPE_OPTIONS.map((type) => (
+                          <option key={type.value} value={type.value}>
+                            {type.label}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {t('schools.bulkActions.dialogs.update.updateTypeHelpText')}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
