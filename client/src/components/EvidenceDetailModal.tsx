@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Clock, X, Calendar, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CheckCircle, Clock, X, Calendar, User, Pencil, AlertCircle } from "lucide-react";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
+import { TeacherEvidenceEditDialog } from "@/components/TeacherEvidenceEditDialog";
 import { useTranslation } from "react-i18next";
 import type { Evidence } from "@shared/schema";
 
@@ -10,12 +13,17 @@ interface EvidenceDetailModalProps {
   evidence: Evidence | null;
   isOpen: boolean;
   onClose: () => void;
+  canEdit?: boolean;
 }
 
-export function EvidenceDetailModal({ evidence, isOpen, onClose }: EvidenceDetailModalProps) {
+export function EvidenceDetailModal({ evidence, isOpen, onClose, canEdit = true }: EvidenceDetailModalProps) {
   const { t } = useTranslation('dashboard');
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   if (!evidence) return null;
+
+  const isPending = evidence.status === 'pending';
+  const showEditButton = canEdit && isPending;
 
   const getStatusBadge = () => {
     switch (evidence.status) {
@@ -38,6 +46,13 @@ export function EvidenceDetailModal({ evidence, isOpen, onClose }: EvidenceDetai
           <Badge className="bg-red-50 text-red-700 border-red-200">
             <X className="h-3 w-3 mr-1" />
             {t('progress.status.rejected')}
+          </Badge>
+        );
+      case 'revision_requested':
+        return (
+          <Badge className="bg-amber-50 text-amber-700 border-amber-200">
+            <AlertCircle className="h-3 w-3 mr-1" />
+            {t('progress.status.revision_requested', 'Revision Requested')}
           </Badge>
         );
       default:
@@ -86,6 +101,17 @@ export function EvidenceDetailModal({ evidence, isOpen, onClose }: EvidenceDetai
                 </Badge>
               </div>
             </div>
+            {showEditButton && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowEditDialog(true)}
+                data-testid="button-edit-evidence"
+              >
+                <Pencil className="h-4 w-4 mr-1" />
+                {t('evidence.edit_button', 'Edit')}
+              </Button>
+            )}
           </div>
         </DialogHeader>
 
@@ -149,8 +175,41 @@ export function EvidenceDetailModal({ evidence, isOpen, onClose }: EvidenceDetai
               </div>
             </div>
           )}
+
+          {/* Revision Request Feedback */}
+          {evidence.status === 'revision_requested' && evidence.reviewNotes && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-sm text-amber-900 mb-1">{t('evidence.revision_feedback', 'Revision Requested')}</h3>
+                  <p className="text-sm text-amber-800 whitespace-pre-wrap" data-testid="text-revision-notes">
+                    {evidence.reviewNotes}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </DialogContent>
+
+      {/* Edit Dialog for pending evidence */}
+      <TeacherEvidenceEditDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        evidence={evidence ? {
+          id: evidence.id,
+          schoolId: evidence.schoolId,
+          title: evidence.title,
+          description: evidence.description || '',
+          stage: evidence.stage,
+          visibility: evidence.visibility || 'private',
+          files: evidence.files as any[] || [],
+          videoLinks: evidence.videoLinks || null,
+          status: evidence.status || 'pending',
+        } : null}
+        onDeleted={onClose}
+      />
     </Dialog>
   );
 }
