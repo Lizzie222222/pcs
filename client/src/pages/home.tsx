@@ -86,6 +86,7 @@ import {
 } from "lucide-react";
 import { PDFThumbnail } from "@/components/PDFThumbnail";
 import { MigratedUserNotice } from "@/components/MigratedUserNotice";
+import { RoundBadges } from "@/components/RoundBadges";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -1065,14 +1066,19 @@ export default function Home() {
                       </Button>
                     </a>
                   </div>
-                  {(school.roundsCompleted ?? 0) > 0 && (
-                    <div className="flex items-center gap-2 text-sm">
+                  {/* Round Badges Section */}
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <div className="flex items-center gap-2 mb-3">
                       <Award className="h-5 w-5 text-yellow-500" />
-                      <span className="text-gray-700 font-medium">
-                        {school.roundsCompleted} {school.roundsCompleted === 1 ? 'round' : 'rounds'} completed
+                      <span className="text-sm font-semibold text-gray-700">
+                        {(school.roundsCompleted ?? 0) > 0 
+                          ? `${school.roundsCompleted} ${school.roundsCompleted === 1 ? 'round' : 'rounds'} completed`
+                          : 'Complete rounds to earn badges'
+                        }
                       </span>
                     </div>
-                  )}
+                    <RoundBadges roundsCompleted={school.roundsCompleted ?? 0} showAll={true} size="md" />
+                  </div>
                 </div>
                 <div className="text-center">
                   <div className="relative inline-flex items-center justify-center w-28 h-28 mb-3">
