@@ -1067,9 +1067,7 @@ export default function Home() {
                     </a>
                   </div>
                   {/* Round Badges Section */}
-                  <div className="mt-1">
-                    <RoundBadges roundsCompleted={school.roundsCompleted ?? 0} showAll={true} size="lg" />
-                  </div>
+                  <RoundBadges roundsCompleted={school.roundsCompleted ?? 0} showAll={true} size="lg" />
                 </div>
                 <div className="text-center">
                   <div className="relative inline-flex items-center justify-center w-28 h-28 mb-3">

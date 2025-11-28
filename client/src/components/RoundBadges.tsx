@@ -42,7 +42,7 @@ export function RoundBadges({ roundsCompleted, showAll = true, size = 'md' }: Ro
   }
 
   return (
-    <div className="flex items-center gap-2 sm:gap-3 flex-wrap" data-testid="round-badges-container">
+    <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap" data-testid="round-badges-container">
       {badgesToShow.map(({ round, image }) => {
         const isEarned = round <= roundsCompleted;
         
