@@ -687,10 +687,9 @@ class SendGridSyncQueue {
                     failedContacts: bisectionResult.failedContacts.map(f => ({
                       email: f.email,
                       error: f.error,
-                      // Store limited payload info to avoid huge DB entries
-                      school_name: f.payload.custom_fields?.school_name || f.payload.school_name,
-                      first_name: f.payload.first_name,
-                      last_name: f.payload.last_name,
+                      // Store the full payload - this contains all the data that was sent
+                      // including first_name, last_name, country, and custom_fields with their IDs
+                      payload: f.payload
                     })),
                     timestamp: new Date().toISOString()
                   }
