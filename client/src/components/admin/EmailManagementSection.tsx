@@ -353,6 +353,7 @@ export default function EmailManagementSection({
     currentBatch: number;
     totalBatches: number;
     errorMessage: string | null;
+    errorDetails?: { batch: number; error: any; timestamp: string } | null;
   } | null>(null);
   const [sendGridSyncResult, setSendGridSyncResult] = useState<{
     success: boolean;
@@ -664,6 +665,12 @@ export default function EmailManagementSection({
           }
         } else {
           message = `Completed with ${job.failedBatches} failed batches`;
+          if (job.errorDetails?.error) {
+            const errorStr = typeof job.errorDetails.error === 'object' 
+              ? JSON.stringify(job.errorDetails.error).substring(0, 200)
+              : String(job.errorDetails.error).substring(0, 200);
+            message += ` - Error: ${errorStr}`;
+          }
         }
         
         setSendGridSyncResult({

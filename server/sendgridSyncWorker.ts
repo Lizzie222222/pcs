@@ -502,7 +502,24 @@ class SendGridSyncQueue {
 
           if (!batchSuccess) {
             failedBatches++;
-            console.error(`[SendGrid Worker] Batch ${batchNumber}: Failed after ${MAX_RETRIES} retries`);
+            const errorDetails = typeof lastError === 'object' ? JSON.stringify(lastError) : String(lastError);
+            console.error(`[SendGrid Worker] Batch ${batchNumber}: Failed after ${MAX_RETRIES} retries. Last error: ${errorDetails}`);
+            
+            // Store error details in job for visibility
+            try {
+              await db
+                .update(sendgridSyncJobs)
+                .set({ 
+                  errorDetails: { 
+                    batch: batchNumber, 
+                    error: lastError,
+                    timestamp: new Date().toISOString()
+                  }
+                })
+                .where(eq(sendgridSyncJobs.id, jobId));
+            } catch (e) {
+              console.error('[SendGrid Worker] Failed to store error details');
+            }
           } else if (syncedUserIds.length > 0) {
             // IMMEDIATELY update sendgridSyncedAt for this batch's users in a separate transaction
             // This ensures the update commits even if later batches fail
