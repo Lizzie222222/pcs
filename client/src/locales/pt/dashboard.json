@@ -182,7 +182,11 @@
     "completion_subtitle": "A sua escola completou com sucesso:",
     "completion_stages": "Todas as 3 fases concluídas (Inspirar → Investigar → Agir)",
     "start_next_round": "Iniciar Ronda {{round}} →",
-    "start_warning": "Iniciar uma nova ronda irá reiniciar o seu progresso e começará do início"
+    "start_warning": "Iniciar uma nova ronda irá reiniciar o seu progresso e começará do início",
+    "complete_title": "Ronda {{round}} Concluída!",
+    "ready_to_continue": "Pronto para continuar a sua jornada de redução de plástico?",
+    "dismiss_failed": "Falha ao fechar a celebração",
+    "upload_above_beyond": "Carregar Evidências Extraordinárias"
   },
   "certificates": {
     "title": "Os Seus Certificados",

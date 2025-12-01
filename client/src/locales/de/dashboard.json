@@ -182,7 +182,11 @@
     "completion_subtitle": "Ihre Schule hat erfolgreich:",
     "completion_stages": "Alle 3 Stufen abgeschlossen (Inspirieren → Untersuchen → Handeln)",
     "start_next_round": "Runde {{round}} Starten →",
-    "start_warning": "Das Starten einer neuen Runde setzt Ihren Fortschritt zurück und Sie beginnen von vorne"
+    "start_warning": "Das Starten einer neuen Runde setzt Ihren Fortschritt zurück und Sie beginnen von vorne",
+    "complete_title": "Runde {{round}} Abgeschlossen!",
+    "ready_to_continue": "Bereit, Ihre Plastikreduktionsreise fortzusetzen?",
+    "dismiss_failed": "Feier konnte nicht geschlossen werden",
+    "upload_above_beyond": "Zusätzliche Nachweise Hochladen"
   },
   "certificates": {
     "title": "Ihre Zertifikate",

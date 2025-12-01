@@ -182,7 +182,11 @@
     "completion_subtitle": "Mae eich ysgol wedi llwyddo i:",
     "completion_stages": "Cwblhau pob 3 cham (Ysbrydoli → Ymchwilio → Gweithredu)",
     "start_next_round": "Dechrau Rownd {{round}} →",
-    "start_warning": "Bydd dechrau rownd newydd yn ailosod eich cynnydd a byddwch yn dechrau o'r dechrau"
+    "start_warning": "Bydd dechrau rownd newydd yn ailosod eich cynnydd a byddwch yn dechrau o'r dechrau",
+    "complete_title": "Rownd {{round}} Wedi'i Chwblhau!",
+    "ready_to_continue": "Yn barod i barhau â'ch taith lleihau plastig?",
+    "dismiss_failed": "Methodd cau'r dathliad",
+    "upload_above_beyond": "Uwchlwytho Tystiolaeth Tu Hwnt i'r Disgwyl"
   },
   "certificates": {
     "title": "Eich Tystysgrifau",

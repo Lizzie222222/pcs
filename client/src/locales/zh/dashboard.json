@@ -182,7 +182,11 @@
     "completion_subtitle": "您的学校成功地:",
     "completion_stages": "完成了所有3个阶段(启发 → 调查 → 行动)",
     "start_next_round": "开始第 {{round}} 轮 →",
-    "start_warning": "开始新一轮将重置您的进度,您将从头开始"
+    "start_warning": "开始新一轮将重置您的进度,您将从头开始",
+    "complete_title": "第 {{round}} 轮完成!",
+    "ready_to_continue": "准备好继续您的减塑之旅了吗?",
+    "dismiss_failed": "关闭庆祝失败",
+    "upload_above_beyond": "上传额外证据"
   },
   "certificates": {
     "title": "您的证书",

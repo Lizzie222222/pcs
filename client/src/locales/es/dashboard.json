@@ -182,7 +182,11 @@
     "completion_subtitle": "Tu escuela ha logrado con éxito:",
     "completion_stages": "Completar las 3 etapas (Inspirar → Investigar → Actuar)",
     "start_next_round": "Iniciar Ronda {{round}} →",
-    "start_warning": "Iniciar una nueva ronda restablecerá tu progreso y comenzarás desde el principio"
+    "start_warning": "Iniciar una nueva ronda restablecerá tu progreso y comenzarás desde el principio",
+    "complete_title": "¡Ronda {{round}} Completada!",
+    "ready_to_continue": "¿Listo para continuar tu viaje de reducción de plástico?",
+    "dismiss_failed": "Error al cerrar la celebración",
+    "upload_above_beyond": "Subir Evidencia Adicional"
   },
   "certificates": {
     "title": "Tus Certificados",

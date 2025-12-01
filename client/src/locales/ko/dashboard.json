@@ -182,7 +182,11 @@
     "completion_subtitle": "귀교가 성공적으로:",
     "completion_stages": "모든 3단계 완료 (영감 → 조사 → 행동)",
     "start_next_round": "라운드 {{round}} 시작 →",
-    "start_warning": "새 라운드를 시작하면 진행 상황이 재설정되고 처음부터 시작됩니다"
+    "start_warning": "새 라운드를 시작하면 진행 상황이 재설정되고 처음부터 시작됩니다",
+    "complete_title": "라운드 {{round}} 완료!",
+    "ready_to_continue": "플라스틱 감소 여정을 계속할 준비가 되셨나요?",
+    "dismiss_failed": "축하 닫기 실패",
+    "upload_above_beyond": "특별 증거 업로드"
   },
   "certificates": {
     "title": "귀하의 인증서",

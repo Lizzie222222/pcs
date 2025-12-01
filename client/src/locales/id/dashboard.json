@@ -182,7 +182,11 @@
     "completion_subtitle": "Sekolah Anda telah berhasil:",
     "completion_stages": "Menyelesaikan semua 3 tahap (Inspirasi → Investigasi → Tindakan)",
     "start_next_round": "Mulai Putaran {{round}} →",
-    "start_warning": "Memulai putaran baru akan mengatur ulang kemajuan Anda dan Anda akan mulai dari awal"
+    "start_warning": "Memulai putaran baru akan mengatur ulang kemajuan Anda dan Anda akan mulai dari awal",
+    "complete_title": "Putaran {{round}} Selesai!",
+    "ready_to_continue": "Siap melanjutkan perjalanan pengurangan plastik Anda?",
+    "dismiss_failed": "Gagal menutup perayaan",
+    "upload_above_beyond": "Unggah Bukti Luar Biasa"
   },
   "certificates": {
     "title": "Sertifikat Anda",

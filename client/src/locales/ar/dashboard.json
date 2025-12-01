@@ -182,7 +182,11 @@
     "completion_subtitle": "نجحت مدرستك في:",
     "completion_stages": "إكمال جميع المراحل الثلاث (إلهام ← تحقيق ← عمل)",
     "start_next_round": "بدء الجولة {{round}} ←",
-    "start_warning": "بدء جولة جديدة سيعيد تعيين تقدمك وستبدأ من البداية"
+    "start_warning": "بدء جولة جديدة سيعيد تعيين تقدمك وستبدأ من البداية",
+    "complete_title": "الجولة {{round}} مكتملة!",
+    "ready_to_continue": "هل أنت مستعد لمواصلة رحلتك في تقليل البلاستيك؟",
+    "dismiss_failed": "فشل إغلاق الاحتفال",
+    "upload_above_beyond": "تحميل أدلة ما وراء التوقعات"
   },
   "certificates": {
     "title": "شهاداتك",

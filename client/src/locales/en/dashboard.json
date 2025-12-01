@@ -54,7 +54,11 @@
     "completion_subtitle": "Your school has successfully:",
     "completion_stages": "Completed all 3 stages (Inspire → Investigate → Act)",
     "start_next_round": "Start Round {{round}} →",
-    "start_warning": "Starting a new round will reset your progress and begin fresh"
+    "start_warning": "Starting a new round will reset your progress and begin fresh",
+    "complete_title": "Round {{round}} Complete!",
+    "ready_to_continue": "Ready to continue your plastic reduction journey?",
+    "dismiss_failed": "Failed to dismiss celebration",
+    "upload_above_beyond": "Upload Above & Beyond Evidence"
   },
   "notifications": {
     "audit_complete_title": "🎉 You've completed your plastic waste audit!",

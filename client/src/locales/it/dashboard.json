@@ -182,7 +182,11 @@
     "completion_subtitle": "La tua scuola ha completato con successo:",
     "completion_stages": "Completato tutte le 3 fasi (Ispira → Investiga → Agisci)",
     "start_next_round": "Inizia Round {{round}} →",
-    "start_warning": "Iniziare un nuovo round resetterà i tuoi progressi e inizierai dall'inizio"
+    "start_warning": "Iniziare un nuovo round resetterà i tuoi progressi e inizierai dall'inizio",
+    "complete_title": "Round {{round}} Completato!",
+    "ready_to_continue": "Pronto a continuare il tuo percorso di riduzione della plastica?",
+    "dismiss_failed": "Impossibile chiudere la celebrazione",
+    "upload_above_beyond": "Carica Prove Oltre le Aspettative"
   },
   "certificates": {
     "title": "I Tuoi Certificati",

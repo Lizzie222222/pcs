@@ -182,7 +182,11 @@
     "completion_subtitle": "Votre école a réussi à :",
     "completion_stages": "Compléter les 3 étapes (Inspirer → Enquêter → Agir)",
     "start_next_round": "Commencer le Tour {{round}} →",
-    "start_warning": "Démarrer un nouveau tour réinitialisera votre progression et vous recommencerez depuis le début"
+    "start_warning": "Démarrer un nouveau tour réinitialisera votre progression et vous recommencerez depuis le début",
+    "complete_title": "Tour {{round}} Terminé !",
+    "ready_to_continue": "Prêt à continuer votre parcours de réduction du plastique ?",
+    "dismiss_failed": "Échec de la fermeture de la célébration",
+    "upload_above_beyond": "Télécharger des Preuves Supplémentaires"
   },
   "certificates": {
     "title": "Vos Certificats",

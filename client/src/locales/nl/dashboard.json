@@ -182,7 +182,11 @@
     "completion_subtitle": "Uw school heeft met succes:",
     "completion_stages": "Alle 3 fasen voltooid (Inspireren → Onderzoeken → Handelen)",
     "start_next_round": "Ronde {{round}} Starten →",
-    "start_warning": "Een nieuwe ronde starten zal uw voortgang resetten en u begint opnieuw"
+    "start_warning": "Een nieuwe ronde starten zal uw voortgang resetten en u begint opnieuw",
+    "complete_title": "Ronde {{round}} Voltooid!",
+    "ready_to_continue": "Klaar om uw plasticreductiereis voort te zetten?",
+    "dismiss_failed": "Viering sluiten mislukt",
+    "upload_above_beyond": "Extra Bewijs Uploaden"
   },
   "certificates": {
     "title": "Uw Certificaten",
