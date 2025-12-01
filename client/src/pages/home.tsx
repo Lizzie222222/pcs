@@ -1076,9 +1076,20 @@ export default function Home() {
                       });
                       if (response.ok) {
                         queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
+                      } else {
+                        toast({
+                          title: t('errors.unexpected_error', { ns: 'dashboard' }),
+                          description: t('round.dismiss_failed', { ns: 'dashboard' }),
+                          variant: "destructive",
+                        });
                       }
                     } catch (error) {
                       console.error('Failed to dismiss celebration:', error);
+                      toast({
+                        title: t('errors.unexpected_error', { ns: 'dashboard' }),
+                        description: t('round.dismiss_failed', { ns: 'dashboard' }),
+                        variant: "destructive",
+                      });
                     }
                   }}
                   data-testid="button-dismiss-celebration"
@@ -1106,37 +1117,51 @@ export default function Home() {
                       <span>{t('round.completion_stages', { ns: 'dashboard' })}</span>
                     </div>
                   </div>
-                  <div className="pt-4">
-                    <Button
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg font-bold rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-                      onClick={async () => {
-                        try {
-                          const response = await fetch(`/api/schools/${school.id}/start-round`, {
-                            method: 'POST',
-                            credentials: 'include',
-                          });
-                          if (response.ok) {
-                            window.location.reload();
-                          } else {
+                  <div className="pt-4 flex flex-col gap-3">
+                    <div className="flex flex-wrap justify-center gap-3">
+                      <Button
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg font-bold rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+                        onClick={async () => {
+                          try {
+                            const response = await fetch(`/api/schools/${school.id}/start-round`, {
+                              method: 'POST',
+                              credentials: 'include',
+                            });
+                            if (response.ok) {
+                              queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
+                            } else {
+                              toast({
+                                title: t('errors.unexpected_error', { ns: 'dashboard' }),
+                                description: t('errors.start_round_failed', { ns: 'dashboard' }),
+                                variant: "destructive",
+                              });
+                            }
+                          } catch (error) {
                             toast({
                               title: t('errors.unexpected_error', { ns: 'dashboard' }),
                               description: t('errors.start_round_failed', { ns: 'dashboard' }),
                               variant: "destructive",
                             });
                           }
-                        } catch (error) {
-                          toast({
-                            title: t('errors.unexpected_error', { ns: 'dashboard' }),
-                            description: t('errors.start_round_failed', { ns: 'dashboard' }),
-                            variant: "destructive",
-                          });
-                        }
-                      }}
-                      data-testid="button-start-new-round"
-                    >
-                      {t('round.start_next_round', { ns: 'dashboard', round: (school.currentRound || 1) + 1 })}
-                    </Button>
-                    <p className="text-xs text-gray-500 mt-3">
+                        }}
+                        data-testid="button-start-new-round"
+                      >
+                        {t('round.start_next_round', { ns: 'dashboard', round: (school.currentRound || 1) + 1 })}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="border-2 border-teal-400 text-teal-700 hover:bg-teal-50 px-6 py-4 text-lg font-semibold rounded-full shadow-lg transition-all duration-300"
+                        onClick={() => {
+                          setShowEvidenceForm(true);
+                          setPreSelectedStage('above_and_beyond');
+                        }}
+                        data-testid="button-upload-above-beyond"
+                      >
+                        <Upload className="h-5 w-5 mr-2" />
+                        {t('round.upload_above_beyond', { ns: 'dashboard' })}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
                       {t('round.start_warning', { ns: 'dashboard' })}
                     </p>
                   </div>
@@ -1608,42 +1633,56 @@ export default function Home() {
                         </div>
                         <div>
                           <h3 className="text-xl font-bold text-navy">
-                            Round {school.currentRound} Complete!
+                            {t('round.complete_title', { ns: 'dashboard', round: school.currentRound })}
                           </h3>
                           <p className="text-sm text-gray-600">
-                            Ready to continue your plastic reduction journey?
+                            {t('round.ready_to_continue', { ns: 'dashboard' })}
                           </p>
                         </div>
                       </div>
-                      <Button
-                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
-                        onClick={async () => {
-                          try {
-                            const response = await fetch(`/api/schools/${school.id}/start-round`, {
-                              method: 'POST',
-                              credentials: 'include',
-                            });
-                            if (response.ok) {
-                              window.location.reload();
-                            } else {
+                      <div className="flex flex-wrap gap-3">
+                        <Button
+                          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                          onClick={async () => {
+                            try {
+                              const response = await fetch(`/api/schools/${school.id}/start-round`, {
+                                method: 'POST',
+                                credentials: 'include',
+                              });
+                              if (response.ok) {
+                                queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
+                              } else {
+                                toast({
+                                  title: t('errors.unexpected_error', { ns: 'dashboard' }),
+                                  description: t('errors.start_round_failed', { ns: 'dashboard' }),
+                                  variant: "destructive",
+                                });
+                              }
+                            } catch (error) {
                               toast({
                                 title: t('errors.unexpected_error', { ns: 'dashboard' }),
                                 description: t('errors.start_round_failed', { ns: 'dashboard' }),
                                 variant: "destructive",
                               });
                             }
-                          } catch (error) {
-                            toast({
-                              title: t('errors.unexpected_error', { ns: 'dashboard' }),
-                              description: t('errors.start_round_failed', { ns: 'dashboard' }),
-                              variant: "destructive",
-                            });
-                          }
-                        }}
-                        data-testid="button-start-round-compact"
-                      >
-                        Start Round {(school.currentRound || 1) + 1}
-                      </Button>
+                          }}
+                          data-testid="button-start-round-compact"
+                        >
+                          {t('round.start_next_round', { ns: 'dashboard', round: (school.currentRound || 1) + 1 })}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="border-2 border-teal-400 text-teal-700 hover:bg-teal-50 px-4 py-3 font-semibold rounded-full shadow transition-all duration-300"
+                          onClick={() => {
+                            setShowEvidenceForm(true);
+                            setPreSelectedStage('above_and_beyond');
+                          }}
+                          data-testid="button-upload-above-beyond-compact"
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          {t('round.upload_above_beyond', { ns: 'dashboard' })}
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
