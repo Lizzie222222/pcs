@@ -531,8 +531,10 @@ class SendGridSyncQueue {
       const countsMatch = expectedProcessed === processedContacts && processedContacts === totalUsers;
       const jobSucceeded = failedBatches === 0 && countsMatch;
 
-      if (jobSucceeded && allSyncedUserIds.length > 0) {
-        console.log(`[SendGrid Worker] Job succeeded, updating sendgridSyncedAt for ${allSyncedUserIds.length} users...`);
+      // Always update sendgridSyncedAt for successfully synced contacts, even if job partially failed
+      // This ensures retries don't re-sync contacts that already succeeded
+      if (allSyncedUserIds.length > 0) {
+        console.log(`[SendGrid Worker] Updating sendgridSyncedAt for ${allSyncedUserIds.length} successfully synced users...`);
         try {
           const SYNC_UPDATE_BATCH_SIZE = 500;
           for (let i = 0; i < allSyncedUserIds.length; i += SYNC_UPDATE_BATCH_SIZE) {
@@ -609,30 +611,57 @@ class SendGridSyncQueue {
 export const sendgridSyncQueue = new SendGridSyncQueue();
 
 export async function createSendGridSyncJob(mode: 'incremental' | 'full', triggeredBy: string): Promise<string> {
-  const existingRunning = await db
-    .select()
-    .from(sendgridSyncJobs)
-    .where(eq(sendgridSyncJobs.status, 'processing'))
-    .limit(1);
+  console.log(`[SendGrid Worker] createSendGridSyncJob called with mode: ${mode}, triggeredBy: ${triggeredBy}`);
+  
+  try {
+    const existingRunning = await db
+      .select()
+      .from(sendgridSyncJobs)
+      .where(eq(sendgridSyncJobs.status, 'processing'))
+      .limit(1);
 
-  if (existingRunning.length > 0) {
-    throw new Error('A sync job is already running. Please wait for it to complete.');
+    console.log(`[SendGrid Worker] Existing running jobs: ${existingRunning.length}`);
+
+    if (existingRunning.length > 0) {
+      throw new Error('A sync job is already running. Please wait for it to complete.');
+    }
+
+    console.log('[SendGrid Worker] Inserting new job into database...');
+    const [job] = await db
+      .insert(sendgridSyncJobs)
+      .values({
+        mode,
+        triggeredBy,
+        status: 'pending',
+      })
+      .returning();
+
+    if (!job || !job.id) {
+      throw new Error('Failed to create sync job - no job returned from database insert');
+    }
+
+    console.log(`[SendGrid Worker] Created sync job ${job.id} (mode: ${mode})`);
+
+    // Verify the job was persisted
+    const verifyJob = await db
+      .select()
+      .from(sendgridSyncJobs)
+      .where(eq(sendgridSyncJobs.id, job.id))
+      .limit(1);
+    
+    if (verifyJob.length === 0) {
+      throw new Error(`Job ${job.id} was not persisted to database`);
+    }
+    
+    console.log(`[SendGrid Worker] Verified job ${job.id} exists in database`);
+
+    sendgridSyncQueue.startJob(job.id);
+
+    return job.id;
+  } catch (error: any) {
+    console.error('[SendGrid Worker] Error in createSendGridSyncJob:', error);
+    throw error;
   }
-
-  const [job] = await db
-    .insert(sendgridSyncJobs)
-    .values({
-      mode,
-      triggeredBy,
-      status: 'pending',
-    })
-    .returning();
-
-  console.log(`[SendGrid Worker] Created sync job ${job.id} (mode: ${mode})`);
-
-  sendgridSyncQueue.startJob(job.id);
-
-  return job.id;
 }
 
 export async function getSendGridSyncJobStatus(jobId: string) {
