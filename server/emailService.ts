@@ -4,7 +4,7 @@ import { storage } from './storage';
 import { translateEmailContent, type EmailContent } from './translationService';
 import { db } from './db';
 import { users, schools, schoolUsers } from '@shared/schema';
-import { eq, isNull, isNotNull, and, asc } from 'drizzle-orm';
+import { eq, isNull, isNotNull, and, asc, or, lt, inArray } from 'drizzle-orm';
 
 if (!process.env.SENDGRID_API_KEY) {
   console.warn("SENDGRID_API_KEY environment variable not set");
@@ -361,21 +361,39 @@ export interface BackfillResult {
   totalUsers: number;
   syncedContacts: number;
   skippedNoEmail: number;
+  skippedAlreadySynced: number;
   failedBatches: number;
   durationSeconds: number;
 }
 
+export interface BackfillOptions {
+  forceSync?: boolean;
+  onProgress?: (processed: number, total: number) => void;
+}
+
 export async function backfillAllContactsToSendGrid(
-  onProgress?: (processed: number, total: number) => void
+  optionsOrOnProgress?: BackfillOptions | ((processed: number, total: number) => void),
+  legacyOnProgress?: (processed: number, total: number) => void
 ): Promise<BackfillResult> {
+  // Handle both old signature (onProgress callback) and new signature (options object)
+  const options: BackfillOptions = typeof optionsOrOnProgress === 'function' 
+    ? { onProgress: optionsOrOnProgress }
+    : (optionsOrOnProgress || {});
+  
+  const onProgress = options.onProgress || legacyOnProgress;
+  const forceSync = options.forceSync || false;
+  
   const BATCH_SIZE = 500;
-  const DELAY_BETWEEN_BATCHES_MS = 500; // Increased to reduce rate limiting
+  const DELAY_BETWEEN_BATCHES_MS = 500;
+  // Users synced within the last 24 hours are skipped (unless forceSync)
+  const SYNC_THRESHOLD_HOURS = 24;
 
   const startTime = Date.now();
   const result: BackfillResult = {
     totalUsers: 0,
     syncedContacts: 0,
     skippedNoEmail: 0,
+    skippedAlreadySynced: 0,
     failedBatches: 0,
     durationSeconds: 0,
   };
@@ -393,16 +411,51 @@ export async function backfillAllContactsToSendGrid(
   const customFieldIds = await getSendGridCustomFieldIds();
   console.log('[SendGrid Backfill] Custom field IDs:', Object.keys(customFieldIds).join(', '));
 
-  const countResult = await db
+  // Calculate threshold time for incremental sync
+  const syncThreshold = new Date(Date.now() - SYNC_THRESHOLD_HOURS * 60 * 60 * 1000);
+  
+  // Build where condition based on forceSync
+  const baseCondition = and(
+    isNotNull(users.email),
+    isNull(users.deletedAt)
+  );
+  
+  // For incremental sync, only get users not recently synced
+  const whereCondition = forceSync 
+    ? baseCondition 
+    : and(
+        baseCondition,
+        or(
+          isNull(users.sendgridSyncedAt),
+          lt(users.sendgridSyncedAt, syncThreshold)
+        )
+      );
+
+  // Get total count of ALL eligible users (for display)
+  const allUsersCount = await db
     .select({ id: users.id })
     .from(users)
-    .where(and(
-      isNotNull(users.email),
-      isNull(users.deletedAt)
-    ));
+    .where(baseCondition);
   
-  result.totalUsers = countResult.length;
-  console.log(`[SendGrid Backfill] Total users to process: ${result.totalUsers}`);
+  // Get users to sync
+  const usersToSync = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(whereCondition);
+  
+  result.totalUsers = usersToSync.length;
+  result.skippedAlreadySynced = allUsersCount.length - usersToSync.length;
+  
+  console.log(`[SendGrid Backfill] Mode: ${forceSync ? 'FORCE FULL SYNC' : 'INCREMENTAL'}`);
+  console.log(`[SendGrid Backfill] Total eligible users: ${allUsersCount.length}`);
+  console.log(`[SendGrid Backfill] Users to sync: ${result.totalUsers}`);
+  console.log(`[SendGrid Backfill] Already synced (skipped): ${result.skippedAlreadySynced}`);
+  
+  if (result.totalUsers === 0) {
+    console.log('[SendGrid Backfill] No users need syncing. All done!');
+    result.durationSeconds = Math.round((Date.now() - startTime) / 1000);
+    return result;
+  }
 
   let offset = 0;
   let batchNumber = 1;
@@ -423,15 +476,13 @@ export async function backfillAllContactsToSendGrid(
         isMigrated: users.isMigrated,
       })
       .from(users)
-      .where(and(
-        isNotNull(users.email),
-        isNull(users.deletedAt)
-      ))
+      .where(whereCondition)
       .orderBy(asc(users.id))
       .limit(BATCH_SIZE)
       .offset(offset);
 
     const contacts: SendGridContactData[] = [];
+    const batchUserIds: string[] = [];
 
     for (const user of userBatch) {
       processedUsers++;
@@ -441,6 +492,8 @@ export async function backfillAllContactsToSendGrid(
         result.skippedNoEmail++;
         continue;
       }
+
+      batchUserIds.push(user.id);
 
       const schoolAssociation = await db
         .select({
@@ -502,6 +555,19 @@ export async function backfillAllContactsToSendGrid(
             result.syncedContacts += contacts.length;
             console.log(`[SendGrid Backfill] Batch ${batchNumber}: Synced ${contacts.length} contacts`);
             batchSuccess = true;
+            
+            // Mark users as synced in the database
+            if (batchUserIds.length > 0) {
+              try {
+                await db
+                  .update(users)
+                  .set({ sendgridSyncedAt: new Date() })
+                  .where(inArray(users.id, batchUserIds));
+                console.log(`[SendGrid Backfill] Batch ${batchNumber}: Marked ${batchUserIds.length} users as synced`);
+              } catch (dbError) {
+                console.error(`[SendGrid Backfill] Batch ${batchNumber}: Failed to update sync timestamps:`, dbError);
+              }
+            }
           } else {
             retryCount++;
             lastError = { statusCode: response.statusCode, body: response.body };
@@ -547,8 +613,9 @@ export async function backfillAllContactsToSendGrid(
   result.durationSeconds = Math.round((Date.now() - startTime) / 1000);
   
   console.log('[SendGrid Backfill] Complete!');
-  console.log(`  Total users: ${result.totalUsers}`);
+  console.log(`  Total users to sync: ${result.totalUsers}`);
   console.log(`  Synced contacts: ${result.syncedContacts}`);
+  console.log(`  Skipped (already synced): ${result.skippedAlreadySynced}`);
   console.log(`  Skipped (no email): ${result.skippedNoEmail}`);
   console.log(`  Failed batches: ${result.failedBatches}`);
   console.log(`  Duration: ${result.durationSeconds}s`);
