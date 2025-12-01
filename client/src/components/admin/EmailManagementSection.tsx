@@ -100,13 +100,10 @@ function SaveFiltersButton({ schoolFilters }: { schoolFilters: any }) {
 
   const createGroupMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest('/api/admin/email-recipient-groups', {
-        method: 'POST',
-        body: JSON.stringify({
-          name: groupName,
-          description: groupDescription || null,
-          filters: schoolFilters,
-        }),
+      return await apiRequest('POST', '/api/admin/email-recipient-groups', {
+        name: groupName,
+        description: groupDescription || null,
+        filters: schoolFilters,
       });
     },
     onSuccess: () => {
@@ -212,7 +209,7 @@ function SavedGroupSelector({ emailForm, setEmailForm }: { emailForm: any; setEm
 
   const deleteGroupMutation = useMutation({
     mutationFn: async (groupId: string) => {
-      await apiRequest(`/api/admin/email-recipient-groups/${groupId}`, { method: 'DELETE' });
+      await apiRequest('DELETE', `/api/admin/email-recipient-groups/${groupId}`);
     },
     onSuccess: () => {
       queryClientInstance.invalidateQueries({ queryKey: ['/api/admin/email-recipient-groups'] });
