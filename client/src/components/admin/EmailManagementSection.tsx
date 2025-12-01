@@ -615,6 +615,13 @@ export default function EmailManagementSection({
         credentials: 'include',
       });
 
+      // Handle non-JSON responses (timeouts, server errors)
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        throw new Error(text || `Server error: ${response.status}`);
+      }
+
       const result = await response.json();
 
       if (response.ok) {
@@ -644,11 +651,11 @@ export default function EmailManagementSection({
     } catch (error: any) {
       setSendGridSyncResult({
         success: false,
-        message: error.message || "An error occurred during sync",
+        message: error.message || "An error occurred during sync. The sync may still be running - check server logs.",
       });
       toast({
         title: "Error",
-        description: "An error occurred while syncing contacts",
+        description: error.message || "An error occurred while syncing contacts",
         variant: "destructive",
       });
     } finally {

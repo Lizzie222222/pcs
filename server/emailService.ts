@@ -507,7 +507,7 @@ export async function backfillAllContactsToSendGrid(
             lastError = { statusCode: response.statusCode, body: response.body };
             console.error(`[SendGrid Backfill] Batch ${batchNumber}: Unexpected status ${response.statusCode}, retry ${retryCount}/${MAX_RETRIES}`);
             if (retryCount < MAX_RETRIES) {
-              const delay = 2000 * Math.pow(2, retryCount); // Longer delays: 4s, 8s, 16s, 32s
+              const delay = 1000 * (retryCount + 1); // Linear delays: 2s, 3s, 4s, 5s
               console.log(`[SendGrid Backfill] Waiting ${delay/1000}s before retry...`);
               await new Promise(resolve => setTimeout(resolve, delay));
             }
@@ -517,7 +517,7 @@ export async function backfillAllContactsToSendGrid(
           lastError = error.response?.body || error.message || error;
           console.error(`[SendGrid Backfill] Batch ${batchNumber}: Error (attempt ${retryCount}/${MAX_RETRIES}) -`, lastError);
           if (retryCount < MAX_RETRIES) {
-            const delay = 2000 * Math.pow(2, retryCount); // Longer delays: 4s, 8s, 16s, 32s
+            const delay = 1000 * (retryCount + 1); // Linear delays: 2s, 3s, 4s, 5s
             console.log(`[SendGrid Backfill] Waiting ${delay/1000}s before retry...`);
             await new Promise(resolve => setTimeout(resolve, delay));
           }
