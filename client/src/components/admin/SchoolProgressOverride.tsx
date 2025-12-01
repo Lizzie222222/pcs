@@ -62,17 +62,20 @@ export default function SchoolProgressOverride({ schoolId, onUpdate }: SchoolPro
   const queryClient = useQueryClient();
 
   // Fetch school details
-  const { data: school } = useQuery<School>({
+  const { data: school, isLoading: schoolLoading } = useQuery<School>({
     queryKey: ['/api/admin/schools', schoolId],
   });
   
   // Viewing state - separate from actual current round/stage
-  // Initialize with school data or safe defaults
-  const [viewingRound, setViewingRound] = useState<number>(() => school?.currentRound || 1);
-  const [viewingStage, setViewingStage] = useState<'inspire' | 'investigate' | 'act'>(() => school?.currentStage || 'inspire');
+  // CRITICAL: Initialize as null to prevent race condition where queries fire
+  // with roundNumber=1 before school data loads with the actual current round.
+  // This caused audits from Round 1 to appear when viewing Round 2 schools.
+  const [viewingRound, setViewingRound] = useState<number | null>(null);
+  const [viewingStage, setViewingStage] = useState<'inspire' | 'investigate' | 'act' | null>(null);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
   // Sync viewing state when school data loads or changes
+  // This is the ONLY place where viewingRound gets set to a real value
   useEffect(() => {
     if (school) {
       setViewingRound(school.currentRound);
@@ -224,8 +227,18 @@ export default function SchoolProgressOverride({ schoolId, onUpdate }: SchoolPro
     act: requirements.filter(r => r.stage === 'act').sort((a, b) => a.orderIndex - b.orderIndex),
   };
 
-  if (!school) {
-    return null;
+  // Show loading state while school data or viewing state is not ready
+  // This prevents queries from firing with wrong round number
+  if (!school || schoolLoading || viewingRound === null || viewingStage === null) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center text-gray-500">
+            Loading school progress...
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   // Check if viewing differs from current

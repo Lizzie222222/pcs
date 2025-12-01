@@ -282,9 +282,29 @@ export class SchoolStorage {
       return undefined;
     }
 
+    // If rolling back to a previous round, adjust roundsCompleted
     if (updates.currentRound !== undefined && updates.currentRound < (currentSchool.currentRound || 1)) {
       (updates as any).roundsCompleted = Math.max(0, updates.currentRound - 1);
       console.log(`[Manual Progression] Rolling back from Round ${currentSchool.currentRound} to Round ${updates.currentRound}, resetting roundsCompleted to ${(updates as any).roundsCompleted}`);
+    }
+
+    // CRITICAL: If advancing to a new round, reset ALL stage completion flags
+    // This mirrors the behavior of startNewRound() to prevent stale completion states
+    // Without this, flags like inspireCompleted stay true from the previous round
+    if (updates.currentRound !== undefined && updates.currentRound > (currentSchool.currentRound || 1)) {
+      console.log(`[Manual Progression] Advancing from Round ${currentSchool.currentRound} to Round ${updates.currentRound}`);
+      console.log(`[Manual Progression] Before reset - inspireCompleted: ${currentSchool.inspireCompleted}, investigateCompleted: ${currentSchool.investigateCompleted}, actCompleted: ${currentSchool.actCompleted}`);
+      
+      // Reset all stage completion flags for the new round
+      updates.inspireCompleted = false;
+      updates.investigateCompleted = false;
+      updates.actCompleted = false;
+      (updates as any).awardCompleted = false;
+      (updates as any).auditQuizCompleted = false;
+      updates.progressPercentage = 0;
+      (updates as any).roundCelebrationDismissed = false;
+      
+      console.log(`[Manual Progression] After reset - all completion flags set to false, progressPercentage set to 0`);
     }
 
     const [school] = await db
