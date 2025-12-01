@@ -301,7 +301,130 @@ function buildSendGridContactWithCustomFields(
 const BATCH_SIZE = 250;
 const DELAY_BETWEEN_BATCHES_MS = 1000;
 const SYNC_THRESHOLD_HOURS = 24;
-const MAX_RETRIES = 5;
+const MAX_RETRIES = 3; // Reduced since we now have bisection fallback
+const MAX_BISECTION_DEPTH = 8; // Allows isolating down to single contacts
+
+interface BisectionResult {
+  syncedCount: number;
+  failedContacts: Array<{ email: string; error: string; payload: any }>;
+}
+
+/**
+ * Attempts to sync a batch of contacts to SendGrid.
+ * On failure, recursively bisects the batch to isolate problematic contacts
+ * and sync the good ones.
+ */
+async function syncBatchWithBisection(
+  contacts: SendGridContactData[],
+  batchLabel: string,
+  depth: number = 0
+): Promise<BisectionResult> {
+  const result: BisectionResult = { syncedCount: 0, failedContacts: [] };
+  
+  if (contacts.length === 0) {
+    return result;
+  }
+  
+  // If we've reached a single contact and it fails, log it and give up on that contact
+  if (contacts.length === 1 && depth > 0) {
+    try {
+      const request = {
+        url: '/v3/marketing/contacts' as '/v3/marketing/contacts',
+        method: 'PUT' as const,
+        body: { contacts }
+      };
+      const [response] = await sgClient.request(request);
+      if (response.statusCode === 202) {
+        result.syncedCount = 1;
+        console.log(`[SendGrid Worker] ${batchLabel}: Single contact sync succeeded for ${contacts[0].email}`);
+      } else {
+        result.failedContacts.push({
+          email: contacts[0].email,
+          error: `Unexpected status: ${response.statusCode}`,
+          payload: contacts[0]
+        });
+        console.error(`[SendGrid Worker] ${batchLabel}: Single contact FAILED - ${contacts[0].email}`, {
+          status: response.statusCode,
+          payload: JSON.stringify(contacts[0])
+        });
+      }
+    } catch (error: any) {
+      const errorMsg = error.response?.body?.errors?.[0]?.message || error.message || 'Unknown error';
+      result.failedContacts.push({
+        email: contacts[0].email,
+        error: errorMsg,
+        payload: contacts[0]
+      });
+      console.error(`[SendGrid Worker] ${batchLabel}: Single contact FAILED - ${contacts[0].email}`, {
+        error: errorMsg,
+        fullError: JSON.stringify(error.response?.body || error.message),
+        payload: JSON.stringify(contacts[0])
+      });
+    }
+    return result;
+  }
+  
+  // Try to sync the entire batch
+  try {
+    const request = {
+      url: '/v3/marketing/contacts' as '/v3/marketing/contacts',
+      method: 'PUT' as const,
+      body: { contacts }
+    };
+    const [response] = await sgClient.request(request);
+    if (response.statusCode === 202) {
+      result.syncedCount = contacts.length;
+      if (depth > 0) {
+        console.log(`[SendGrid Worker] ${batchLabel}: Bisected batch of ${contacts.length} synced successfully`);
+      }
+      return result;
+    }
+    // Non-202 status, fall through to bisection
+    console.log(`[SendGrid Worker] ${batchLabel}: Got status ${response.statusCode}, will bisect`);
+  } catch (error: any) {
+    const errorMsg = error.response?.body?.errors?.[0]?.message || error.message || 'Unknown error';
+    console.log(`[SendGrid Worker] ${batchLabel}: Batch of ${contacts.length} failed with: ${errorMsg}, will bisect (depth ${depth})`);
+    
+    // Log specific error details from SendGrid if available
+    if (error.response?.body?.errors) {
+      console.log(`[SendGrid Worker] ${batchLabel}: SendGrid errors:`, JSON.stringify(error.response.body.errors));
+    }
+  }
+  
+  // Check bisection depth limit
+  if (depth >= MAX_BISECTION_DEPTH) {
+    console.error(`[SendGrid Worker] ${batchLabel}: Max bisection depth reached, failing ${contacts.length} contacts`);
+    for (const contact of contacts) {
+      result.failedContacts.push({
+        email: contact.email,
+        error: 'Max bisection depth reached',
+        payload: contact
+      });
+    }
+    return result;
+  }
+  
+  // Bisect: split in half and try each half
+  const midpoint = Math.floor(contacts.length / 2);
+  const firstHalf = contacts.slice(0, midpoint);
+  const secondHalf = contacts.slice(midpoint);
+  
+  console.log(`[SendGrid Worker] ${batchLabel}: Bisecting ${contacts.length} contacts into ${firstHalf.length} + ${secondHalf.length}`);
+  
+  // Add small delay between bisected requests
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  const firstResult = await syncBatchWithBisection(firstHalf, `${batchLabel}.1`, depth + 1);
+  
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  const secondResult = await syncBatchWithBisection(secondHalf, `${batchLabel}.2`, depth + 1);
+  
+  result.syncedCount = firstResult.syncedCount + secondResult.syncedCount;
+  result.failedContacts = [...firstResult.failedContacts, ...secondResult.failedContacts];
+  
+  return result;
+}
 
 class SendGridSyncQueue {
   private isProcessing = false;
@@ -538,56 +661,37 @@ class SendGridSyncQueue {
         }
 
         if (contacts.length > 0) {
-          let retryCount = 0;
-          let batchSuccess = false;
-          let lastError: any = null;
-
-          while (retryCount < MAX_RETRIES && !batchSuccess) {
-            try {
-              const request = {
-                url: '/v3/marketing/contacts' as '/v3/marketing/contacts',
-                method: 'PUT' as const,
-                body: { contacts }
-              };
-
-              const [response] = await sgClient.request(request);
-              if (response.statusCode === 202) {
-                syncedContacts += contacts.length;
-                console.log(`[SendGrid Worker] Batch ${batchNumber}: Synced ${contacts.length} contacts`);
-                batchSuccess = true;
-              } else {
-                retryCount++;
-                lastError = { statusCode: response.statusCode, body: response.body };
-                console.error(`[SendGrid Worker] Batch ${batchNumber}: Unexpected status ${response.statusCode}, retry ${retryCount}/${MAX_RETRIES}`);
-                if (retryCount < MAX_RETRIES) {
-                  const delay = 2000 * retryCount;
-                  await new Promise(resolve => setTimeout(resolve, delay));
-                }
-              }
-            } catch (error: any) {
-              retryCount++;
-              lastError = error.response?.body || error.message || error;
-              console.error(`[SendGrid Worker] Batch ${batchNumber}: Error (attempt ${retryCount}/${MAX_RETRIES}) -`, lastError);
-              if (retryCount < MAX_RETRIES) {
-                const delay = 2000 * retryCount;
-                await new Promise(resolve => setTimeout(resolve, delay));
-              }
+          // Use bisection approach: if batch fails, split and retry to isolate bad contacts
+          console.log(`[SendGrid Worker] Batch ${batchNumber}: Attempting to sync ${contacts.length} contacts...`);
+          
+          const bisectionResult = await syncBatchWithBisection(contacts, `Batch${batchNumber}`, 0);
+          
+          // Update counters based on bisection results
+          syncedContacts += bisectionResult.syncedCount;
+          
+          if (bisectionResult.failedContacts.length > 0) {
+            // Log all failed contacts with details
+            console.error(`[SendGrid Worker] Batch ${batchNumber}: ${bisectionResult.failedContacts.length} contacts failed:`);
+            for (const failed of bisectionResult.failedContacts) {
+              console.error(`  - ${failed.email}: ${failed.error}`);
+              console.error(`    Payload: ${JSON.stringify(failed.payload)}`);
             }
-          }
-
-          if (!batchSuccess) {
-            failedBatches++;
-            const errorDetails = typeof lastError === 'object' ? JSON.stringify(lastError) : String(lastError);
-            console.error(`[SendGrid Worker] Batch ${batchNumber}: Failed after ${MAX_RETRIES} retries. Last error: ${errorDetails}`);
             
-            // Store error details in job for visibility
+            // Store failed contact details in job for visibility
             try {
               await db
                 .update(sendgridSyncJobs)
                 .set({ 
                   errorDetails: { 
                     batch: batchNumber, 
-                    error: lastError,
+                    failedContacts: bisectionResult.failedContacts.map(f => ({
+                      email: f.email,
+                      error: f.error,
+                      // Store limited payload info to avoid huge DB entries
+                      school_name: f.payload.custom_fields?.school_name || f.payload.school_name,
+                      first_name: f.payload.first_name,
+                      last_name: f.payload.last_name,
+                    })),
                     timestamp: new Date().toISOString()
                   }
                 })
@@ -595,18 +699,47 @@ class SendGridSyncQueue {
             } catch (e) {
               console.error('[SendGrid Worker] Failed to store error details');
             }
-          } else if (syncedUserIds.length > 0) {
-            // IMMEDIATELY update sendgridSyncedAt for this batch's users in a separate transaction
-            // This ensures the update commits even if later batches fail
-            try {
-              await db
-                .update(users)
-                .set({ sendgridSyncedAt: new Date() })
-                .where(inArray(users.id, syncedUserIds));
-              console.log(`[SendGrid Worker] Batch ${batchNumber}: Marked ${syncedUserIds.length} users as synced in database`);
-            } catch (dbError) {
-              console.error(`[SendGrid Worker] Batch ${batchNumber}: Failed to update sendgridSyncedAt:`, dbError);
-              // Don't fail the batch - the contacts were synced to SendGrid successfully
+            
+            // Only count as failed batch if we couldn't sync ANY contacts
+            if (bisectionResult.syncedCount === 0) {
+              failedBatches++;
+            }
+          }
+          
+          // Log success summary
+          if (bisectionResult.syncedCount > 0) {
+            console.log(`[SendGrid Worker] Batch ${batchNumber}: Successfully synced ${bisectionResult.syncedCount}/${contacts.length} contacts`);
+          }
+          
+          // Update sendgridSyncedAt for successfully synced users
+          // We need to figure out which users succeeded - for now, update all if any succeeded
+          // (the bisection isolates failures, so most should have synced)
+          if (bisectionResult.syncedCount > 0 && syncedUserIds.length > 0) {
+            // Build list of failed emails for exclusion
+            const failedEmails = new Set(bisectionResult.failedContacts.map(f => f.email.toLowerCase()));
+            
+            // Filter syncedUserIds to only include those whose emails weren't in failedContacts
+            // We need to match by email since that's what we have from bisection
+            const contactEmailToUserId = new Map<string, string>();
+            for (let i = 0; i < contacts.length; i++) {
+              contactEmailToUserId.set(contacts[i].email.toLowerCase(), syncedUserIds[i]);
+            }
+            
+            const successfulUserIds = syncedUserIds.filter((userId, index) => {
+              const email = contacts[index]?.email.toLowerCase();
+              return email && !failedEmails.has(email);
+            });
+            
+            if (successfulUserIds.length > 0) {
+              try {
+                await db
+                  .update(users)
+                  .set({ sendgridSyncedAt: new Date() })
+                  .where(inArray(users.id, successfulUserIds));
+                console.log(`[SendGrid Worker] Batch ${batchNumber}: Marked ${successfulUserIds.length} users as synced in database`);
+              } catch (dbError) {
+                console.error(`[SendGrid Worker] Batch ${batchNumber}: Failed to update sendgridSyncedAt:`, dbError);
+              }
             }
           }
         }
