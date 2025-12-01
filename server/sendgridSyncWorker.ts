@@ -149,9 +149,12 @@ async function ensureSendGridCustomFields(): Promise<boolean> {
 
 /**
  * Sanitizes a string for SendGrid API compatibility.
- * - Normalizes Unicode characters
- * - Removes control characters and invalid UTF-8 sequences
+ * - Normalizes Unicode characters (preserves valid international characters)
+ * - Removes only control characters that could break JSON/API
  * - Trims and limits length
+ * 
+ * Note: SendGrid supports UTF-8, so we preserve valid Unicode.
+ * We only remove characters that could cause API/JSON encoding issues.
  */
 function sanitizeForSendGrid(value: string | null | undefined, maxLength: number = 255): string | undefined {
   if (!value) return undefined;
@@ -160,53 +163,33 @@ function sanitizeForSendGrid(value: string | null | undefined, maxLength: number
     // Normalize unicode (NFC form for consistency)
     let sanitized = value.normalize('NFC');
     
-    // Remove control characters (except newlines/tabs which are valid)
+    // Remove only control characters that break JSON/API (NULL, etc.)
+    // Keep tabs and newlines as they're valid in text
     sanitized = sanitized.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
     
-    // Remove any surrogate pairs that are incomplete (invalid UTF-16)
-    sanitized = sanitized.replace(/[\uD800-\uDFFF]/g, '');
-    
-    // Replace common mojibake patterns (corrupted UTF-8)
-    // These are common patterns when UTF-8 is misinterpreted as Latin-1
-    const mojibakeReplacements: [RegExp, string][] = [
-      [/Ã©/g, 'é'], // é
-      [/Ã¨/g, 'è'], // è
-      [/Ã /g, 'à'], // à
-      [/Ã¡/g, 'á'], // á
-      [/Ã¢/g, 'â'], // â
-      [/Ã£/g, 'ã'], // ã
-      [/Ã§/g, 'ç'], // ç
-      [/Ã±/g, 'ñ'], // ñ
-      [/Ã³/g, 'ó'], // ó
-      [/Ãº/g, 'ú'], // ú
-      [/Ã­/g, 'í'], // í
-      [/Ã®/g, 'î'], // î
-      [/Ã¯/g, 'ï'], // ï
-      [/Ã´/g, 'ô'], // ô
-      [/Ã¶/g, 'ö'], // ö
-      [/Ã¼/g, 'ü'], // ü
-      [/ć/g, 'ã'], // Common corruption of ã
-      [/ķ/g, 'í'], // Common corruption of í
-      [/ē/g, 'ç'], // Common corruption of ç
-    ];
-    
-    for (const [pattern, replacement] of mojibakeReplacements) {
-      sanitized = sanitized.replace(pattern, replacement);
-    }
+    // Remove only UNPAIRED surrogates (invalid UTF-16)
+    // This regex matches lone high surrogates not followed by low surrogates,
+    // or lone low surrogates not preceded by high surrogates
+    sanitized = sanitized.replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '');
     
     // Trim whitespace
     sanitized = sanitized.trim();
     
-    // Limit length
+    // Limit length (but don't cut in middle of a surrogate pair)
     if (sanitized.length > maxLength) {
       sanitized = sanitized.substring(0, maxLength);
+      // If we cut in the middle of a surrogate pair, remove the orphaned high surrogate
+      if (sanitized.charCodeAt(sanitized.length - 1) >= 0xD800 && 
+          sanitized.charCodeAt(sanitized.length - 1) <= 0xDBFF) {
+        sanitized = sanitized.substring(0, sanitized.length - 1);
+      }
     }
     
     return sanitized.length > 0 ? sanitized : undefined;
   } catch (error) {
     console.error('[SendGrid Worker] Error sanitizing string:', value, error);
-    // If all else fails, try to return ASCII-only version
-    return value.replace(/[^\x20-\x7E]/g, '').trim() || undefined;
+    // If normalization fails, just trim and return
+    return value.trim() || undefined;
   }
 }
 
