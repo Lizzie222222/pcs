@@ -166,6 +166,7 @@ export const users = pgTable("users", {
   needsEvidenceResubmission: boolean("needs_evidence_resubmission").default(false),
   migratedAt: timestamp("migrated_at"),
   welcomeEmailSentAt: timestamp("welcome_email_sent_at"),
+  sendgridSyncedAt: timestamp("sendgrid_synced_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
