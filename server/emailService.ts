@@ -369,7 +369,7 @@ export async function backfillAllContactsToSendGrid(
   onProgress?: (processed: number, total: number) => void
 ): Promise<BackfillResult> {
   const BATCH_SIZE = 500;
-  const DELAY_BETWEEN_BATCHES_MS = 300;
+  const DELAY_BETWEEN_BATCHES_MS = 500; // Increased to reduce rate limiting
 
   const startTime = Date.now();
   const result: BackfillResult = {
@@ -484,9 +484,10 @@ export async function backfillAllContactsToSendGrid(
     }
 
     if (contacts.length > 0) {
-      const MAX_RETRIES = 3;
+      const MAX_RETRIES = 5; // Increased retries
       let retryCount = 0;
       let batchSuccess = false;
+      let lastError: any = null;
 
       while (retryCount < MAX_RETRIES && !batchSuccess) {
         try {
@@ -503,23 +504,31 @@ export async function backfillAllContactsToSendGrid(
             batchSuccess = true;
           } else {
             retryCount++;
+            lastError = { statusCode: response.statusCode, body: response.body };
             console.error(`[SendGrid Backfill] Batch ${batchNumber}: Unexpected status ${response.statusCode}, retry ${retryCount}/${MAX_RETRIES}`);
             if (retryCount < MAX_RETRIES) {
-              await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
+              const delay = 2000 * Math.pow(2, retryCount); // Longer delays: 4s, 8s, 16s, 32s
+              console.log(`[SendGrid Backfill] Waiting ${delay/1000}s before retry...`);
+              await new Promise(resolve => setTimeout(resolve, delay));
             }
           }
         } catch (error: any) {
           retryCount++;
-          console.error(`[SendGrid Backfill] Batch ${batchNumber}: Error (attempt ${retryCount}/${MAX_RETRIES}) -`, error.response?.body || error);
+          lastError = error.response?.body || error.message || error;
+          console.error(`[SendGrid Backfill] Batch ${batchNumber}: Error (attempt ${retryCount}/${MAX_RETRIES}) -`, lastError);
           if (retryCount < MAX_RETRIES) {
-            await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
+            const delay = 2000 * Math.pow(2, retryCount); // Longer delays: 4s, 8s, 16s, 32s
+            console.log(`[SendGrid Backfill] Waiting ${delay/1000}s before retry...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
           }
         }
       }
 
       if (!batchSuccess) {
         result.failedBatches++;
-        console.error(`[SendGrid Backfill] Batch ${batchNumber}: Failed after ${MAX_RETRIES} retries`);
+        const sampleEmails = contacts.slice(0, 3).map(c => c.email).join(', ');
+        console.error(`[SendGrid Backfill] Batch ${batchNumber}: Failed after ${MAX_RETRIES} retries. Sample emails: ${sampleEmails}...`);
+        console.error(`[SendGrid Backfill] Last error:`, JSON.stringify(lastError, null, 2));
       }
     }
 
