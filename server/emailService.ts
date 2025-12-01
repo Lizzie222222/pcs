@@ -23,7 +23,7 @@ interface SendGridContactData {
   last_name?: string;
   city?: string;
   country?: string;
-  custom_fields?: Record<string, string>;
+  custom_fields?: Record<string, string | number>;
 }
 
 interface EnrichedContactData {
@@ -209,7 +209,7 @@ function buildSendGridContactWithCustomFields(
     }
     
     if (customFieldIds['rounds_completed']) {
-      sgContact.custom_fields[customFieldIds['rounds_completed']] = String(contact.roundsCompleted || 0);
+      sgContact.custom_fields[customFieldIds['rounds_completed']] = contact.roundsCompleted || 0;
     }
     
     if (customFieldIds['is_migrated']) {
@@ -484,24 +484,42 @@ export async function backfillAllContactsToSendGrid(
     }
 
     if (contacts.length > 0) {
-      try {
-        const request = {
-          url: '/v3/marketing/contacts' as '/v3/marketing/contacts',
-          method: 'PUT' as const,
-          body: { contacts }
-        };
+      const MAX_RETRIES = 3;
+      let retryCount = 0;
+      let batchSuccess = false;
 
-        const [response] = await sgClient.request(request);
-        if (response.statusCode === 202) {
-          result.syncedContacts += contacts.length;
-          console.log(`[SendGrid Backfill] Batch ${batchNumber}: Synced ${contacts.length} contacts`);
-        } else {
-          result.failedBatches++;
-          console.error(`[SendGrid Backfill] Batch ${batchNumber}: Unexpected status ${response.statusCode}`);
+      while (retryCount < MAX_RETRIES && !batchSuccess) {
+        try {
+          const request = {
+            url: '/v3/marketing/contacts' as '/v3/marketing/contacts',
+            method: 'PUT' as const,
+            body: { contacts }
+          };
+
+          const [response] = await sgClient.request(request);
+          if (response.statusCode === 202) {
+            result.syncedContacts += contacts.length;
+            console.log(`[SendGrid Backfill] Batch ${batchNumber}: Synced ${contacts.length} contacts`);
+            batchSuccess = true;
+          } else {
+            retryCount++;
+            console.error(`[SendGrid Backfill] Batch ${batchNumber}: Unexpected status ${response.statusCode}, retry ${retryCount}/${MAX_RETRIES}`);
+            if (retryCount < MAX_RETRIES) {
+              await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
+            }
+          }
+        } catch (error: any) {
+          retryCount++;
+          console.error(`[SendGrid Backfill] Batch ${batchNumber}: Error (attempt ${retryCount}/${MAX_RETRIES}) -`, error.response?.body || error);
+          if (retryCount < MAX_RETRIES) {
+            await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
+          }
         }
-      } catch (error: any) {
+      }
+
+      if (!batchSuccess) {
         result.failedBatches++;
-        console.error(`[SendGrid Backfill] Batch ${batchNumber}: Error -`, error.response?.body || error);
+        console.error(`[SendGrid Backfill] Batch ${batchNumber}: Failed after ${MAX_RETRIES} retries`);
       }
     }
 
