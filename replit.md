@@ -70,7 +70,7 @@ Core entities include Users, Schools, Evidence, Audit Logs, Reduction Promises (
 -   **File Storage**: Google Cloud Storage
 -   **Authentication**: Google OAuth
 -   **Email Services**: SendGrid (with automatic contact sync to Marketing Contacts)
-    -   **SendGrid Contact Backfill Script**: Run `npx tsx server/scripts/backfill-sendgrid-contacts.ts` to sync all existing users to SendGrid Marketing Contacts. Supports `--dry-run` flag for testing. Creates custom fields: `has_interacted`, `school_name`, `school_stage`, `user_role` for segmentation.
+    -   **SendGrid Contact Sync**: Admin UI provides incremental sync that only processes contacts not synced in the last 24 hours (tracked via `sendgridSyncedAt` timestamp on users table). "Force Sync All" option available for full re-sync when needed. Custom fields include: `has_interacted`, `school_name`, `school_stage`, `user_role`, `school_type`, `rounds_completed` (Number type), `inspire_completed`, `investigate_completed`, `act_completed`, `is_migrated`, `user_language`, `is_active` for segmentation.
 -   **Build Tool**: Vite
 -   **Hosting/Deployment**: Replit
 -   **AI Integration**: OpenAI GPT-4o-mini

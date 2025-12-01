@@ -348,6 +348,7 @@ export default function EmailManagementSection({
     message: string;
     totalUsers?: number;
     syncedContacts?: number;
+    skippedAlreadySynced?: number;
     durationSeconds?: number;
   } | null>(null);
   
