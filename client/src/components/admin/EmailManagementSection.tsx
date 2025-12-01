@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -340,6 +340,20 @@ export default function EmailManagementSection({
   
   // SendGrid contact sync state
   const [sendGridSyncing, setSendGridSyncing] = useState(false);
+  const [sendGridJobId, setSendGridJobId] = useState<string | null>(null);
+  const [sendGridJobStatus, setSendGridJobStatus] = useState<{
+    status: 'pending' | 'processing' | 'completed' | 'failed';
+    mode: 'incremental' | 'full';
+    totalContacts: number;
+    processedContacts: number;
+    syncedContacts: number;
+    skippedNoEmail: number;
+    skippedAlreadySynced: number;
+    failedBatches: number;
+    currentBatch: number;
+    totalBatches: number;
+    errorMessage: string | null;
+  } | null>(null);
   const [sendGridSyncResult, setSendGridSyncResult] = useState<{
     success: boolean;
     message: string;
@@ -348,6 +362,7 @@ export default function EmailManagementSection({
     skippedAlreadySynced?: number;
     durationSeconds?: number;
   } | null>(null);
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   
   const [formData, setFormData] = useState({
     welcome: { recipientEmail: '', schoolName: 'Test School' },
@@ -602,9 +617,117 @@ export default function EmailManagementSection({
     setImagePickerOpen(false);
   };
 
+  const clearPolling = () => {
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = null;
+    }
+  };
+
+  const startPolling = (jobId: string) => {
+    clearPolling();
+    pollIntervalRef.current = setInterval(() => {
+      pollJobStatus(jobId);
+    }, 2000);
+    pollJobStatus(jobId);
+  };
+
+  const pollJobStatus = async (jobId: string) => {
+    try {
+      const response = await fetch(`/api/admin/sendgrid/sync-jobs/${jobId}`, {
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch job status');
+      }
+      
+      const job = await response.json();
+      setSendGridJobStatus(job);
+      
+      if (job.status === 'completed' || job.status === 'failed') {
+        clearPolling();
+        setSendGridSyncing(false);
+        setSendGridJobId(null);
+        
+        const success = job.status === 'completed' && job.failedBatches === 0;
+        let message: string;
+        
+        if (job.status === 'failed') {
+          message = job.errorMessage || 'Sync failed';
+        } else if (job.totalContacts === 0 && job.skippedAlreadySynced > 0) {
+          message = `All ${job.skippedAlreadySynced} contacts already synced. No updates needed.`;
+        } else if (job.failedBatches === 0) {
+          message = `Successfully synced ${job.syncedContacts} contacts to SendGrid`;
+          if (job.skippedAlreadySynced > 0) {
+            message += ` (${job.skippedAlreadySynced} already synced)`;
+          }
+        } else {
+          message = `Completed with ${job.failedBatches} failed batches`;
+        }
+        
+        setSendGridSyncResult({
+          success,
+          message,
+          totalUsers: job.totalContacts,
+          syncedContacts: job.syncedContacts,
+          skippedAlreadySynced: job.skippedAlreadySynced,
+        });
+        
+        toast({
+          title: success ? "Sync Complete" : "Sync Issue",
+          description: message,
+          variant: success ? "default" : "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error polling job status:', error);
+    }
+  };
+
+  useEffect(() => {
+    const checkForActiveJob = async () => {
+      try {
+        const response = await fetch('/api/admin/sendgrid/sync-jobs/latest', {
+          credentials: 'include',
+        });
+        
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        
+        if (data.isActive && data.job) {
+          setSendGridSyncing(true);
+          setSendGridJobId(data.job.id);
+          setSendGridJobStatus(data.job);
+          startPolling(data.job.id);
+        }
+      } catch (error) {
+        console.error('Error checking for active sync job:', error);
+      }
+    };
+    
+    checkForActiveJob();
+    
+    return () => {
+      clearPolling();
+    };
+  }, []);
+
   const handleSendGridSync = async (forceSync: boolean = false) => {
+    if (sendGridSyncing) {
+      toast({
+        title: "Sync Already Running",
+        description: "Please wait for the current sync to complete.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    clearPolling();
     setSendGridSyncing(true);
     setSendGridSyncResult(null);
+    setSendGridJobStatus(null);
 
     try {
       const response = await fetch('/api/admin/sendgrid/backfill', {
@@ -614,7 +737,6 @@ export default function EmailManagementSection({
         body: JSON.stringify({ forceSync }),
       });
 
-      // Handle non-JSON responses (timeouts, server errors)
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
         const text = await response.text();
@@ -623,43 +745,44 @@ export default function EmailManagementSection({
 
       const result = await response.json();
 
-      if (response.ok) {
-        setSendGridSyncResult({
-          success: result.failedBatches === 0,
-          message: result.message,
-          totalUsers: result.totalUsers,
-          syncedContacts: result.syncedContacts,
-          skippedAlreadySynced: result.skippedAlreadySynced,
-          durationSeconds: result.durationSeconds,
-        });
+      if (response.ok && result.jobId) {
+        setSendGridJobId(result.jobId);
         toast({
-          title: result.failedBatches === 0 ? "Sync Complete" : "Sync Completed with Issues",
-          description: result.message,
-          variant: result.failedBatches === 0 ? "default" : "destructive",
+          title: "Sync Started",
+          description: "Contact sync is running in the background. You can track progress below.",
+        });
+        
+        startPolling(result.jobId);
+      } else if (response.status === 409 || result.conflict) {
+        setSendGridSyncing(false);
+        toast({
+          title: "Sync Already Running",
+          description: result.message || "A sync job is already in progress. Please wait for it to complete.",
+          variant: "destructive",
         });
       } else {
+        setSendGridSyncing(false);
         setSendGridSyncResult({
           success: false,
-          message: result.message || "Failed to sync contacts",
+          message: result.message || "Failed to start sync",
         });
         toast({
           title: "Sync Failed",
-          description: result.message || "Failed to sync contacts to SendGrid",
+          description: result.message || "Failed to start contact sync",
           variant: "destructive",
         });
       }
     } catch (error: any) {
+      setSendGridSyncing(false);
       setSendGridSyncResult({
         success: false,
-        message: error.message || "An error occurred during sync. The sync may still be running - check server logs.",
+        message: error.message || "An error occurred while starting sync",
       });
       toast({
         title: "Error",
-        description: error.message || "An error occurred while syncing contacts",
+        description: error.message || "An error occurred while starting sync",
         variant: "destructive",
       });
-    } finally {
-      setSendGridSyncing(false);
     }
   };
 
@@ -743,7 +866,44 @@ export default function EmailManagementSection({
               </Button>
             </div>
 
-            {sendGridSyncResult && (
+            {sendGridSyncing && sendGridJobStatus && (
+              <div className="p-4 rounded-lg bg-blue-50 border border-blue-200" data-testid="sendgrid-sync-progress">
+                <div className="flex items-center gap-2 mb-3">
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                  <p className="text-sm font-medium text-blue-900">
+                    Syncing contacts... ({sendGridJobStatus.mode === 'full' ? 'Full Sync' : 'Incremental'})
+                  </p>
+                </div>
+                
+                {sendGridJobStatus.totalContacts > 0 && (
+                  <>
+                    <div className="w-full bg-blue-200 rounded-full h-2.5 mb-2">
+                      <div 
+                        className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
+                        style={{ width: `${Math.round((sendGridJobStatus.processedContacts / sendGridJobStatus.totalContacts) * 100)}%` }}
+                      />
+                    </div>
+                    <div className="text-sm text-blue-700 space-y-1">
+                      <p>
+                        Progress: {sendGridJobStatus.processedContacts} / {sendGridJobStatus.totalContacts} contacts
+                        ({Math.round((sendGridJobStatus.processedContacts / sendGridJobStatus.totalContacts) * 100)}%)
+                      </p>
+                      <p>Batch: {sendGridJobStatus.currentBatch} / {sendGridJobStatus.totalBatches}</p>
+                      <p>Synced so far: {sendGridJobStatus.syncedContacts}</p>
+                      {sendGridJobStatus.skippedAlreadySynced > 0 && (
+                        <p>Already synced (skipped): {sendGridJobStatus.skippedAlreadySynced}</p>
+                      )}
+                    </div>
+                  </>
+                )}
+                
+                {sendGridJobStatus.status === 'pending' && (
+                  <p className="text-sm text-blue-600 mt-2">Preparing sync job...</p>
+                )}
+              </div>
+            )}
+
+            {!sendGridSyncing && sendGridSyncResult && (
               <div className={`p-4 rounded-lg ${sendGridSyncResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`} data-testid="sendgrid-sync-result">
                 <p className={`text-sm font-medium ${sendGridSyncResult.success ? 'text-green-900' : 'text-red-900'}`}>
                   {sendGridSyncResult.success ? '✅ Sync Complete' : '❌ Sync Issue'}

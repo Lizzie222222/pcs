@@ -4,7 +4,8 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated, isSchoolMember, trackUserActivity, markUserInteracted } from "./auth";
 import { ObjectStorageService, ObjectNotFoundError, objectStorageClient } from "./objectStorage";
 import { ObjectPermission, getObjectAclPolicy, setObjectAclPolicy } from "./objectAcl";
-import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail, sendEventAnnouncementEmail, sendEventDigestEmail, sendContactFormEmail, getFromAddress, sendWeeklyAdminDigest, WeeklyDigestData, getBaseUrl, backfillAllContactsToSendGrid, getSendGridCustomFieldIds } from "./emailService";
+import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail, sendEventAnnouncementEmail, sendEventDigestEmail, sendContactFormEmail, getFromAddress, sendWeeklyAdminDigest, WeeklyDigestData, getBaseUrl, getSendGridCustomFieldIds } from "./emailService";
+import { createSendGridSyncJob, getSendGridSyncJobStatus, getLatestSendGridSyncJob, getActiveOrLatestJob } from "./sendgridSyncWorker";
 import { mailchimpService } from "./mailchimpService";
 import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, insertCaseStudySchema, type VerificationRequest, users, schools, schoolUsers, caseStudies, importBatches, userActivityLogs, certificates, evidence, evidenceRequirements } from "@shared/schema";
 import { nanoid } from 'nanoid';
@@ -9366,7 +9367,7 @@ Return JSON with:
     }
   });
 
-  // Trigger SendGrid contact backfill (incremental by default, or full with forceSync)
+  // Start SendGrid contact sync as a background job (returns immediately)
   app.post('/api/admin/sendgrid/backfill', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
       if (!process.env.SENDGRID_API_KEY) {
@@ -9376,35 +9377,64 @@ Return JSON with:
       }
 
       const { forceSync = false } = req.body || {};
+      const mode = forceSync ? 'full' : 'incremental';
       
-      console.log(`[SendGrid Backfill] Starting ${forceSync ? 'FULL' : 'INCREMENTAL'} contact sync triggered by admin: ${req.user.email}`);
+      console.log(`[SendGrid Sync] Starting ${mode.toUpperCase()} contact sync job triggered by admin: ${req.user.email}`);
       
-      const result = await backfillAllContactsToSendGrid({ forceSync });
-
-      console.log(`[SendGrid Backfill] Completed. Synced ${result.syncedContacts} of ${result.totalUsers} contacts.`);
-      
-      let message: string;
-      if (result.totalUsers === 0 && result.skippedAlreadySynced > 0) {
-        message = `All ${result.skippedAlreadySynced} contacts already synced. No updates needed.`;
-      } else if (result.failedBatches === 0) {
-        message = `Successfully synced ${result.syncedContacts} contacts to SendGrid`;
-        if (result.skippedAlreadySynced > 0) {
-          message += ` (${result.skippedAlreadySynced} already synced)`;
-        }
-      } else {
-        message = `Completed with ${result.failedBatches} failed batches`;
-      }
+      const jobId = await createSendGridSyncJob(mode, req.user.id);
       
       res.json({
-        success: result.failedBatches === 0,
-        message,
-        ...result
+        success: true,
+        message: `Sync job started. The sync is running in the background.`,
+        jobId,
+        mode
       });
     } catch (error: any) {
-      console.error("Error running SendGrid backfill:", error);
+      console.error("Error starting SendGrid sync job:", error);
+      
+      if (error.message?.includes('already running')) {
+        return res.status(409).json({ 
+          message: error.message,
+          conflict: true
+        });
+      }
+      
       res.status(500).json({ 
-        message: error.message || "Failed to run SendGrid contact backfill" 
+        message: error.message || "Failed to start SendGrid contact sync" 
       });
+    }
+  });
+
+  // Get status of a specific SendGrid sync job
+  app.get('/api/admin/sendgrid/sync-jobs/:jobId', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { jobId } = req.params;
+      const job = await getSendGridSyncJobStatus(jobId);
+      
+      if (!job) {
+        return res.status(404).json({ message: "Sync job not found" });
+      }
+      
+      res.json(job);
+    } catch (error: any) {
+      console.error("Error fetching SendGrid sync job status:", error);
+      res.status(500).json({ message: "Failed to fetch sync job status" });
+    }
+  });
+
+  // Get the latest or active SendGrid sync job status
+  app.get('/api/admin/sendgrid/sync-jobs/latest', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { job, isActive } = await getActiveOrLatestJob();
+      
+      if (!job) {
+        return res.json({ hasJob: false, job: null, isActive: false });
+      }
+      
+      res.json({ hasJob: true, job, isActive });
+    } catch (error: any) {
+      console.error("Error fetching latest SendGrid sync job:", error);
+      res.status(500).json({ message: "Failed to fetch latest sync job" });
     }
   });
 

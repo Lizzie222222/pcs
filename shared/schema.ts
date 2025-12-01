@@ -228,6 +228,53 @@ export const migrationLogs = pgTable("migration_logs", {
   index("idx_migration_logs_started").on(table.startedAt),
 ]);
 
+export const sendgridSyncStatusEnum = pgEnum('sendgrid_sync_status', [
+  'pending',
+  'processing',
+  'completed',
+  'failed'
+]);
+
+export const sendgridSyncModeEnum = pgEnum('sendgrid_sync_mode', [
+  'incremental',
+  'full'
+]);
+
+/**
+ * @description Tracks background SendGrid contact sync jobs with progress and error information.
+ * Enables async processing to avoid HTTP timeouts when syncing large numbers of contacts.
+ */
+export const sendgridSyncJobs = pgTable("sendgrid_sync_jobs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  status: sendgridSyncStatusEnum("status").default('pending'),
+  mode: sendgridSyncModeEnum("mode").default('incremental'),
+  totalContacts: integer("total_contacts").default(0),
+  processedContacts: integer("processed_contacts").default(0),
+  syncedContacts: integer("synced_contacts").default(0),
+  skippedNoEmail: integer("skipped_no_email").default(0),
+  skippedAlreadySynced: integer("skipped_already_synced").default(0),
+  failedBatches: integer("failed_batches").default(0),
+  currentBatch: integer("current_batch").default(0),
+  totalBatches: integer("total_batches").default(0),
+  errorMessage: text("error_message"),
+  errorDetails: jsonb("error_details"),
+  triggeredBy: varchar("triggered_by").references(() => users.id),
+  startedAt: timestamp("started_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+  lastProgressAt: timestamp("last_progress_at"),
+}, (table) => [
+  index("idx_sendgrid_sync_jobs_status").on(table.status),
+  index("idx_sendgrid_sync_jobs_started").on(table.startedAt),
+]);
+
+export const insertSendgridSyncJobSchema = createInsertSchema(sendgridSyncJobs).omit({
+  id: true,
+  startedAt: true,
+});
+
+export type InsertSendgridSyncJob = z.infer<typeof insertSendgridSyncJobSchema>;
+export type SendgridSyncJob = typeof sendgridSyncJobs.$inferSelect;
+
 /**
  * @description Schools table tracking program progress through 3 stages (inspire/investigate/act), geographic location, and completion status. Core entity for all school-related data.
  * @location shared/schema.ts#L105
