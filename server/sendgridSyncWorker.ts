@@ -377,7 +377,6 @@ class SendGridSyncQueue {
       let syncedContacts = 0;
       let skippedNoEmail = 0;
       let failedBatches = 0;
-      const allSyncedUserIds: string[] = [];
 
       for (let batchStart = 0; batchStart < userIdList.length; batchStart += BATCH_SIZE) {
         const batchUserIds = userIdList.slice(batchStart, batchStart + BATCH_SIZE);
@@ -481,7 +480,6 @@ class SendGridSyncQueue {
                 syncedContacts += contacts.length;
                 console.log(`[SendGrid Worker] Batch ${batchNumber}: Synced ${contacts.length} contacts`);
                 batchSuccess = true;
-                allSyncedUserIds.push(...syncedUserIds);
               } else {
                 retryCount++;
                 lastError = { statusCode: response.statusCode, body: response.body };
@@ -505,20 +503,38 @@ class SendGridSyncQueue {
           if (!batchSuccess) {
             failedBatches++;
             console.error(`[SendGrid Worker] Batch ${batchNumber}: Failed after ${MAX_RETRIES} retries`);
+          } else if (syncedUserIds.length > 0) {
+            // IMMEDIATELY update sendgridSyncedAt for this batch's users in a separate transaction
+            // This ensures the update commits even if later batches fail
+            try {
+              await db
+                .update(users)
+                .set({ sendgridSyncedAt: new Date() })
+                .where(inArray(users.id, syncedUserIds));
+              console.log(`[SendGrid Worker] Batch ${batchNumber}: Marked ${syncedUserIds.length} users as synced in database`);
+            } catch (dbError) {
+              console.error(`[SendGrid Worker] Batch ${batchNumber}: Failed to update sendgridSyncedAt:`, dbError);
+              // Don't fail the batch - the contacts were synced to SendGrid successfully
+            }
           }
         }
 
-        await db
-          .update(sendgridSyncJobs)
-          .set({ 
-            currentBatch: batchNumber,
-            processedContacts,
-            syncedContacts,
-            skippedNoEmail,
-            failedBatches,
-            lastProgressAt: new Date()
-          })
-          .where(eq(sendgridSyncJobs.id, jobId));
+        // Update job progress (separate from user updates)
+        try {
+          await db
+            .update(sendgridSyncJobs)
+            .set({ 
+              currentBatch: batchNumber,
+              processedContacts,
+              syncedContacts,
+              skippedNoEmail,
+              failedBatches,
+              lastProgressAt: new Date()
+            })
+            .where(eq(sendgridSyncJobs.id, jobId));
+        } catch (progressError) {
+          console.error(`[SendGrid Worker] Failed to update job progress:`, progressError);
+        }
 
         batchNumber++;
 
@@ -530,25 +546,6 @@ class SendGridSyncQueue {
       const expectedProcessed = syncedContacts + skippedNoEmail;
       const countsMatch = expectedProcessed === processedContacts && processedContacts === totalUsers;
       const jobSucceeded = failedBatches === 0 && countsMatch;
-
-      // Always update sendgridSyncedAt for successfully synced contacts, even if job partially failed
-      // This ensures retries don't re-sync contacts that already succeeded
-      if (allSyncedUserIds.length > 0) {
-        console.log(`[SendGrid Worker] Updating sendgridSyncedAt for ${allSyncedUserIds.length} successfully synced users...`);
-        try {
-          const SYNC_UPDATE_BATCH_SIZE = 500;
-          for (let i = 0; i < allSyncedUserIds.length; i += SYNC_UPDATE_BATCH_SIZE) {
-            const batch = allSyncedUserIds.slice(i, i + SYNC_UPDATE_BATCH_SIZE);
-            await db
-              .update(users)
-              .set({ sendgridSyncedAt: new Date() })
-              .where(inArray(users.id, batch));
-          }
-          console.log('[SendGrid Worker] Successfully updated sendgridSyncedAt timestamps');
-        } catch (dbError) {
-          console.error('[SendGrid Worker] Failed to update sendgridSyncedAt timestamps:', dbError);
-        }
-      }
 
       let errorMessage: string | null = null;
       if (failedBatches > 0) {
