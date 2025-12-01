@@ -509,13 +509,17 @@ class SendGridSyncQueue {
 
         const contacts: SendGridContactData[] = [];
         const syncedUserIds: string[] = [];
+        const skippedInBatch: string[] = []; // Track skipped emails for logging
 
         for (const user of userBatch) {
           processedContacts++;
 
           const email = user.email?.toLowerCase().trim();
-          if (!email || email.length === 0 || !email.includes('@')) {
+          
+          // Use stricter email validation to prevent batch failures
+          if (!email || !isValidSendGridEmail(email)) {
             skippedNoEmail++;
+            skippedInBatch.push(email || '(empty)');
             continue;
           }
 
@@ -543,6 +547,11 @@ class SendGridSyncQueue {
           };
 
           contacts.push(buildSendGridContactWithCustomFields(enrichedContact, customFieldIds));
+        }
+
+        // Log skipped emails if any
+        if (skippedInBatch.length > 0) {
+          console.log(`[SendGrid Worker] Batch ${batchNumber}: Skipped ${skippedInBatch.length} invalid emails: ${skippedInBatch.slice(0, 5).join(', ')}${skippedInBatch.length > 5 ? '...' : ''}`);
         }
 
         if (contacts.length > 0) {
