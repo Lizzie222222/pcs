@@ -9366,7 +9366,7 @@ Return JSON with:
     }
   });
 
-  // Trigger full SendGrid contact backfill
+  // Trigger SendGrid contact backfill (incremental by default, or full with forceSync)
   app.post('/api/admin/sendgrid/backfill', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
       if (!process.env.SENDGRID_API_KEY) {
@@ -9375,17 +9375,29 @@ Return JSON with:
         });
       }
 
-      console.log(`[SendGrid Backfill] Starting full contact sync triggered by admin: ${req.user.email}`);
+      const { forceSync = false } = req.body || {};
       
-      const result = await backfillAllContactsToSendGrid();
+      console.log(`[SendGrid Backfill] Starting ${forceSync ? 'FULL' : 'INCREMENTAL'} contact sync triggered by admin: ${req.user.email}`);
+      
+      const result = await backfillAllContactsToSendGrid({ forceSync });
 
       console.log(`[SendGrid Backfill] Completed. Synced ${result.syncedContacts} of ${result.totalUsers} contacts.`);
       
+      let message: string;
+      if (result.totalUsers === 0 && result.skippedAlreadySynced > 0) {
+        message = `All ${result.skippedAlreadySynced} contacts already synced. No updates needed.`;
+      } else if (result.failedBatches === 0) {
+        message = `Successfully synced ${result.syncedContacts} contacts to SendGrid`;
+        if (result.skippedAlreadySynced > 0) {
+          message += ` (${result.skippedAlreadySynced} already synced)`;
+        }
+      } else {
+        message = `Completed with ${result.failedBatches} failed batches`;
+      }
+      
       res.json({
         success: result.failedBatches === 0,
-        message: result.failedBatches === 0 
-          ? `Successfully synced ${result.syncedContacts} contacts to SendGrid`
-          : `Completed with ${result.failedBatches} failed batches`,
+        message,
         ...result
       });
     } catch (error: any) {

@@ -604,7 +604,7 @@ export default function EmailManagementSection({
     setImagePickerOpen(false);
   };
 
-  const handleSendGridSync = async () => {
+  const handleSendGridSync = async (forceSync: boolean = false) => {
     setSendGridSyncing(true);
     setSendGridSyncResult(null);
 
@@ -613,6 +613,7 @@ export default function EmailManagementSection({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
+        body: JSON.stringify({ forceSync }),
       });
 
       // Handle non-JSON responses (timeouts, server errors)
@@ -630,6 +631,7 @@ export default function EmailManagementSection({
           message: result.message,
           totalUsers: result.totalUsers,
           syncedContacts: result.syncedContacts,
+          skippedAlreadySynced: result.skippedAlreadySynced,
           durationSeconds: result.durationSeconds,
         });
         toast({
@@ -693,16 +695,19 @@ export default function EmailManagementSection({
           <div className="space-y-4">
             <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-800">
-                <strong>Sync all contacts to SendGrid Marketing</strong>
+                <strong>Sync contacts to SendGrid Marketing</strong>
               </p>
               <p className="text-sm text-blue-700 mt-1">
-                This will update all user contacts in SendGrid with their current data including: school stage, rounds completed, activity status, language preferences, and more. This enables segmentation for targeted email campaigns.
+                Updates user contacts in SendGrid with their current data including: school stage, rounds completed, activity status, language preferences, and more. This enables segmentation for targeted email campaigns.
+              </p>
+              <p className="text-sm text-blue-600 mt-2">
+                <strong>Incremental sync:</strong> Only syncs contacts not updated in the last 24 hours. Safe to run multiple times.
               </p>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-3">
               <Button
-                onClick={handleSendGridSync}
+                onClick={() => handleSendGridSync(false)}
                 disabled={sendGridSyncing}
                 className="bg-pcs_blue hover:bg-blue-600"
                 data-testid="button-sendgrid-sync"
@@ -715,7 +720,26 @@ export default function EmailManagementSection({
                 ) : (
                   <>
                     <Send className="mr-2 h-4 w-4" />
-                    Sync All Contacts to SendGrid
+                    Sync New/Updated Contacts
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={() => handleSendGridSync(true)}
+                disabled={sendGridSyncing}
+                variant="outline"
+                className="border-orange-300 text-orange-700 hover:bg-orange-50"
+                data-testid="button-sendgrid-force-sync"
+              >
+                {sendGridSyncing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Syncing...
+                  </>
+                ) : (
+                  <>
+                    <Users className="mr-2 h-4 w-4" />
+                    Force Sync All (Slower)
                   </>
                 )}
               </Button>
@@ -729,9 +753,12 @@ export default function EmailManagementSection({
                 <p className={`text-sm mt-1 ${sendGridSyncResult.success ? 'text-green-800' : 'text-red-800'}`}>
                   {sendGridSyncResult.message}
                 </p>
-                {sendGridSyncResult.totalUsers !== undefined && (
-                  <div className="mt-2 text-sm text-gray-600">
-                    <p>Total users processed: {sendGridSyncResult.totalUsers}</p>
+                {(sendGridSyncResult.totalUsers !== undefined || sendGridSyncResult.skippedAlreadySynced !== undefined) && (
+                  <div className="mt-2 text-sm text-gray-600 space-y-1">
+                    {sendGridSyncResult.skippedAlreadySynced !== undefined && sendGridSyncResult.skippedAlreadySynced > 0 && (
+                      <p>Already synced (skipped): {sendGridSyncResult.skippedAlreadySynced}</p>
+                    )}
+                    <p>Users to sync this run: {sendGridSyncResult.totalUsers}</p>
                     <p>Contacts synced: {sendGridSyncResult.syncedContacts}</p>
                     {sendGridSyncResult.durationSeconds !== undefined && (
                       <p>Duration: {sendGridSyncResult.durationSeconds}s</p>
