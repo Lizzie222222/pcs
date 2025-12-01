@@ -341,6 +341,16 @@ export default function EmailManagementSection({
   const [migratedSentFilter, setMigratedSentFilter] = useState('all');
   const [confirmMigratedSendOpen, setConfirmMigratedSendOpen] = useState(false);
   
+  // SendGrid contact sync state
+  const [sendGridSyncing, setSendGridSyncing] = useState(false);
+  const [sendGridSyncResult, setSendGridSyncResult] = useState<{
+    success: boolean;
+    message: string;
+    totalUsers?: number;
+    syncedContacts?: number;
+    durationSeconds?: number;
+  } | null>(null);
+  
   const [formData, setFormData] = useState({
     welcome: { recipientEmail: '', schoolName: 'Test School' },
     invitation: { recipientEmail: '', schoolName: 'Test School', inviterName: 'John Doe', expiresInDays: 7 },
@@ -594,6 +604,58 @@ export default function EmailManagementSection({
     setImagePickerOpen(false);
   };
 
+  const handleSendGridSync = async () => {
+    setSendGridSyncing(true);
+    setSendGridSyncResult(null);
+
+    try {
+      const response = await fetch('/api/admin/sendgrid/backfill', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setSendGridSyncResult({
+          success: result.failedBatches === 0,
+          message: result.message,
+          totalUsers: result.totalUsers,
+          syncedContacts: result.syncedContacts,
+          durationSeconds: result.durationSeconds,
+        });
+        toast({
+          title: result.failedBatches === 0 ? "Sync Complete" : "Sync Completed with Issues",
+          description: result.message,
+          variant: result.failedBatches === 0 ? "default" : "destructive",
+        });
+      } else {
+        setSendGridSyncResult({
+          success: false,
+          message: result.message || "Failed to sync contacts",
+        });
+        toast({
+          title: "Sync Failed",
+          description: result.message || "Failed to sync contacts to SendGrid",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      setSendGridSyncResult({
+        success: false,
+        message: error.message || "An error occurred during sync",
+      });
+      toast({
+        title: "Error",
+        description: "An error occurred while syncing contacts",
+        variant: "destructive",
+      });
+    } finally {
+      setSendGridSyncing(false);
+    }
+  };
+
   const ResultMessage = ({ type }: { type: string }) => {
     const result = results[type];
     if (!result) return null;
@@ -612,6 +674,69 @@ export default function EmailManagementSection({
 
   return (
     <div className="space-y-6" data-refactor-source="EmailManagementSection">
+      {/* SendGrid Contact Sync */}
+      <Card>
+        <CardHeader className="p-3 sm:p-4 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Users className="h-5 w-5" />
+            SendGrid Contact Sync
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-3 sm:p-4 lg:p-6">
+          <div className="space-y-4">
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>Sync all contacts to SendGrid Marketing</strong>
+              </p>
+              <p className="text-sm text-blue-700 mt-1">
+                This will update all user contacts in SendGrid with their current data including: school stage, rounds completed, activity status, language preferences, and more. This enables segmentation for targeted email campaigns.
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <Button
+                onClick={handleSendGridSync}
+                disabled={sendGridSyncing}
+                className="bg-pcs_blue hover:bg-blue-600"
+                data-testid="button-sendgrid-sync"
+              >
+                {sendGridSyncing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Syncing Contacts...
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 h-4 w-4" />
+                    Sync All Contacts to SendGrid
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {sendGridSyncResult && (
+              <div className={`p-4 rounded-lg ${sendGridSyncResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`} data-testid="sendgrid-sync-result">
+                <p className={`text-sm font-medium ${sendGridSyncResult.success ? 'text-green-900' : 'text-red-900'}`}>
+                  {sendGridSyncResult.success ? '✅ Sync Complete' : '❌ Sync Issue'}
+                </p>
+                <p className={`text-sm mt-1 ${sendGridSyncResult.success ? 'text-green-800' : 'text-red-800'}`}>
+                  {sendGridSyncResult.message}
+                </p>
+                {sendGridSyncResult.totalUsers !== undefined && (
+                  <div className="mt-2 text-sm text-gray-600">
+                    <p>Total users processed: {sendGridSyncResult.totalUsers}</p>
+                    <p>Contacts synced: {sendGridSyncResult.syncedContacts}</p>
+                    {sendGridSyncResult.durationSeconds !== undefined && (
+                      <p>Duration: {sendGridSyncResult.durationSeconds}s</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Test Email Forms */}
       <Card>
         <CardHeader className="p-3 sm:p-4 lg:p-6">

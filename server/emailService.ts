@@ -2,6 +2,9 @@ import { MailService } from '@sendgrid/mail';
 import { Client } from '@sendgrid/client';
 import { storage } from './storage';
 import { translateEmailContent, type EmailContent } from './translationService';
+import { db } from './db';
+import { users, schools, schoolUsers } from '@shared/schema';
+import { eq, isNull, isNotNull, and, asc } from 'drizzle-orm';
 
 if (!process.env.SENDGRID_API_KEY) {
   console.warn("SENDGRID_API_KEY environment variable not set");
@@ -21,6 +24,200 @@ interface SendGridContactData {
   city?: string;
   country?: string;
   custom_fields?: Record<string, string>;
+}
+
+interface EnrichedContactData {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  country?: string;
+  hasInteracted?: boolean;
+  schoolName?: string;
+  schoolStage?: string;
+  schoolRole?: string;
+  schoolType?: string;
+  preferredLanguage?: string;
+  inspireCompleted?: boolean;
+  investigateCompleted?: boolean;
+  actCompleted?: boolean;
+  roundsCompleted?: number;
+  isMigrated?: boolean;
+  lastActiveAt?: Date | null;
+  schoolLastActiveAt?: Date | null;
+}
+
+let cachedCustomFieldIds: Record<string, string> | null = null;
+let customFieldIdsCacheTime: number = 0;
+const CUSTOM_FIELD_CACHE_TTL = 60 * 60 * 1000;
+
+async function getSendGridCustomFieldIds(): Promise<Record<string, string>> {
+  if (cachedCustomFieldIds && (Date.now() - customFieldIdsCacheTime) < CUSTOM_FIELD_CACHE_TTL) {
+    return cachedCustomFieldIds;
+  }
+
+  if (!process.env.SENDGRID_API_KEY) {
+    return {};
+  }
+
+  try {
+    const request = {
+      url: '/v3/marketing/field_definitions' as '/v3/marketing/field_definitions',
+      method: 'GET' as const,
+    };
+
+    const [response] = await sgClient.request(request);
+    const body = response.body as any;
+    
+    const fieldMap: Record<string, string> = {};
+    if (body.custom_fields) {
+      for (const field of body.custom_fields) {
+        fieldMap[field.name] = field.id;
+      }
+    }
+    
+    cachedCustomFieldIds = fieldMap;
+    customFieldIdsCacheTime = Date.now();
+    console.log('[SendGrid] Cached custom field IDs:', Object.keys(fieldMap).join(', '));
+    
+    return fieldMap;
+  } catch (error) {
+    console.error('[SendGrid] Error fetching custom field definitions:', error);
+    return cachedCustomFieldIds || {};
+  }
+}
+
+async function ensureSendGridCustomFields(): Promise<boolean> {
+  if (!process.env.SENDGRID_API_KEY) {
+    return false;
+  }
+
+  const fieldsToCreate = [
+    { name: 'has_interacted', field_type: 'Text' },
+    { name: 'school_name', field_type: 'Text' },
+    { name: 'school_stage', field_type: 'Text' },
+    { name: 'user_role', field_type: 'Text' },
+    { name: 'is_active', field_type: 'Text' },
+    { name: 'user_language', field_type: 'Text' },
+    { name: 'school_type', field_type: 'Text' },
+    { name: 'inspire_completed', field_type: 'Text' },
+    { name: 'investigate_completed', field_type: 'Text' },
+    { name: 'act_completed', field_type: 'Text' },
+    { name: 'rounds_completed', field_type: 'Number' },
+    { name: 'is_migrated', field_type: 'Text' },
+  ];
+
+  const existingFields = await getSendGridCustomFieldIds();
+  
+  for (const field of fieldsToCreate) {
+    if (existingFields[field.name]) {
+      continue;
+    }
+
+    try {
+      const request = {
+        url: '/v3/marketing/field_definitions' as '/v3/marketing/field_definitions',
+        method: 'POST' as const,
+        body: field,
+      };
+
+      await sgClient.request(request);
+      console.log(`[SendGrid] Created custom field: ${field.name}`);
+    } catch (error: any) {
+      if (error.response?.body?.errors?.[0]?.message?.includes('already exists')) {
+        console.log(`[SendGrid] Custom field '${field.name}' already exists`);
+      } else {
+        console.error(`[SendGrid] Error creating field '${field.name}':`, error.response?.body || error);
+      }
+    }
+  }
+
+  cachedCustomFieldIds = null;
+  return true;
+}
+
+function determineActiveStatus(contact: EnrichedContactData): string {
+  if (contact.hasInteracted) {
+    return 'yes';
+  }
+  
+  const ninetyDaysAgo = new Date();
+  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+  
+  if (contact.lastActiveAt && new Date(contact.lastActiveAt) > ninetyDaysAgo) {
+    return 'yes';
+  }
+  
+  if (contact.schoolLastActiveAt && new Date(contact.schoolLastActiveAt) > ninetyDaysAgo) {
+    return 'yes';
+  }
+  
+  return 'no';
+}
+
+function buildSendGridContactWithCustomFields(
+  contact: EnrichedContactData, 
+  customFieldIds: Record<string, string>
+): SendGridContactData {
+  const sgContact: SendGridContactData = {
+    email: contact.email.toLowerCase().trim(),
+    first_name: contact.firstName || undefined,
+    last_name: contact.lastName || undefined,
+    country: contact.country || undefined,
+  };
+
+  if (Object.keys(customFieldIds).length > 0) {
+    sgContact.custom_fields = {};
+    
+    if (customFieldIds['has_interacted']) {
+      sgContact.custom_fields[customFieldIds['has_interacted']] = contact.hasInteracted ? 'yes' : 'no';
+    }
+    
+    if (customFieldIds['is_active']) {
+      sgContact.custom_fields[customFieldIds['is_active']] = determineActiveStatus(contact);
+    }
+    
+    if (customFieldIds['user_language']) {
+      sgContact.custom_fields[customFieldIds['user_language']] = contact.preferredLanguage || 'en';
+    }
+    
+    if (customFieldIds['school_name'] && contact.schoolName) {
+      sgContact.custom_fields[customFieldIds['school_name']] = contact.schoolName;
+    }
+    
+    if (customFieldIds['school_stage'] && contact.schoolStage) {
+      sgContact.custom_fields[customFieldIds['school_stage']] = contact.schoolStage;
+    }
+    
+    if (customFieldIds['user_role'] && contact.schoolRole) {
+      sgContact.custom_fields[customFieldIds['user_role']] = contact.schoolRole;
+    }
+    
+    if (customFieldIds['school_type'] && contact.schoolType) {
+      sgContact.custom_fields[customFieldIds['school_type']] = contact.schoolType;
+    }
+    
+    if (customFieldIds['inspire_completed']) {
+      sgContact.custom_fields[customFieldIds['inspire_completed']] = contact.inspireCompleted ? 'yes' : 'no';
+    }
+    
+    if (customFieldIds['investigate_completed']) {
+      sgContact.custom_fields[customFieldIds['investigate_completed']] = contact.investigateCompleted ? 'yes' : 'no';
+    }
+    
+    if (customFieldIds['act_completed']) {
+      sgContact.custom_fields[customFieldIds['act_completed']] = contact.actCompleted ? 'yes' : 'no';
+    }
+    
+    if (customFieldIds['rounds_completed']) {
+      sgContact.custom_fields[customFieldIds['rounds_completed']] = String(contact.roundsCompleted || 0);
+    }
+    
+    if (customFieldIds['is_migrated']) {
+      sgContact.custom_fields[customFieldIds['is_migrated']] = contact.isMigrated ? 'yes' : 'no';
+    }
+  }
+
+  return sgContact;
 }
 
 export async function syncContactToSendGrid(contact: SendGridContactData): Promise<void> {
@@ -53,6 +250,86 @@ export async function syncContactToSendGrid(contact: SendGridContactData): Promi
   }
 }
 
+export async function syncEnrichedContactToSendGrid(userId: string): Promise<void> {
+  if (!process.env.SENDGRID_API_KEY) {
+    console.log('[SendGrid Contacts] Skipping enriched contact sync - no API key configured');
+    return;
+  }
+
+  try {
+    const userResult = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        hasInteracted: users.hasInteracted,
+        preferredLanguage: users.preferredLanguage,
+        lastActiveAt: users.lastActiveAt,
+        isMigrated: users.isMigrated,
+      })
+      .from(users)
+      .where(and(
+        eq(users.id, userId),
+        isNotNull(users.email),
+        isNull(users.deletedAt)
+      ))
+      .limit(1);
+
+    if (userResult.length === 0) {
+      console.log(`[SendGrid Contacts] User ${userId} not found or has no email`);
+      return;
+    }
+
+    const user = userResult[0];
+
+    const schoolAssociation = await db
+      .select({
+        schoolName: schools.name,
+        schoolCountry: schools.country,
+        schoolStage: schools.currentStage,
+        schoolRole: schoolUsers.role,
+        schoolType: schools.type,
+        inspireCompleted: schools.inspireCompleted,
+        investigateCompleted: schools.investigateCompleted,
+        actCompleted: schools.actCompleted,
+        roundsCompleted: schools.roundsCompleted,
+        schoolLastActiveAt: schools.lastActiveAt,
+      })
+      .from(schoolUsers)
+      .innerJoin(schools, eq(schoolUsers.schoolId, schools.id))
+      .where(eq(schoolUsers.userId, userId))
+      .limit(1);
+
+    const enrichedContact: EnrichedContactData = {
+      email: user.email!,
+      firstName: user.firstName || undefined,
+      lastName: user.lastName || undefined,
+      country: schoolAssociation[0]?.schoolCountry || undefined,
+      hasInteracted: user.hasInteracted || false,
+      schoolName: schoolAssociation[0]?.schoolName || undefined,
+      schoolStage: schoolAssociation[0]?.schoolStage || undefined,
+      schoolRole: schoolAssociation[0]?.schoolRole || undefined,
+      schoolType: schoolAssociation[0]?.schoolType || undefined,
+      preferredLanguage: user.preferredLanguage || 'en',
+      inspireCompleted: schoolAssociation[0]?.inspireCompleted || false,
+      investigateCompleted: schoolAssociation[0]?.investigateCompleted || false,
+      actCompleted: schoolAssociation[0]?.actCompleted || false,
+      roundsCompleted: schoolAssociation[0]?.roundsCompleted || 0,
+      isMigrated: user.isMigrated || false,
+      lastActiveAt: user.lastActiveAt,
+      schoolLastActiveAt: schoolAssociation[0]?.schoolLastActiveAt || null,
+    };
+
+    const customFieldIds = await getSendGridCustomFieldIds();
+    const sgContact = buildSendGridContactWithCustomFields(enrichedContact, customFieldIds);
+
+    await syncContactToSendGrid(sgContact);
+  } catch (error) {
+    console.error(`[SendGrid Contacts] Error syncing enriched contact for user ${userId}:`, error);
+  }
+}
+
 export async function syncContactsToSendGrid(contacts: SendGridContactData[]): Promise<void> {
   if (!process.env.SENDGRID_API_KEY || contacts.length === 0) {
     return;
@@ -79,6 +356,180 @@ export async function syncContactsToSendGrid(contacts: SendGridContactData[]): P
     }
   }
 }
+
+export interface BackfillResult {
+  totalUsers: number;
+  syncedContacts: number;
+  skippedNoEmail: number;
+  failedBatches: number;
+  durationSeconds: number;
+}
+
+export async function backfillAllContactsToSendGrid(
+  onProgress?: (processed: number, total: number) => void
+): Promise<BackfillResult> {
+  const BATCH_SIZE = 500;
+  const DELAY_BETWEEN_BATCHES_MS = 300;
+
+  const startTime = Date.now();
+  const result: BackfillResult = {
+    totalUsers: 0,
+    syncedContacts: 0,
+    skippedNoEmail: 0,
+    failedBatches: 0,
+    durationSeconds: 0,
+  };
+
+  if (!process.env.SENDGRID_API_KEY) {
+    console.error('[SendGrid Backfill] No API key configured');
+    return result;
+  }
+
+  console.log('[SendGrid Backfill] Ensuring custom fields exist...');
+  await ensureSendGridCustomFields();
+  
+  await new Promise(resolve => setTimeout(resolve, 2000));
+
+  const customFieldIds = await getSendGridCustomFieldIds();
+  console.log('[SendGrid Backfill] Custom field IDs:', Object.keys(customFieldIds).join(', '));
+
+  const countResult = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(and(
+      isNotNull(users.email),
+      isNull(users.deletedAt)
+    ));
+  
+  result.totalUsers = countResult.length;
+  console.log(`[SendGrid Backfill] Total users to process: ${result.totalUsers}`);
+
+  let offset = 0;
+  let batchNumber = 1;
+  let processedUsers = 0;
+
+  while (offset < result.totalUsers) {
+    console.log(`[SendGrid Backfill] Processing batch ${batchNumber} (${offset + 1} to ${Math.min(offset + BATCH_SIZE, result.totalUsers)})...`);
+
+    const userBatch = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        hasInteracted: users.hasInteracted,
+        preferredLanguage: users.preferredLanguage,
+        lastActiveAt: users.lastActiveAt,
+        isMigrated: users.isMigrated,
+      })
+      .from(users)
+      .where(and(
+        isNotNull(users.email),
+        isNull(users.deletedAt)
+      ))
+      .orderBy(asc(users.id))
+      .limit(BATCH_SIZE)
+      .offset(offset);
+
+    const contacts: SendGridContactData[] = [];
+
+    for (const user of userBatch) {
+      processedUsers++;
+
+      const email = user.email?.toLowerCase().trim();
+      if (!email || email.length === 0 || !email.includes('@')) {
+        result.skippedNoEmail++;
+        continue;
+      }
+
+      const schoolAssociation = await db
+        .select({
+          schoolName: schools.name,
+          schoolCountry: schools.country,
+          schoolStage: schools.currentStage,
+          schoolRole: schoolUsers.role,
+          schoolType: schools.type,
+          inspireCompleted: schools.inspireCompleted,
+          investigateCompleted: schools.investigateCompleted,
+          actCompleted: schools.actCompleted,
+          roundsCompleted: schools.roundsCompleted,
+          schoolLastActiveAt: schools.lastActiveAt,
+        })
+        .from(schoolUsers)
+        .innerJoin(schools, eq(schoolUsers.schoolId, schools.id))
+        .where(eq(schoolUsers.userId, user.id))
+        .limit(1);
+
+      const enrichedContact: EnrichedContactData = {
+        email,
+        firstName: user.firstName || undefined,
+        lastName: user.lastName || undefined,
+        country: schoolAssociation[0]?.schoolCountry || undefined,
+        hasInteracted: user.hasInteracted || false,
+        schoolName: schoolAssociation[0]?.schoolName || undefined,
+        schoolStage: schoolAssociation[0]?.schoolStage || undefined,
+        schoolRole: schoolAssociation[0]?.schoolRole || undefined,
+        schoolType: schoolAssociation[0]?.schoolType || undefined,
+        preferredLanguage: user.preferredLanguage || 'en',
+        inspireCompleted: schoolAssociation[0]?.inspireCompleted || false,
+        investigateCompleted: schoolAssociation[0]?.investigateCompleted || false,
+        actCompleted: schoolAssociation[0]?.actCompleted || false,
+        roundsCompleted: schoolAssociation[0]?.roundsCompleted || 0,
+        isMigrated: user.isMigrated || false,
+        lastActiveAt: user.lastActiveAt,
+        schoolLastActiveAt: schoolAssociation[0]?.schoolLastActiveAt || null,
+      };
+
+      contacts.push(buildSendGridContactWithCustomFields(enrichedContact, customFieldIds));
+    }
+
+    if (contacts.length > 0) {
+      try {
+        const request = {
+          url: '/v3/marketing/contacts' as '/v3/marketing/contacts',
+          method: 'PUT' as const,
+          body: { contacts }
+        };
+
+        const [response] = await sgClient.request(request);
+        if (response.statusCode === 202) {
+          result.syncedContacts += contacts.length;
+          console.log(`[SendGrid Backfill] Batch ${batchNumber}: Synced ${contacts.length} contacts`);
+        } else {
+          result.failedBatches++;
+          console.error(`[SendGrid Backfill] Batch ${batchNumber}: Unexpected status ${response.statusCode}`);
+        }
+      } catch (error: any) {
+        result.failedBatches++;
+        console.error(`[SendGrid Backfill] Batch ${batchNumber}: Error -`, error.response?.body || error);
+      }
+    }
+
+    if (onProgress) {
+      onProgress(processedUsers, result.totalUsers);
+    }
+
+    offset += BATCH_SIZE;
+    batchNumber++;
+
+    if (offset < result.totalUsers) {
+      await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_BATCHES_MS));
+    }
+  }
+
+  result.durationSeconds = Math.round((Date.now() - startTime) / 1000);
+  
+  console.log('[SendGrid Backfill] Complete!');
+  console.log(`  Total users: ${result.totalUsers}`);
+  console.log(`  Synced contacts: ${result.syncedContacts}`);
+  console.log(`  Skipped (no email): ${result.skippedNoEmail}`);
+  console.log(`  Failed batches: ${result.failedBatches}`);
+  console.log(`  Duration: ${result.durationSeconds}s`);
+
+  return result;
+}
+
+export { getSendGridCustomFieldIds, ensureSendGridCustomFields };
 
 export function getBaseUrl(): string {
   let baseUrl: string;

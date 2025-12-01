@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated, isSchoolMember, trackUserActivity, markUserInteracted } from "./auth";
 import { ObjectStorageService, ObjectNotFoundError, objectStorageClient } from "./objectStorage";
 import { ObjectPermission, getObjectAclPolicy, setObjectAclPolicy } from "./objectAcl";
-import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail, sendEventAnnouncementEmail, sendEventDigestEmail, sendContactFormEmail, getFromAddress, sendWeeklyAdminDigest, WeeklyDigestData, getBaseUrl } from "./emailService";
+import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail, sendEventAnnouncementEmail, sendEventDigestEmail, sendContactFormEmail, getFromAddress, sendWeeklyAdminDigest, WeeklyDigestData, getBaseUrl, backfillAllContactsToSendGrid, getSendGridCustomFieldIds } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
 import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, insertCaseStudySchema, type VerificationRequest, users, schools, schoolUsers, caseStudies, importBatches, userActivityLogs, certificates, evidence, evidenceRequirements } from "@shared/schema";
 import { nanoid } from 'nanoid';
@@ -9345,6 +9345,54 @@ Return JSON with:
     } catch (error: any) {
       console.error("Error checking email health:", error);
       res.status(500).json({ message: "Failed to check email system health" });
+    }
+  });
+
+  // Get SendGrid custom field IDs for debugging
+  app.get('/api/admin/sendgrid/custom-fields', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      if (!process.env.SENDGRID_API_KEY) {
+        return res.status(500).json({ message: "SendGrid not configured" });
+      }
+
+      const customFields = await getSendGridCustomFieldIds();
+      res.json({ 
+        customFields,
+        fieldCount: Object.keys(customFields).length
+      });
+    } catch (error: any) {
+      console.error("Error fetching SendGrid custom fields:", error);
+      res.status(500).json({ message: "Failed to fetch custom fields" });
+    }
+  });
+
+  // Trigger full SendGrid contact backfill
+  app.post('/api/admin/sendgrid/backfill', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      if (!process.env.SENDGRID_API_KEY) {
+        return res.status(500).json({ 
+          message: "SendGrid not configured. Please set SENDGRID_API_KEY environment variable." 
+        });
+      }
+
+      console.log(`[SendGrid Backfill] Starting full contact sync triggered by admin: ${req.user.email}`);
+      
+      const result = await backfillAllContactsToSendGrid();
+
+      console.log(`[SendGrid Backfill] Completed. Synced ${result.syncedContacts} of ${result.totalUsers} contacts.`);
+      
+      res.json({
+        success: result.failedBatches === 0,
+        message: result.failedBatches === 0 
+          ? `Successfully synced ${result.syncedContacts} contacts to SendGrid`
+          : `Completed with ${result.failedBatches} failed batches`,
+        ...result
+      });
+    } catch (error: any) {
+      console.error("Error running SendGrid backfill:", error);
+      res.status(500).json({ 
+        message: error.message || "Failed to run SendGrid contact backfill" 
+      });
     }
   });
 
