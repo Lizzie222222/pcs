@@ -9405,6 +9405,22 @@ Return JSON with:
     }
   });
 
+  // Get the latest or active SendGrid sync job status (must be before :jobId route)
+  app.get('/api/admin/sendgrid/sync-jobs/latest', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { job, isActive } = await getActiveOrLatestJob();
+      
+      if (!job) {
+        return res.json({ hasJob: false, job: null, isActive: false });
+      }
+      
+      res.json({ hasJob: true, job, isActive });
+    } catch (error: any) {
+      console.error("Error fetching latest SendGrid sync job:", error);
+      res.status(500).json({ message: "Failed to fetch latest sync job" });
+    }
+  });
+
   // Get status of a specific SendGrid sync job
   app.get('/api/admin/sendgrid/sync-jobs/:jobId', isAuthenticated, requireAdmin, async (req, res) => {
     try {
@@ -9419,22 +9435,6 @@ Return JSON with:
     } catch (error: any) {
       console.error("Error fetching SendGrid sync job status:", error);
       res.status(500).json({ message: "Failed to fetch sync job status" });
-    }
-  });
-
-  // Get the latest or active SendGrid sync job status
-  app.get('/api/admin/sendgrid/sync-jobs/latest', isAuthenticated, requireAdmin, async (req, res) => {
-    try {
-      const { job, isActive } = await getActiveOrLatestJob();
-      
-      if (!job) {
-        return res.json({ hasJob: false, job: null, isActive: false });
-      }
-      
-      res.json({ hasJob: true, job, isActive });
-    } catch (error: any) {
-      console.error("Error fetching latest SendGrid sync job:", error);
-      res.status(500).json({ message: "Failed to fetch latest sync job" });
     }
   });
 
