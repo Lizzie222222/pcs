@@ -5513,49 +5513,78 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  // Reactivation Rate - schools that returned after dormancy
+  // Reactivation Rate - schools that returned after being dormant
+  // Dormant = registered 90+ days ago but hasn't submitted evidence yet
+  // Reactivated = was dormant but then submitted evidence
   async getReactivationRate(): Promise<{
     reactivatedSchools: number;
     totalDormantSchools: number;
     reactivationRate: number;
+    stillDormant: number;
+    activeFromStart: number;
     reactivations: Array<{ month: string; count: number }>;
   }> {
-    // Schools that had a gap of 30+ days between activities
-    const schoolActivity = await db
+    const now = new Date();
+    const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+
+    // Get all schools registered 90+ days ago
+    const oldSchools = await db
+      .select({
+        id: schools.id,
+        createdAt: schools.createdAt,
+      })
+      .from(schools)
+      .where(sql`created_at < ${ninetyDaysAgo}`);
+
+    // Get first evidence submission for each school
+    const firstEvidence = await db
       .select({
         schoolId: evidence.schoolId,
-        dates: sql<string[]>`ARRAY_AGG(DISTINCT DATE(submitted_at) ORDER BY DATE(submitted_at))`,
+        firstSubmission: sql<string>`MIN(submitted_at)`,
       })
       .from(evidence)
       .groupBy(evidence.schoolId);
 
+    const evidenceMap = new Map<string, Date>();
+    firstEvidence.forEach(e => {
+      if (e.schoolId && e.firstSubmission) {
+        evidenceMap.set(e.schoolId, new Date(e.firstSubmission));
+      }
+    });
+
     let reactivatedSchools = 0;
-    let totalDormantSchools = 0;
+    let stillDormant = 0;
+    let activeFromStart = 0;
     const reactivationsByMonth = new Map<string, number>();
 
-    schoolActivity.forEach(school => {
-      const dates = school.dates as string[];
-      if (!dates || dates.length < 2) return;
+    oldSchools.forEach(school => {
+      if (!school.createdAt) return;
+      const createdAt = new Date(school.createdAt);
+      const firstEvidenceDate = evidenceMap.get(school.id);
 
-      let hadDormancy = false;
-      let wasReactivated = false;
+      if (!firstEvidenceDate) {
+        // No evidence = still dormant
+        stillDormant++;
+      } else {
+        // Calculate days between registration and first evidence
+        const daysToFirstEvidence = Math.ceil(
+          (firstEvidenceDate.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24)
+        );
 
-      for (let i = 1; i < dates.length; i++) {
-        const prev = new Date(dates[i - 1]);
-        const curr = new Date(dates[i]);
-        const daysDiff = Math.ceil((curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24));
-        
-        if (daysDiff >= 30) {
-          hadDormancy = true;
-          wasReactivated = true;
-          const month = curr.toISOString().substring(0, 7);
+        if (daysToFirstEvidence <= 30) {
+          // Active from the start (submitted within 30 days of registering)
+          activeFromStart++;
+        } else {
+          // Was dormant for 30+ days but then submitted evidence (reactivated)
+          reactivatedSchools++;
+          const month = firstEvidenceDate.toISOString().substring(0, 7);
           reactivationsByMonth.set(month, (reactivationsByMonth.get(month) || 0) + 1);
         }
       }
-
-      if (hadDormancy) totalDormantSchools++;
-      if (wasReactivated) reactivatedSchools++;
     });
+
+    // Total dormant = schools that are still dormant + schools that were reactivated
+    const totalDormantSchools = stillDormant + reactivatedSchools;
 
     const reactivations = Array.from(reactivationsByMonth.entries())
       .map(([month, count]) => ({ month, count }))
@@ -5565,6 +5594,8 @@ export class DatabaseStorage implements IStorage {
     return {
       reactivatedSchools,
       totalDormantSchools,
+      stillDormant,
+      activeFromStart,
       reactivationRate: totalDormantSchools > 0 ? Math.round((reactivatedSchools / totalDormantSchools) * 100) : 0,
       reactivations,
     };

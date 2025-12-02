@@ -201,6 +201,8 @@ interface ReactivationRateAnalytics {
   reactivatedSchools: number;
   totalDormantSchools: number;
   reactivationRate: number;
+  stillDormant: number;
+  activeFromStart: number;
   reactivations: Array<{ month: string; count: number }>;
 }
 
@@ -2323,54 +2325,106 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <TrendingUp className="w-5 h-5 mr-2 text-green-600" />
-                  Reactivation Rate
+                  School Engagement Rate
                 </CardTitle>
-                <p className="text-sm text-gray-500">Dormant schools that became active again</p>
+                <p className="text-sm text-gray-500">
+                  How quickly schools start participating after registering
+                </p>
               </CardHeader>
               <CardContent>
                 {reactivationRateQuery.isLoading ? (
-                  <div className="h-[250px] flex items-center justify-center">
+                  <div className="h-[280px] flex items-center justify-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
                   </div>
                 ) : reactivationRateQuery.data ? (
                   <div className="space-y-4">
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="text-center p-3 bg-green-50 rounded-lg" data-testid="metric-reactivation-rate">
-                        <div className="text-2xl font-bold text-green-600">
-                          {reactivationRateQuery.data.reactivationRate.toFixed(1)}%
-                        </div>
-                        <div className="text-xs text-gray-600">Reactivation Rate</div>
-                      </div>
-                      <div className="text-center p-3 bg-blue-50 rounded-lg" data-testid="metric-reactivated-schools">
-                        <div className="text-2xl font-bold text-pcs_blue">
-                          {reactivationRateQuery.data.reactivatedSchools}
-                        </div>
-                        <div className="text-xs text-gray-600">Reactivated</div>
-                      </div>
-                      <div className="text-center p-3 bg-gray-50 rounded-lg" data-testid="metric-dormant-schools">
-                        <div className="text-2xl font-bold text-gray-600">
-                          {reactivationRateQuery.data.totalDormantSchools}
-                        </div>
-                        <div className="text-xs text-gray-600">Total Dormant</div>
-                      </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="text-center p-3 bg-green-50 rounded-lg cursor-help" data-testid="metric-active-from-start">
+                            <div className="text-2xl font-bold text-green-600">
+                              {reactivationRateQuery.data.activeFromStart}
+                            </div>
+                            <div className="text-xs text-gray-600 flex items-center justify-center gap-1">
+                              Active From Start
+                              <Info className="h-3 w-3 text-gray-400" />
+                            </div>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>Schools that submitted evidence within 30 days of registering - highly engaged from the start</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="text-center p-3 bg-blue-50 rounded-lg cursor-help" data-testid="metric-reactivated-schools">
+                            <div className="text-2xl font-bold text-pcs_blue">
+                              {reactivationRateQuery.data.reactivatedSchools}
+                            </div>
+                            <div className="text-xs text-gray-600 flex items-center justify-center gap-1">
+                              Reactivated
+                              <Info className="h-3 w-3 text-gray-400" />
+                            </div>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>Schools that were dormant for 30+ days after registering but then came back and submitted evidence</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="text-center p-3 bg-orange-50 rounded-lg cursor-help" data-testid="metric-still-dormant">
+                            <div className="text-2xl font-bold text-orange-600">
+                              {reactivationRateQuery.data.stillDormant}
+                            </div>
+                            <div className="text-xs text-gray-600 flex items-center justify-center gap-1">
+                              Still Dormant
+                              <Info className="h-3 w-3 text-gray-400" />
+                            </div>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>Schools registered 90+ days ago that have never submitted any evidence - potential re-engagement targets</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="text-center p-3 bg-teal-50 rounded-lg cursor-help" data-testid="metric-reactivation-rate">
+                            <div className="text-2xl font-bold text-pcs_teal">
+                              {reactivationRateQuery.data.reactivationRate.toFixed(0)}%
+                            </div>
+                            <div className="text-xs text-gray-600 flex items-center justify-center gap-1">
+                              Win-Back Rate
+                              <Info className="h-3 w-3 text-gray-400" />
+                            </div>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>Of schools that didn't engage immediately, what percentage were eventually won back? (Reactivated ÷ Total Dormant)</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
                     {reactivationRateQuery.data.reactivations && reactivationRateQuery.data.reactivations.length > 0 && (
-                      <ResponsiveContainer width="100%" height={150}>
-                        <LineChart data={reactivationRateQuery.data.reactivations}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                          <YAxis tick={{ fontSize: 10 }} />
-                          <Tooltip />
-                          <Line type="monotone" dataKey="count" stroke="#10B981" strokeWidth={2} name="Reactivations" />
-                        </LineChart>
-                      </ResponsiveContainer>
+                      <div>
+                        <p className="text-xs text-gray-500 mb-2">Monthly reactivations trend</p>
+                        <ResponsiveContainer width="100%" height={120}>
+                          <LineChart data={reactivationRateQuery.data.reactivations}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                            <YAxis tick={{ fontSize: 10 }} />
+                            <RechartsTooltip />
+                            <Line type="monotone" dataKey="count" stroke="#10B981" strokeWidth={2} name="Reactivations" />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
                     )}
                   </div>
                 ) : (
-                  <div className="h-[250px] flex items-center justify-center text-gray-500">
+                  <div className="h-[280px] flex items-center justify-center text-gray-500">
                     <div className="text-center">
                       <TrendingUp className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                      <p>No reactivation data available</p>
+                      <p>No engagement data available</p>
+                      <p className="text-xs mt-1">This metric appears once schools have been registered for 90+ days</p>
                     </div>
                   </div>
                 )}
