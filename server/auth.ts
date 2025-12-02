@@ -346,6 +346,9 @@ export async function setupAuth(app: Express) {
           req
         );
         
+        // Mark user as having interacted (login counts as interaction)
+        await storage.markUserAsInteracted(user.id);
+        
         res.json({ 
           success: true, 
           message: "Login successful",

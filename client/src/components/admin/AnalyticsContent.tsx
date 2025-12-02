@@ -38,6 +38,13 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Tooltip as UITooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -256,6 +263,37 @@ const formatReferralSource = (source: string): string => {
     'other': 'Other',
   };
   return sourceLabels[source] || source.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+};
+
+const StatTooltip = ({ explanation }: { explanation: string }) => (
+  <TooltipProvider>
+    <UITooltip>
+      <TooltipTrigger asChild>
+        <Info className="h-3.5 w-3.5 text-gray-400 cursor-help ml-1 inline-block" />
+      </TooltipTrigger>
+      <TooltipContent className="max-w-xs text-sm">
+        <p>{explanation}</p>
+      </TooltipContent>
+    </UITooltip>
+  </TooltipProvider>
+);
+
+const STAT_EXPLANATIONS = {
+  totalSchools: "Count of all registered schools in the system. Filtered by registration date if a date range is selected.",
+  totalUsers: "Count of all registered user accounts (teachers and administrators). Filtered by account creation date if a date range is selected.",
+  totalEvidence: "Count of unique evidence submissions (deduplicated by school + requirement + round). Includes legacy imported evidence when viewing all time.",
+  completedAwards: "Total number of completed rounds across all schools. One school completing 3 rounds counts as 3 awards.",
+  schoolsCompleted: "Number of schools that have completed at least one full round of the programme.",
+  pendingEvidence: "Evidence submissions waiting to be reviewed by an administrator. Filtered by submission date if a date range is selected.",
+  averageProgress: "Average completion percentage across all participating schools. Based on the progress_percentage field which tracks overall programme completion.",
+  studentsImpacted: "Sum of student counts reported by all registered schools. Filtered by school registration date if a date range is selected.",
+  countriesReached: "Number of unique countries with at least one registered school. Filtered by school registration date if a date range is selected.",
+  activeSchoolsLastMonth: "Schools with any recorded activity in the past 30 days. This always shows the current rolling 30-day window regardless of date filter selection.",
+  lifetimeTotalUsers: "Total registered users (excludes deleted accounts).",
+  interactedUsers: "Users who have logged in at least once. Tracked when a user successfully authenticates.",
+  notInteractedUsers: "Users who have never logged in. These are accounts that were created but never used.",
+  interactionRate: "Percentage of users who have logged in at least once (Ever Logged In / Total Users).",
+  totalResourceDownloads: "Total download count across all resources and resource packs.",
 };
 
 interface AnalyticsContentProps {
@@ -744,7 +782,10 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                 data-testid="card-total-schools"
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Schools</CardTitle>
+                  <CardTitle className="text-sm font-medium flex items-center">
+                    Total Schools
+                    <StatTooltip explanation={STAT_EXPLANATIONS.totalSchools} />
+                  </CardTitle>
                   <School className="h-4 w-4 text-pcs_blue" />
                 </CardHeader>
                 <CardContent>
@@ -761,7 +802,10 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                 data-testid="card-active-users"
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Active Users</CardTitle>
+                  <CardTitle className="text-sm font-medium flex items-center">
+                    Active Users
+                    <StatTooltip explanation={STAT_EXPLANATIONS.totalUsers} />
+                  </CardTitle>
                   <Users className="h-4 w-4 text-pcs_teal" />
                 </CardHeader>
                 <CardContent>
@@ -778,7 +822,10 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                 data-testid="card-evidence-submissions"
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Evidence Submissions</CardTitle>
+                  <CardTitle className="text-sm font-medium flex items-center">
+                    Evidence Submissions
+                    <StatTooltip explanation={STAT_EXPLANATIONS.totalEvidence} />
+                  </CardTitle>
                   <FileText className="h-4 w-4 text-pcs_yellow" />
                 </CardHeader>
                 <CardContent>
@@ -797,7 +844,10 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                 data-testid="card-global-reach"
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Global Reach</CardTitle>
+                  <CardTitle className="text-sm font-medium flex items-center">
+                    Global Reach
+                    <StatTooltip explanation={STAT_EXPLANATIONS.countriesReached} />
+                  </CardTitle>
                   <Globe className="h-4 w-4 text-pcs_coral" />
                 </CardHeader>
                 <CardContent>
@@ -819,6 +869,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                     <CardTitle className="text-sm text-gray-600 font-medium flex items-center gap-2">
                       <School className="h-4 w-4 text-pcs_blue" />
                       Total Schools
+                      <StatTooltip explanation={STAT_EXPLANATIONS.totalSchools} />
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -832,6 +883,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                     <CardTitle className="text-sm text-gray-600 font-medium flex items-center gap-2">
                       <FileText className="h-4 w-4 text-pcs_teal" />
                       Total Evidence
+                      <StatTooltip explanation={STAT_EXPLANATIONS.totalEvidence} />
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -845,6 +897,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                     <CardTitle className="text-sm text-gray-600 font-medium flex items-center gap-2">
                       <Award className="h-4 w-4 text-pcs_teal" />
                       Awards Completed
+                      <StatTooltip explanation={STAT_EXPLANATIONS.completedAwards} />
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -864,6 +917,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                     <CardTitle className="text-sm text-gray-600 font-medium flex items-center gap-2">
                       <Trophy className="h-4 w-4 text-pcs_yellow" />
                       Schools Completed
+                      <StatTooltip explanation={STAT_EXPLANATIONS.schoolsCompleted} />
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -883,6 +937,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                     <CardTitle className="text-sm text-gray-600 font-medium flex items-center gap-2">
                       <TrendingUp className="h-4 w-4 text-green-600" />
                       Active Schools (Last Month)
+                      <StatTooltip explanation={STAT_EXPLANATIONS.activeSchoolsLastMonth} />
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -896,6 +951,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                     <CardTitle className="text-sm text-gray-600 font-medium flex items-center gap-2">
                       <Heart className="h-4 w-4 text-pcs_blue" />
                       Students Impacted
+                      <StatTooltip explanation={STAT_EXPLANATIONS.studentsImpacted} />
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -909,6 +965,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                     <CardTitle className="text-sm text-gray-600 font-medium flex items-center gap-2">
                       <Download className="h-4 w-4 text-pcs_coral" />
                       Resource Downloads
+                      <StatTooltip explanation={STAT_EXPLANATIONS.totalResourceDownloads} />
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -922,7 +979,10 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                    <CardTitle className="text-sm font-medium flex items-center">
+                      Total Users
+                      <StatTooltip explanation={STAT_EXPLANATIONS.lifetimeTotalUsers} />
+                    </CardTitle>
                     <Users className="h-4 w-4 text-pcs_blue" />
                   </CardHeader>
                   <CardContent>
@@ -935,7 +995,10 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
 
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Ever Logged In</CardTitle>
+                    <CardTitle className="text-sm font-medium flex items-center">
+                      Ever Logged In
+                      <StatTooltip explanation={STAT_EXPLANATIONS.interactedUsers} />
+                    </CardTitle>
                     <UserCheck className="h-4 w-4 text-green-600" />
                   </CardHeader>
                   <CardContent>
@@ -950,7 +1013,10 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
 
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Never Logged In</CardTitle>
+                    <CardTitle className="text-sm font-medium flex items-center">
+                      Never Logged In
+                      <StatTooltip explanation={STAT_EXPLANATIONS.notInteractedUsers} />
+                    </CardTitle>
                     <UserMinus className="h-4 w-4 text-amber-600" />
                   </CardHeader>
                   <CardContent>
