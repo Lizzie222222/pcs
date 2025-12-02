@@ -422,6 +422,7 @@ export const resourcePacks = pgTable("resource_packs", {
   visibility: visibilityEnum("visibility").default('public'),
   isActive: boolean("is_active").default(true),
   downloadCount: integer("download_count").default(0),
+  coverImageUrl: varchar("cover_image_url"),
   createdBy: varchar("created_by").notNull().references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

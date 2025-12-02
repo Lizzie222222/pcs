@@ -84,7 +84,7 @@ import OpenAI from 'openai';
 // Import extracted utilities
 import { generateCSV, getCSVHeaders, generateExcel, generateTitleFromFilename } from './routes/utils/exports';
 import { stripHtml, escapeHtml, sanitizeFilename, generatePdfHtml } from './routes/utils/pdf';
-import { bulkResourceUpload, photoConsentUpload, uploadCompression, importUpload } from './routes/utils/uploads';
+import { bulkResourceUpload, photoConsentUpload, uploadCompression, importUpload, coverImageUpload } from './routes/utils/uploads';
 import { uploadToObjectStorage } from './routes/utils/objectStorage';
 import { requireAdmin, requireAdminOrPartner, requireFullAdmin } from './routes/utils/middleware';
 import { normalizeObjectStorageUrl, normalizeFileArray } from './routes/utils/urlNormalization';
@@ -799,6 +799,131 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating resource order:", error);
       res.status(500).json({ message: "Failed to update resource order" });
+    }
+  });
+
+  // Upload cover image for resource pack (admin/partner only)
+  app.post('/api/resource-packs/:id/cover-image', isAuthenticated, (req: any, res: any, next: any) => {
+    coverImageUpload.single('coverImage')(req, res, (err: any) => {
+      if (err) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({ message: "File too large. Maximum size is 5MB." });
+        }
+        if (err.message?.includes('Invalid file type')) {
+          return res.status(400).json({ message: err.message });
+        }
+        return res.status(400).json({ message: "Error uploading file: " + (err.message || "Unknown error") });
+      }
+      next();
+    });
+  }, async (req: any, res) => {
+    try {
+      if (!req.user?.isAdmin && req.user?.role !== 'partner') {
+        return res.status(403).json({ message: "Admin or Partner access required" });
+      }
+
+      const packId = req.params.id;
+      
+      // Verify pack exists
+      const existingPack = await storage.getResourcePackById(packId);
+      if (!existingPack) {
+        return res.status(404).json({ message: "Resource pack not found" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file provided" });
+      }
+
+      const userId = req.user.id;
+      const objectStorageService = new ObjectStorageService();
+      const file = req.file;
+      const mimeType = file.mimetype;
+      const fileSize = file.buffer.length;
+
+      // Sanitize the filename to prevent path traversal
+      const safeFilename = sanitizeFilename(file.originalname);
+
+      // Get upload URL from object storage
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+
+      // Upload file to object storage
+      const uploadResponse = await fetch(uploadURL, {
+        method: 'PUT',
+        body: file.buffer,
+        headers: {
+          'Content-Type': mimeType,
+          'Content-Length': fileSize.toString(),
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error(`Failed to upload file: ${uploadResponse.statusText}`);
+      }
+
+      // Set ACL policy with public visibility using sanitized filename
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        uploadURL.split('?')[0],
+        {
+          owner: userId,
+          visibility: 'public',
+        },
+        safeFilename
+      );
+
+      // Update the resource pack with the cover image URL
+      const updatedPack = await storage.updateResourcePack(packId, {
+        coverImageUrl: objectPath,
+      });
+
+      res.json({ 
+        success: true, 
+        coverImageUrl: objectPath,
+        pack: updatedPack
+      });
+    } catch (error) {
+      console.error("Error uploading cover image:", error);
+      res.status(500).json({ message: "Failed to upload cover image" });
+    }
+  });
+
+  // Remove cover image from resource pack (admin/partner only)
+  app.delete('/api/resource-packs/:id/cover-image', isAuthenticated, async (req: any, res) => {
+    try {
+      if (!req.user?.isAdmin && req.user?.role !== 'partner') {
+        return res.status(403).json({ message: "Admin or Partner access required" });
+      }
+
+      const packId = req.params.id;
+      
+      // Verify pack exists
+      const existingPack = await storage.getResourcePackById(packId);
+      if (!existingPack) {
+        return res.status(404).json({ message: "Resource pack not found" });
+      }
+
+      // Delete the old cover image from object storage if it exists
+      if (existingPack.coverImageUrl) {
+        try {
+          const objectStorageService = new ObjectStorageService();
+          await objectStorageService.deleteObject(existingPack.coverImageUrl);
+        } catch (deleteError) {
+          // Log but don't fail if we can't delete the old file
+          console.warn("Could not delete old cover image:", deleteError);
+        }
+      }
+
+      // Update the resource pack to remove cover image URL
+      const updatedPack = await storage.updateResourcePack(packId, {
+        coverImageUrl: null,
+      });
+
+      res.json({ 
+        success: true,
+        pack: updatedPack
+      });
+    } catch (error) {
+      console.error("Error removing cover image:", error);
+      res.status(500).json({ message: "Failed to remove cover image" });
     }
   });
 

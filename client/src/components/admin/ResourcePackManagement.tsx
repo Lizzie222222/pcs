@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Package, Plus, Search, Edit, Trash2, X, BookOpen, Download, GripVertical } from "lucide-react";
+import { Package, Plus, Search, Edit, Trash2, X, BookOpen, Download, GripVertical, Image, Upload, Loader2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import {
   DndContext,
@@ -58,6 +58,7 @@ interface ResourcePack {
   visibility: 'public' | 'private';
   isActive: boolean;
   downloadCount: number;
+  coverImageUrl: string | null;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -144,6 +145,8 @@ function PackEditorDialog({ pack, onClose, onSuccess }: {
   });
 
   const [packResources, setPackResources] = useState<ResourcePackItem[]>(pack?.resources || []);
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(pack?.coverImageUrl || null);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -204,6 +207,109 @@ function PackEditorDialog({ pack, onClose, onSuccess }: {
       queryClient.invalidateQueries({ queryKey: ['/api/resource-packs'] });
     },
   });
+
+  const handleCoverImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!pack?.id) {
+      toast({
+        title: "Save Pack First",
+        description: "Please save the resource pack before uploading a cover image.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Invalid File Type",
+        description: "Please upload a JPG, PNG, GIF, or WEBP image.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File Too Large",
+        description: "Cover image must be less than 5MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploadingCover(true);
+    try {
+      const formData = new FormData();
+      formData.append('coverImage', file);
+
+      const response = await fetch(`/api/resource-packs/${pack.id}/cover-image`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to upload cover image');
+      }
+
+      const result = await response.json();
+      setCoverImageUrl(result.coverImageUrl);
+      queryClient.invalidateQueries({ queryKey: ['/api/resource-packs'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/resource-packs', pack.id] });
+
+      toast({
+        title: "Cover Image Uploaded",
+        description: "The cover image has been successfully uploaded.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Upload Failed",
+        description: error.message || "Failed to upload cover image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingCover(false);
+      event.target.value = '';
+    }
+  };
+
+  const handleRemoveCoverImage = async () => {
+    if (!pack?.id) return;
+
+    setIsUploadingCover(true);
+    try {
+      const response = await fetch(`/api/resource-packs/${pack.id}/cover-image`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to remove cover image');
+      }
+
+      setCoverImageUrl(null);
+      queryClient.invalidateQueries({ queryKey: ['/api/resource-packs'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/resource-packs', pack.id] });
+
+      toast({
+        title: "Cover Image Removed",
+        description: "The cover image has been removed.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Remove Failed",
+        description: error.message || "Failed to remove cover image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingCover(false);
+    }
+  };
 
   const handleAddResource = async (resourceId: string) => {
     const resourceExists = packResources.some(item => item.resourceId === resourceId);
@@ -517,6 +623,79 @@ function PackEditorDialog({ pack, onClose, onSuccess }: {
                     <SelectItem value="private">Private (requires login)</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Cover Image
+                </label>
+                <div className="space-y-3">
+                  {coverImageUrl ? (
+                    <div className="relative inline-block">
+                      <img
+                        src={coverImageUrl.startsWith('/objects/') ? `/api/objects${coverImageUrl.slice(8)}` : coverImageUrl}
+                        alt="Cover"
+                        className="w-48 h-32 object-cover rounded-lg border border-gray-200"
+                        data-testid="img-cover-preview"
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="destructive"
+                        className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full"
+                        onClick={handleRemoveCoverImage}
+                        disabled={isUploadingCover}
+                        data-testid="button-remove-cover-image"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <div className="w-48 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50">
+                        <div className="text-center">
+                          <Image className="h-8 w-8 mx-auto text-gray-400 mb-1" />
+                          <p className="text-xs text-gray-500">No cover image</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {pack?.id ? (
+                    <div>
+                      <label className="cursor-pointer">
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                          onChange={handleCoverImageUpload}
+                          className="hidden"
+                          disabled={isUploadingCover}
+                          data-testid="input-cover-image"
+                        />
+                        <span className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                          {isUploadingCover ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Uploading...
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="h-4 w-4" />
+                              {coverImageUrl ? 'Replace Image' : 'Upload Image'}
+                            </>
+                          )}
+                        </span>
+                      </label>
+                      <p className="text-xs text-gray-500 mt-1">
+                        JPG, PNG, GIF, or WEBP. Max 5MB.
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-amber-600">
+                      Save the pack first to upload a cover image.
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="flex items-center gap-2">

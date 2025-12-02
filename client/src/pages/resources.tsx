@@ -77,6 +77,7 @@ interface ResourcePack {
   visibility: 'public' | 'private';
   downloadCount: number;
   resourceCount: number;
+  coverImageUrl: string | null;
   createdAt: string;
   previewResources?: Array<{
     id: string;
@@ -721,6 +722,61 @@ export default function Resources() {
     );
   };
 
+  // ResourcePackCover component - safe React-based cover image display with fallback
+  const ResourcePackCover = ({ 
+    coverImageUrl, 
+    title, 
+    previewResources 
+  }: { 
+    coverImageUrl: string | null | undefined;
+    title: string;
+    previewResources?: Array<{
+      id: string;
+      title: string;
+      fileUrl: string | null;
+      fileType: string | null;
+    }>;
+  }) => {
+    const [imageError, setImageError] = useState(false);
+
+    // Reset error state when coverImageUrl changes
+    useEffect(() => {
+      setImageError(false);
+    }, [coverImageUrl]);
+
+    // If custom cover image exists and hasn't errored
+    if (coverImageUrl && !imageError) {
+      const imageUrl = coverImageUrl.startsWith('/objects/') 
+        ? `/api/objects${coverImageUrl.slice(8)}` 
+        : coverImageUrl;
+      
+      return (
+        <div className="w-full h-48 bg-gray-100 relative overflow-hidden">
+          <img 
+            src={imageUrl}
+            alt={title}
+            crossOrigin="anonymous"
+            className="w-full h-full object-cover"
+            onError={() => setImageError(true)}
+            data-testid="img-pack-cover"
+          />
+        </div>
+      );
+    }
+
+    // Fallback to auto-generated thumbnails from pack resources
+    if (previewResources && previewResources.length > 0) {
+      return <ResourcePackThumbnail previewResources={previewResources} />;
+    }
+
+    // Default placeholder
+    return (
+      <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
+        <Package className="h-16 w-16 text-gray-300" />
+      </div>
+    );
+  };
+
   const ResourcePackCard = ({ pack }: { pack: ResourcePack }) => {
     const isNew = isNewResource(pack.createdAt);
     const isRecommended = isRecommendedResource(pack.stage);
@@ -733,9 +789,11 @@ export default function Resources() {
         }`} 
         data-testid={`pack-${pack.id}`}
       >
-        {pack.previewResources && pack.previewResources.length > 0 && (
-          <ResourcePackThumbnail previewResources={pack.previewResources} />
-        )}
+        <ResourcePackCover 
+          coverImageUrl={pack.coverImageUrl} 
+          title={pack.title} 
+          previewResources={pack.previewResources} 
+        />
         <CardHeader className="pb-3 space-y-2">
           {/* Top row: NEW/RECOMMENDED badges */}
           <div className="flex justify-between items-start gap-3">

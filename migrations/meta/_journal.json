@@ -15,6 +15,13 @@
       "when": 1762261560808,
       "tag": "0001_handy_sasquatch",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1764686277254,
+      "tag": "0002_robust_jetstream",
+      "breakpoints": true
     }
   ]
 }

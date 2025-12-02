@@ -54,3 +54,28 @@ export const uploadCompression = multer({
 export const importUpload = multer({ 
   storage: multer.memoryStorage() 
 });
+
+/**
+ * Configure multer for cover image uploads
+ * - Memory storage
+ * - 5MB max file size
+ * - Only allows image files (JPG, PNG, GIF, WEBP)
+ */
+export const coverImageUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5242880 }, // 5MB max
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/webp'
+    ];
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only JPG, PNG, GIF, and WEBP images are allowed.'));
+    }
+  },
+});
