@@ -53,7 +53,6 @@ const createRegistrationSchema = (t: (key: string, options?: any) => string) => 
   acceptTerms: z.boolean().refine(val => val === true, {
     message: t('forms:school_registration.accept_terms_required'),
   }),
-  showOnMap: z.boolean().default(false),
   gdprConsent: z.boolean().refine(val => val === true, {
     message: t('forms:school_registration.gdpr_consent_required'),
   }),
@@ -108,7 +107,6 @@ export default function SchoolSignUpForm({ onClose, inline = false, onRequestJoi
         email: user?.email || '',
       },
       acceptTerms: false,
-      showOnMap: false,
       gdprConsent: false,
     },
   });
@@ -596,32 +594,6 @@ export default function SchoolSignUpForm({ onClose, inline = false, onRequestJoi
                         <a href="#" className="text-pcs_blue hover:underline">{t('forms:school_registration.terms_of_service')}</a>
                         {' '}{t('forms:school_registration.accept_terms_description_and')}{' '}
                         <a href="#" className="text-pcs_blue hover:underline">{t('forms:school_registration.privacy_policy')}</a>
-                      </FormDescription>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Show on Map Consent */}
-              <FormField
-                control={form.control}
-                name="showOnMap"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-blue-50/50">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        data-testid="checkbox-show-on-map"
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>
-                        {t('forms:school_registration.show_on_map')}
-                      </FormLabel>
-                      <FormDescription>
-                        {t('forms:school_registration.show_on_map_description')}
                       </FormDescription>
                     </div>
                     <FormMessage />

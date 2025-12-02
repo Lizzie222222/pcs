@@ -1299,7 +1299,7 @@ Return JSON with:
       
       const schools = await storage.getSchools({
         country: country as string,
-        showOnMap: true, // Only show schools that have consented to be on the map
+        // All schools are shown on map (country-level heat map, not individual locations)
         lastActiveDays: lastActiveDays ? parseInt(lastActiveDays as string) : undefined,
         limit: 1000, // Large limit for map display
       });
@@ -1535,7 +1535,7 @@ Return JSON with:
           // Create school with user as primary contact
           const school = await storage.createSchool({
             ...schoolData,
-            showOnMap: req.body.showOnMap || false, // Include map consent from form
+            showOnMap: true, // All schools appear on country-level heat map
             primaryContactId: user.id,
           });
 
@@ -1618,10 +1618,11 @@ Return JSON with:
       const userId = req.user.id;
       
       // Validate the multi-step registration data
+      // Note: Frontend sends 'name' not 'schoolName' - matching insertSchoolSchema
       const multiStepSchema = z.object({
         // Step 1: School Info
         country: z.string().min(1),
-        schoolName: z.string().min(1).max(200),
+        name: z.string().min(1).max(200),
         type: z.enum(['kindergarten', 'primary', 'secondary', 'high_school', 'international', 'other']),
         adminEmail: z.string().min(1).email(),
         address: z.string().min(1),
@@ -1637,7 +1638,6 @@ Return JSON with:
         // Step 3: Student Info
         studentCount: z.number().min(1).max(10000),
         ageRanges: z.array(z.string()).min(1),
-        showOnMap: z.boolean().default(false),
         gdprConsent: z.boolean().refine(val => val === true, { message: "GDPR consent is required" }),
         acceptTerms: z.boolean().refine(val => val === true, { message: "Terms acceptance is required" }),
         // Optional: Current UI language for welcome email
@@ -1678,7 +1678,7 @@ Return JSON with:
 
       // Create school with all the collected data
       const school = await storage.createSchool({
-        name: data.schoolName,
+        name: data.name,
         type: data.type,
         country: data.country,
         address: data.address,
@@ -1688,7 +1688,7 @@ Return JSON with:
         primaryLanguage: data.primaryLanguage,
         ageRanges: data.ageRanges,
         studentCount: data.studentCount,
-        showOnMap: data.showOnMap,
+        showOnMap: true, // All schools appear on country-level heat map
         registrationCompleted: true,
         primaryContactId: userId,
       });

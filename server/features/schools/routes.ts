@@ -162,14 +162,18 @@ schoolsRouter.get('/api/schools/check-domain', async (req, res) => {
 });
 
 // POST /api/schools/register - Register a new school (single-step)
+// Note: This endpoint expects { school: {...}, user: {...} } from the frontend form
 schoolsRouter.post('/api/schools/register', async (req, res) => {
   try {
     console.log('[School Registration] Starting registration:', {
       hasBody: !!req.body,
       fields: Object.keys(req.body || {}),
+      hasSchool: !!req.body?.school,
     });
 
-    const validationResult = insertSchoolSchema.safeParse(req.body);
+    // Parse the nested school object from the request body
+    const schoolInput = req.body?.school || req.body; // Support both nested and flat structures
+    const validationResult = insertSchoolSchema.safeParse(schoolInput);
     if (!validationResult.success) {
       console.error('[School Registration] Validation failed:', validationResult.error.flatten());
       return res.status(400).json({ 
@@ -201,7 +205,10 @@ schoolsRouter.post('/api/schools/register', async (req, res) => {
       }
     }
 
-    const school = await schoolStorage.createSchool(schoolData);
+    const school = await schoolStorage.createSchool({
+      ...schoolData,
+      showOnMap: true, // All schools appear on country-level heat map
+    });
     console.log('[School Registration] School created:', school.id);
 
     // Check for potential duplicates (non-blocking)
@@ -303,7 +310,10 @@ schoolsRouter.post('/api/schools/register-multi-step', isAuthenticated, async (r
 
     const schoolData = validationResult.data;
 
-    const school = await schoolStorage.createSchool(schoolData);
+    const school = await schoolStorage.createSchool({
+      ...schoolData,
+      showOnMap: true, // All schools appear on country-level heat map
+    });
     console.log('[Multi-step Registration] School created:', school.id);
 
     // Add the current user as head teacher

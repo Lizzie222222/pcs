@@ -23,18 +23,21 @@ interface CountryProperties {
   [key: string]: any;
 }
 
-// Color scale function - navy-tinted sequential scale
+// Color scale function - uses absolute thresholds to prevent countries with few schools from washing out
+// Uses a stepped scale based on actual school counts rather than ratio to max
 function getColorForSchoolCount(count: number, maxCount: number): string {
-  if (count === 0 || maxCount === 0) return '#f0f4f8'; // very light gray for no schools
+  if (count === 0) return '#f0f4f8'; // very light gray for no schools
   
-  const ratio = count / maxCount;
-  
-  // Navy-tinted sequential scale (light to dark blue/navy)
-  if (ratio < 0.2) return '#DBEAFE'; // very light blue
-  if (ratio < 0.4) return '#93C5FD'; // light blue
-  if (ratio < 0.6) return '#3B82F6'; // medium blue
-  if (ratio < 0.8) return '#1E40AF'; // dark blue
-  return '#1E3A8A'; // navy (darkest)
+  // Use absolute thresholds so countries with fewer schools still show visible colors
+  // This prevents one country with many schools from washing out all others
+  if (count === 1) return '#BAE6FD'; // sky blue for 1 school
+  if (count <= 3) return '#7DD3FC'; // light sky blue for 2-3 schools
+  if (count <= 10) return '#38BDF8'; // sky-400 for 4-10 schools
+  if (count <= 25) return '#0EA5E9'; // sky-500 for 11-25 schools
+  if (count <= 50) return '#0284C7'; // sky-600 for 26-50 schools
+  if (count <= 100) return '#0369A1'; // sky-700 for 51-100 schools
+  if (count <= 200) return '#1E40AF'; // dark blue for 101-200 schools
+  return '#1E3A8A'; // navy (darkest) for 200+ schools
 }
 
 export default function SchoolsMap() {
@@ -173,23 +176,39 @@ export default function SchoolsMap() {
         <Card className="mb-8">
           <CardContent className="p-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center space-x-6">
-                <div className="text-sm text-gray-600 font-medium">School count:</div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#DBEAFE' }}></div>
-                  <span className="text-sm text-gray-600">Low</span>
+              <div className="flex items-center flex-wrap gap-x-4 gap-y-2">
+                <div className="text-sm text-gray-600 font-medium">Schools:</div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#BAE6FD' }}></div>
+                  <span className="text-xs text-gray-600">1</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#3B82F6' }}></div>
-                  <span className="text-sm text-gray-600">Medium</span>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#7DD3FC' }}></div>
+                  <span className="text-xs text-gray-600">2-3</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#1E40AF' }}></div>
-                  <span className="text-sm text-gray-600">High</span>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#38BDF8' }}></div>
+                  <span className="text-xs text-gray-600">4-10</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#1E3A8A' }}></div>
-                  <span className="text-sm text-gray-600">Very high</span>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#0EA5E9' }}></div>
+                  <span className="text-xs text-gray-600">11-25</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#0284C7' }}></div>
+                  <span className="text-xs text-gray-600">26-50</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#0369A1' }}></div>
+                  <span className="text-xs text-gray-600">51-100</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#1E40AF' }}></div>
+                  <span className="text-xs text-gray-600">101-200</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#1E3A8A' }}></div>
+                  <span className="text-xs text-gray-600">200+</span>
                 </div>
               </div>
               <div className="flex items-center space-x-4">

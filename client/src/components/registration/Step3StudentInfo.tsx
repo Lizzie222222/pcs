@@ -14,7 +14,6 @@ import { InfoTooltip } from "@/components/ui/info-tooltip";
 export interface Step3Data {
   studentCount: number;
   ageRanges: string[];
-  showOnMap: boolean;
   gdprConsent: boolean;
   acceptTerms: boolean;
 }
@@ -42,7 +41,6 @@ export default function Step3StudentInfo({
       .min(1, t('forms:student_info.student_count_min'))
       .max(10000, t('forms:student_info.student_count_max')),
     ageRanges: z.array(z.string()).min(1, t('forms:student_info.age_ranges_min')),
-    showOnMap: z.boolean().default(false),
     gdprConsent: z.boolean().refine(val => val === true, {
       message: t('forms:school_registration.gdpr_consent_required'),
     }),
@@ -56,7 +54,6 @@ export default function Step3StudentInfo({
     defaultValues: {
       studentCount: initialData?.studentCount || undefined,
       ageRanges: initialData?.ageRanges || [],
-      showOnMap: initialData?.showOnMap || false,
       gdprConsent: initialData?.gdprConsent || false,
       acceptTerms: initialData?.acceptTerms || false,
     },
@@ -135,31 +132,6 @@ export default function Step3StudentInfo({
                   ))}
                 </div>
                 <FormMessage data-testid="error-age-ranges" />
-              </FormItem>
-            )}
-          />
-
-          {/* Show on Map */}
-          <FormField
-            control={form.control}
-            name="showOnMap"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    data-testid="checkbox-show-on-map"
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel className="cursor-pointer">
-                    {t('forms:school_registration.show_on_map')}
-                  </FormLabel>
-                  <FormDescription>
-                    {t('forms:school_registration.show_on_map_description')}
-                  </FormDescription>
-                </div>
               </FormItem>
             )}
           />

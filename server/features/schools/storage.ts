@@ -385,7 +385,8 @@ export class SchoolStorage {
   }>> {
     const conditions = [];
     
-    conditions.push(eq(schools.showOnMap, true));
+    // Count ALL schools for map display - no longer filtered by showOnMap
+    // This ensures map statistics align with admin dashboard numbers
     
     if (filters.country) {
       const allCodes = getAllCountryCodes(filters.country);
