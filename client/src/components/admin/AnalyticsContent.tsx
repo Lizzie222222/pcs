@@ -475,6 +475,9 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
     enabled: activeTab === 'overview'
   });
 
+  // Heatmap date range state - default to last 6 months (must be declared before getHeatmapDateParams)
+  const [heatmapDateRange, setHeatmapDateRange] = useState<string>("6months");
+
   // Helper function to compute start/end dates from heatmap preset
   const getHeatmapDateParams = () => {
     const now = new Date();
@@ -549,8 +552,6 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
   const [analyticsSubTab, setAnalyticsSubTab] = useState("overview");
   const [activityDialogOpen, setActivityDialogOpen] = useState(false);
   
-  // Heatmap date range state - default to last 6 months
-  const [heatmapDateRange, setHeatmapDateRange] = useState<string>("6months");
   const [selectedActivityRange, setSelectedActivityRange] = useState<{ range: string; count: number; schools: Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number; lastActiveByName: string | null; lastActiveByRole: string | null; lastActiveByEmail: string | null; lastActionType: string | null }> } | null>(null);
   const [includeAIInsights, setIncludeAIInsights] = useState(true);
   const [showExportDialog, setShowExportDialog] = useState(false);
