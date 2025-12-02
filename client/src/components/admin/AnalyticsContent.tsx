@@ -2506,49 +2506,85 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
             </Card>
           </div>
 
-          {/* Evidence Type Breakdown */}
-          <Card data-testid="card-evidence-type-breakdown">
+          {/* Submissions by Requirement - Total Count Chart */}
+          <Card data-testid="card-submissions-by-requirement">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <FileText className="w-5 h-5 mr-2 text-pcs_blue" />
-                Evidence Type Breakdown
+                Submissions by Requirement
               </CardTitle>
-              <p className="text-sm text-gray-500">Evidence submissions by requirement with approval rates</p>
+              <p className="text-sm text-gray-500">Total evidence submissions for each program step</p>
             </CardHeader>
             <CardContent>
               {evidenceTypeBreakdownQuery.isLoading ? (
-                <div className="h-[300px] flex items-center justify-center">
+                <div className="h-[350px] flex items-center justify-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_blue"></div>
                 </div>
               ) : evidenceTypeBreakdownQuery.data?.byRequirement && evidenceTypeBreakdownQuery.data.byRequirement.length > 0 ? (
-                <div className="space-y-6">
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={evidenceTypeBreakdownQuery.data.byRequirement} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" />
-                      <YAxis dataKey="requirement" type="category" width={150} tick={{ fontSize: 11 }} />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="approved" stackId="a" fill={ANALYTICS_COLORS[6]} name="Approved" />
-                      <Bar dataKey="pending" stackId="a" fill={ANALYTICS_COLORS[3]} name="Pending" />
-                      <Bar dataKey="rejected" stackId="a" fill={ANALYTICS_COLORS[4]} name="Rejected" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {evidenceTypeBreakdownQuery.data.byRequirement.slice(0, 4).map((req, index) => (
-                      <div key={index} className="p-3 bg-gray-50 rounded-lg" data-testid={`evidence-req-${index}`}>
-                        <div className="text-sm font-medium text-gray-700 truncate">{req.requirement}</div>
-                        <div className="text-lg font-bold text-green-600">{req.approvalRate.toFixed(1)}%</div>
-                        <div className="text-xs text-gray-500">Approval Rate</div>
+                <div className="space-y-4">
+                  {/* Simple bar list showing totals prominently */}
+                  <div className="space-y-3">
+                    {evidenceTypeBreakdownQuery.data.byRequirement.map((req, index) => {
+                      const maxTotal = Math.max(...evidenceTypeBreakdownQuery.data!.byRequirement.map(r => r.total));
+                      const percentage = maxTotal > 0 ? (req.total / maxTotal) * 100 : 0;
+                      return (
+                        <div key={index} className="space-y-1" data-testid={`submission-row-${index}`}>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium text-gray-700">{req.requirement}</span>
+                            <span className="text-lg font-bold text-pcs_blue">{req.total}</span>
+                          </div>
+                          <div className="w-full bg-gray-100 rounded-full h-6 relative overflow-hidden">
+                            <div 
+                              className="h-full rounded-full flex items-center transition-all duration-500"
+                              style={{ 
+                                width: `${percentage}%`,
+                                backgroundColor: ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]
+                              }}
+                            >
+                              {percentage > 15 && (
+                                <span className="text-white text-xs font-medium pl-2">
+                                  {req.approved} approved
+                                </span>
+                              )}
+                            </div>
+                            {req.pending > 0 && (
+                              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-orange-600 font-medium">
+                                {req.pending} pending
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Summary stats */}
+                  <div className="grid grid-cols-3 gap-3 pt-4 border-t border-gray-100">
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <div className="text-2xl font-bold text-pcs_blue">
+                        {evidenceTypeBreakdownQuery.data.byRequirement.reduce((sum, r) => sum + r.total, 0)}
                       </div>
-                    ))}
+                      <div className="text-xs text-gray-600">Total Submissions</div>
+                    </div>
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">
+                        {evidenceTypeBreakdownQuery.data.byRequirement.reduce((sum, r) => sum + r.approved, 0)}
+                      </div>
+                      <div className="text-xs text-gray-600">Approved</div>
+                    </div>
+                    <div className="text-center p-3 bg-orange-50 rounded-lg">
+                      <div className="text-2xl font-bold text-orange-600">
+                        {evidenceTypeBreakdownQuery.data.byRequirement.reduce((sum, r) => sum + r.pending, 0)}
+                      </div>
+                      <div className="text-xs text-gray-600">Pending Review</div>
+                    </div>
                   </div>
                 </div>
               ) : (
-                <div className="h-[300px] flex items-center justify-center text-gray-500">
+                <div className="h-[350px] flex items-center justify-center text-gray-500">
                   <div className="text-center">
                     <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                    <p>No evidence breakdown data available</p>
+                    <p>No evidence submissions data available</p>
                   </div>
                 </div>
               )}
