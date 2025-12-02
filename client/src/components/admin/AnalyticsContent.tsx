@@ -252,6 +252,15 @@ interface PlasticReductionTrendsAnalytics {
   };
 }
 
+interface GeographicAnalytics {
+  schoolsByRegion: Array<{ country: string; schools: number; students: number; progress: number }>;
+  globalReach: {
+    totalCountries: number;
+    totalCities: number;
+    coordinates: Array<{ lat: number; lng: number; schoolCount: number; country: string }>;
+  };
+}
+
 // Color palette for charts
 const ANALYTICS_COLORS = ['#0B3D5D', '#019ADE', '#02BBB4', '#FFC557', '#FF595A', '#6B7280', '#10B981', '#8B5CF6'];
 
@@ -548,6 +557,11 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
 
   const plasticReductionTrendsQuery = useQuery<PlasticReductionTrendsAnalytics>({
     queryKey: ['/api/admin/analytics/plastic-reduction-trends'],
+    enabled: activeTab === 'overview'
+  });
+
+  const geographicAnalyticsQuery = useQuery<GeographicAnalytics>({
+    queryKey: ['/api/admin/analytics/geographic'],
     enabled: activeTab === 'overview'
   });
 
@@ -2585,6 +2599,93 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                   <div className="text-center">
                     <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                     <p>No evidence submissions data available</p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Schools by Country */}
+          <Card data-testid="card-schools-by-country">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Globe className="w-5 h-5 mr-2 text-pcs_teal" />
+                Schools by Country
+              </CardTitle>
+              <p className="text-sm text-gray-500">
+                Geographic distribution of registered schools
+                {geographicAnalyticsQuery.data?.globalReach && (
+                  <span className="ml-2 text-pcs_blue font-medium">
+                    ({geographicAnalyticsQuery.data.globalReach.totalCountries} countries)
+                  </span>
+                )}
+              </p>
+            </CardHeader>
+            <CardContent>
+              {geographicAnalyticsQuery.isLoading ? (
+                <div className="h-[350px] flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_teal"></div>
+                </div>
+              ) : geographicAnalyticsQuery.data?.schoolsByRegion && geographicAnalyticsQuery.data.schoolsByRegion.length > 0 ? (
+                <div className="space-y-4">
+                  {/* Top 10 countries bar chart */}
+                  <div className="space-y-3">
+                    {geographicAnalyticsQuery.data.schoolsByRegion.slice(0, 10).map((region, index) => {
+                      const maxSchools = Math.max(...geographicAnalyticsQuery.data!.schoolsByRegion.map(r => r.schools));
+                      const percentage = maxSchools > 0 ? (region.schools / maxSchools) * 100 : 0;
+                      return (
+                        <div key={index} className="space-y-1" data-testid={`country-row-${index}`}>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium text-gray-700">{region.country}</span>
+                            <span className="text-lg font-bold text-pcs_teal">{region.schools}</span>
+                          </div>
+                          <div className="w-full bg-gray-100 rounded-full h-5 overflow-hidden">
+                            <div 
+                              className="h-full rounded-full flex items-center transition-all duration-500"
+                              style={{ 
+                                width: `${percentage}%`,
+                                backgroundColor: ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]
+                              }}
+                            >
+                              {percentage > 20 && region.students > 0 && (
+                                <span className="text-white text-xs font-medium pl-2">
+                                  {region.students.toLocaleString()} students
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Summary */}
+                  <div className="grid grid-cols-3 gap-3 pt-4 border-t border-gray-100">
+                    <div className="text-center p-3 bg-teal-50 rounded-lg">
+                      <div className="text-2xl font-bold text-pcs_teal">
+                        {geographicAnalyticsQuery.data.schoolsByRegion.reduce((sum, r) => sum + r.schools, 0).toLocaleString()}
+                      </div>
+                      <div className="text-xs text-gray-600">Total Schools</div>
+                    </div>
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <div className="text-2xl font-bold text-pcs_blue">
+                        {geographicAnalyticsQuery.data.globalReach.totalCountries}
+                      </div>
+                      <div className="text-xs text-gray-600">Countries</div>
+                    </div>
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">
+                        {geographicAnalyticsQuery.data.schoolsByRegion.reduce((sum, r) => sum + (r.students || 0), 0).toLocaleString()}
+                      </div>
+                      <div className="text-xs text-gray-600">Total Students</div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="h-[350px] flex items-center justify-center text-gray-500">
+                  <div className="text-center">
+                    <Globe className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p>No geographic data available</p>
                   </div>
                 </div>
               )}
