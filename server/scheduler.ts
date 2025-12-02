@@ -2,6 +2,9 @@ import cron from 'node-cron';
 import { storage } from './storage';
 import { sendWeeklyAdminDigest, type WeeklyDigestData } from './emailService';
 
+// Track last digest send time to prevent duplicate sends
+let lastDigestSentAt: Date | null = null;
+
 /**
  * @description Initialize the automated weekly digest scheduler
  * Runs every Monday at 9:00 AM UK time (Europe/London timezone)
@@ -14,6 +17,16 @@ export function initScheduler(): void {
   // Cron expression: '0 9 * * 1' means: minute 0, hour 9, any day of month, any month, Monday (1)
   cron.schedule('0 9 * * 1', async () => {
     console.log('[Scheduler] Starting weekly admin digest generation...');
+    
+    // Prevent duplicate sends within the same hour (in case of server restarts)
+    const now = new Date();
+    if (lastDigestSentAt) {
+      const hoursSinceLastSend = (now.getTime() - lastDigestSentAt.getTime()) / (1000 * 60 * 60);
+      if (hoursSinceLastSend < 1) {
+        console.log(`[Scheduler] Skipping digest - already sent ${hoursSinceLastSend.toFixed(2)} hours ago`);
+        return;
+      }
+    }
     
     try {
       // Get date range for the past week
@@ -31,22 +44,23 @@ export function initScheduler(): void {
         return submittedAt >= weekStart && submittedAt <= weekEnd;
       });
       
-      // Get all users created in the past week
+      // Get all users created in the past week (excluding deleted users)
       const allUsers = await storage.getAllUsers();
-      const weeklyUsers = allUsers.filter(u => {
+      const activeUsers = allUsers.filter(u => !u.deletedAt);
+      const weeklyUsers = activeUsers.filter(u => {
         if (!u.createdAt) return false;
         const joinedAt = new Date(u.createdAt);
         return joinedAt >= weekStart && joinedAt <= weekEnd;
       });
       
-      // Get platform stats
-      const stats = await storage.getSchoolStats();
-      const totalSchools = stats.totalSchools || 0;
-      const activeSchools = 0; // This field is not in the stats type
+      // Get platform stats using the same method as the dashboard
+      const analyticsOverview = await storage.getAnalyticsOverview();
+      const totalSchools = analyticsOverview.totalSchools;
+      const activeSchools = analyticsOverview.activeSchoolsLastMonth;
       
-      // Count total evidence and users
-      const totalEvidence = allEvidence.length;
-      const totalUsers = allUsers.length;
+      // Count total evidence and users (consistent with dashboard)
+      const totalEvidence = analyticsOverview.totalEvidence;
+      const totalUsers = analyticsOverview.totalUsers;
       
       // Prepare evidence submissions data
       const evidenceSubmissions = await Promise.all(
@@ -92,8 +106,8 @@ export function initScheduler(): void {
         weekEnd
       };
       
-      // Get all admin users
-      const adminUsers = allUsers.filter(u => u.isAdmin);
+      // Get all admin users (only active, non-deleted admins)
+      const adminUsers = activeUsers.filter(u => u.isAdmin);
       
       if (adminUsers.length === 0) {
         console.log('[Scheduler] No admin users found to send digest to');
@@ -101,6 +115,7 @@ export function initScheduler(): void {
       }
       
       console.log(`[Scheduler] Sending digest to ${adminUsers.length} admin users...`);
+      console.log(`[Scheduler] Platform stats: ${totalSchools} schools, ${totalEvidence} evidence, ${totalUsers} users, ${activeSchools} active schools`);
       
       // Send digest to all admins
       let sent = 0;
@@ -132,6 +147,9 @@ export function initScheduler(): void {
           failed++;
         }
       }
+      
+      // Mark digest as sent to prevent duplicates
+      lastDigestSentAt = new Date();
       
       console.log(`[Scheduler] Weekly digest completed: ${sent} sent, ${failed} failed`);
       console.log(`[Scheduler] Digest summary: ${weeklyEvidence.length} evidence submissions, ${weeklyUsers.length} new users`);
