@@ -115,7 +115,7 @@ export const apiLimiter = rateLimit({
     }
     
     if (user.role === 'admin' || user.isAdmin) {
-      return 1000;
+      return 5000; // Increased for admin analytics dashboards
     }
     
     return 300;
@@ -125,7 +125,20 @@ export const apiLimiter = rateLimit({
   legacyHeaders: false,
   validate: { xForwardedForHeader: false, default: false },
   skip: (req: Request) => {
-    return !req.path.startsWith('/api');
+    // Skip rate limiting for non-API routes
+    if (!req.path.startsWith('/api')) {
+      return true;
+    }
+    
+    // Skip rate limiting for admin analytics endpoints for authenticated admins
+    const user = (req as any).user;
+    if (user && (user.role === 'admin' || user.isAdmin)) {
+      if (req.path.startsWith('/api/admin/analytics')) {
+        return true;
+      }
+    }
+    
+    return false;
   },
   handler: (req: Request, res: Response) => {
     const user = (req as any).user;
