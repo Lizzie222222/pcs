@@ -1379,7 +1379,13 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={schoolProgressQuery.data.progressRanges}>
+                    <BarChart data={
+                      // Sort progress ranges in logical order
+                      [...schoolProgressQuery.data.progressRanges].sort((a, b) => {
+                        const order = ['Not Started', '1-25%', '26-50%', '51-75%', '76-99%', 'Completed'];
+                        return order.indexOf(a.range) - order.indexOf(b.range);
+                      })
+                    }>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="range" />
                       <YAxis />
