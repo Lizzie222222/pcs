@@ -4608,7 +4608,17 @@ Return JSON with:
 
   app.get('/api/admin/analytics/activity-heatmap', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
-      const analytics = await storage.getActivityHeatmap();
+      const { startDate, endDate } = req.query;
+      
+      const options: { startDate?: Date; endDate?: Date } = {};
+      if (startDate && typeof startDate === 'string') {
+        options.startDate = new Date(startDate);
+      }
+      if (endDate && typeof endDate === 'string') {
+        options.endDate = new Date(endDate);
+      }
+      
+      const analytics = await storage.getActivityHeatmap(options);
       res.json(analytics);
     } catch (error) {
       console.error("Error fetching activity heatmap:", error);

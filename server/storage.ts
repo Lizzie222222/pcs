@@ -5450,10 +5450,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Activity Heatmap - when schools are most active (day of week / hour)
-  async getActivityHeatmap(): Promise<{
+  async getActivityHeatmap(options?: { startDate?: Date; endDate?: Date }): Promise<{
     heatmap: Array<{ dayOfWeek: number; hour: number; count: number }>;
     peakTimes: { bestDay: string; bestHour: number };
   }> {
+    // Build date filter - default to last 6 months if no dates provided
+    let dateFilter;
+    if (options?.startDate && options?.endDate) {
+      dateFilter = sql`submitted_at >= ${options.startDate} AND submitted_at <= ${options.endDate} AND submitted_at IS NOT NULL`;
+    } else if (options?.startDate) {
+      dateFilter = sql`submitted_at >= ${options.startDate} AND submitted_at IS NOT NULL`;
+    } else if (options?.endDate) {
+      dateFilter = sql`submitted_at <= ${options.endDate} AND submitted_at IS NOT NULL`;
+    } else {
+      // Default: last 6 months
+      dateFilter = sql`submitted_at >= NOW() - INTERVAL '6 months' AND submitted_at IS NOT NULL`;
+    }
+
     // Get activity from evidence submissions
     const activityData = await db
       .select({
@@ -5462,7 +5475,7 @@ export class DatabaseStorage implements IStorage {
         count: sql<number>`COUNT(*)`,
       })
       .from(evidence)
-      .where(sql`submitted_at >= NOW() - INTERVAL '6 months' AND submitted_at IS NOT NULL`)
+      .where(dateFilter)
       .groupBy(sql`EXTRACT(DOW FROM submitted_at)`, sql`EXTRACT(HOUR FROM submitted_at)`)
       .orderBy(sql`EXTRACT(DOW FROM submitted_at)`, sql`EXTRACT(HOUR FROM submitted_at)`);
 

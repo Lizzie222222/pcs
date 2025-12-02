@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
-import { subDays, format } from "date-fns";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { subDays, subMonths, subWeeks, subYears, format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { 
   School, 
@@ -393,8 +394,49 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
     enabled: activeTab === 'overview'
   });
 
+  // Helper function to compute start/end dates from heatmap preset
+  const getHeatmapDateParams = () => {
+    const now = new Date();
+    let startDate: Date | undefined;
+    let endDate: Date | undefined = now;
+    
+    switch (heatmapDateRange) {
+      case "1week":
+        startDate = subWeeks(now, 1);
+        break;
+      case "1month":
+        startDate = subMonths(now, 1);
+        break;
+      case "3months":
+        startDate = subMonths(now, 3);
+        break;
+      case "6months":
+        startDate = subMonths(now, 6);
+        break;
+      case "1year":
+        startDate = subYears(now, 1);
+        break;
+      case "all":
+        startDate = undefined;
+        endDate = undefined;
+        break;
+      default:
+        startDate = subMonths(now, 6);
+    }
+    
+    return {
+      startDate: startDate?.toISOString(),
+      endDate: endDate?.toISOString()
+    };
+  };
+
+  const heatmapDateParams = getHeatmapDateParams();
+
   const activityHeatmapQuery = useQuery<ActivityHeatmapAnalytics>({
-    queryKey: ['/api/admin/analytics/activity-heatmap'],
+    queryKey: ['/api/admin/analytics/activity-heatmap', { 
+      startDate: heatmapDateParams.startDate, 
+      endDate: heatmapDateParams.endDate 
+    }],
     enabled: activeTab === 'overview'
   });
 
@@ -425,6 +467,9 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
 
   const [analyticsSubTab, setAnalyticsSubTab] = useState("overview");
   const [activityDialogOpen, setActivityDialogOpen] = useState(false);
+  
+  // Heatmap date range state - default to last 6 months
+  const [heatmapDateRange, setHeatmapDateRange] = useState<string>("6months");
   const [selectedActivityRange, setSelectedActivityRange] = useState<{ range: string; count: number; schools: Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number; lastActiveByName: string | null; lastActiveByRole: string | null; lastActiveByEmail: string | null; lastActionType: string | null }> } | null>(null);
   const [includeAIInsights, setIncludeAIInsights] = useState(true);
   const [showExportDialog, setShowExportDialog] = useState(false);
@@ -2062,10 +2107,25 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
           {/* Activity Heatmap */}
           <Card data-testid="card-activity-heatmap">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <BarChart3 className="w-5 h-5 mr-2 text-pcs_coral" />
-                Activity Heatmap
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center">
+                  <BarChart3 className="w-5 h-5 mr-2 text-pcs_coral" />
+                  Activity Heatmap
+                </CardTitle>
+                <Select value={heatmapDateRange} onValueChange={setHeatmapDateRange}>
+                  <SelectTrigger className="w-[160px]" data-testid="select-heatmap-date-range">
+                    <SelectValue placeholder="Select range" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1week">Last Week</SelectItem>
+                    <SelectItem value="1month">Last Month</SelectItem>
+                    <SelectItem value="3months">Last 3 Months</SelectItem>
+                    <SelectItem value="6months">Last 6 Months</SelectItem>
+                    <SelectItem value="1year">Last Year</SelectItem>
+                    <SelectItem value="all">All Time</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <p className="text-sm text-gray-500">
                 Activity patterns by day and hour
                 {activityHeatmapQuery.data?.peakTimes && (
