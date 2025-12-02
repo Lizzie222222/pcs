@@ -184,7 +184,7 @@ interface StageFunnelAnalytics {
 }
 
 interface TimeToCompletionAnalytics {
-  averageDays: Array<{ stage: string; avgDays: number; medianDays: number; schoolCount: number }>;
+  averageDays: Array<{ stage: string; avgDays: number; schoolCount: number }>;
   distribution: Array<{ range: string; count: number }>;
 }
 
@@ -2111,9 +2111,9 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Clock className="w-5 h-5 mr-2 text-pcs_blue" />
-                  Time to Completion by Stage
+                  Time to Reach Each Stage
                 </CardTitle>
-                <p className="text-sm text-gray-500">Average days to complete each stage</p>
+                <p className="text-sm text-gray-500">Average days from registration to first evidence in each stage</p>
               </CardHeader>
               <CardContent>
                 {timeToCompletionQuery.isLoading ? (
@@ -2125,11 +2125,9 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                     <BarChart data={timeToCompletionQuery.data.averageDays}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="stage" />
-                      <YAxis />
-                      <Tooltip formatter={(value: number) => [`${value.toFixed(1)} days`, 'Average']} />
-                      <Legend />
+                      <YAxis label={{ value: 'Days', angle: -90, position: 'insideLeft' }} />
+                      <Tooltip formatter={(value: number) => [`${value} days`, 'Avg Days from Registration']} />
                       <Bar dataKey="avgDays" fill={ANALYTICS_COLORS[0]} name="Avg Days" />
-                      <Bar dataKey="medianDays" fill={ANALYTICS_COLORS[2]} name="Median Days" />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (

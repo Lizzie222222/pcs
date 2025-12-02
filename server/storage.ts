@@ -5323,17 +5323,18 @@ export class DatabaseStorage implements IStorage {
     return { stages, dropoffs };
   }
 
-  // Time to Completion - average days to complete each stage
+  // Time to Completion - average days from registration to completing each stage
   async getTimeToCompletion(): Promise<{
-    averageDays: Array<{ stage: string; avgDays: number; medianDays: number; schoolCount: number }>;
+    averageDays: Array<{ stage: string; avgDays: number; schoolCount: number }>;
     distribution: Array<{ range: string; count: number }>;
   }> {
-    // Get schools with completion dates from evidence
+    // Calculate time from school registration to first approved evidence in each stage
+    // This gives a more meaningful metric than time within a stage (which is often 0 days)
     const inspireCompletions = await db
       .select({
         schoolId: evidence.schoolId,
-        minDate: sql<string>`MIN(submitted_at)`,
-        maxDate: sql<string>`MAX(submitted_at)`,
+        firstEvidence: sql<string>`MIN(evidence.submitted_at)`,
+        schoolCreated: sql<string>`(SELECT created_at FROM schools WHERE id = evidence.school_id)`,
       })
       .from(evidence)
       .where(and(eq(evidence.stage, 'inspire'), eq(evidence.status, 'approved')))
@@ -5342,8 +5343,8 @@ export class DatabaseStorage implements IStorage {
     const investigateCompletions = await db
       .select({
         schoolId: evidence.schoolId,
-        minDate: sql<string>`MIN(submitted_at)`,
-        maxDate: sql<string>`MAX(submitted_at)`,
+        firstEvidence: sql<string>`MIN(evidence.submitted_at)`,
+        schoolCreated: sql<string>`(SELECT created_at FROM schools WHERE id = evidence.school_id)`,
       })
       .from(evidence)
       .where(and(eq(evidence.stage, 'investigate'), eq(evidence.status, 'approved')))
@@ -5352,26 +5353,25 @@ export class DatabaseStorage implements IStorage {
     const actCompletions = await db
       .select({
         schoolId: evidence.schoolId,
-        minDate: sql<string>`MIN(submitted_at)`,
-        maxDate: sql<string>`MAX(submitted_at)`,
+        firstEvidence: sql<string>`MIN(evidence.submitted_at)`,
+        schoolCreated: sql<string>`(SELECT created_at FROM schools WHERE id = evidence.school_id)`,
       })
       .from(evidence)
       .where(and(eq(evidence.stage, 'act'), eq(evidence.status, 'approved')))
       .groupBy(evidence.schoolId);
 
-    // Calculate average days per stage
+    // Calculate average days from registration to reaching each stage
     const calculateStats = (completions: any[]) => {
-      if (completions.length === 0) return { avgDays: 0, medianDays: 0, count: 0 };
+      if (completions.length === 0) return { avgDays: 0, count: 0 };
       const days = completions.map(c => {
-        const min = new Date(c.minDate);
-        const max = new Date(c.maxDate);
-        return Math.max(1, Math.ceil((max.getTime() - min.getTime()) / (1000 * 60 * 60 * 24)));
-      }).filter(d => d > 0 && d < 365); // Exclude outliers
-      if (days.length === 0) return { avgDays: 0, medianDays: 0, count: 0 };
-      days.sort((a, b) => a - b);
+        if (!c.schoolCreated || !c.firstEvidence) return 0;
+        const created = new Date(c.schoolCreated);
+        const firstEvidence = new Date(c.firstEvidence);
+        return Math.max(0, Math.ceil((firstEvidence.getTime() - created.getTime()) / (1000 * 60 * 60 * 24)));
+      }).filter(d => d >= 0 && d < 730); // Exclude outliers (> 2 years)
+      if (days.length === 0) return { avgDays: 0, count: 0 };
       const avg = Math.round(days.reduce((a, b) => a + b, 0) / days.length);
-      const median = days[Math.floor(days.length / 2)];
-      return { avgDays: avg, medianDays: median, count: days.length };
+      return { avgDays: avg, count: days.length };
     };
 
     const inspireStats = calculateStats(inspireCompletions);
@@ -5379,9 +5379,9 @@ export class DatabaseStorage implements IStorage {
     const actStats = calculateStats(actCompletions);
 
     const averageDays = [
-      { stage: 'Inspire', avgDays: inspireStats.avgDays, medianDays: inspireStats.medianDays, schoolCount: inspireStats.count },
-      { stage: 'Investigate', avgDays: investigateStats.avgDays, medianDays: investigateStats.medianDays, schoolCount: investigateStats.count },
-      { stage: 'Act', avgDays: actStats.avgDays, medianDays: actStats.medianDays, schoolCount: actStats.count },
+      { stage: 'Inspire', avgDays: inspireStats.avgDays, schoolCount: inspireStats.count },
+      { stage: 'Investigate', avgDays: investigateStats.avgDays, schoolCount: investigateStats.count },
+      { stage: 'Act', avgDays: actStats.avgDays, schoolCount: actStats.count },
     ];
 
     // Overall completion time distribution
