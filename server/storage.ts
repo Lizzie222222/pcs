@@ -1,3 +1,4 @@
+import { COUNTRY_CODE_MAP } from "./lib/evidenceImportUtils";
 import {
   users,
   schools,
@@ -3656,8 +3657,8 @@ export class DatabaseStorage implements IStorage {
       coordinates: Array<{ lat: number; lng: number; schoolCount: number; country: string }>;
     };
   }> {
-    // Schools by region
-    const schoolsByRegion = await db
+    // Schools by region - raw data from DB
+    const schoolsByRegionRaw = await db
       .select({
         country: schools.country,
         schools: count(),
@@ -3668,16 +3669,57 @@ export class DatabaseStorage implements IStorage {
       .groupBy(schools.country)
       .orderBy(desc(count()));
 
+    // Normalize country codes to full names and merge duplicates
+    const countryMap = new Map<string, { country: string; schools: number; students: number; progress: number; count: number }>();
+    
+    for (const region of schoolsByRegionRaw) {
+      // Normalize: convert code to full name, or keep as-is if already full name
+      const rawCountry = region.country || 'Unknown';
+      const normalizedCountry = COUNTRY_CODE_MAP[rawCountry.toUpperCase()] || rawCountry;
+      
+      if (countryMap.has(normalizedCountry)) {
+        // Merge with existing entry
+        const existing = countryMap.get(normalizedCountry)!;
+        const totalSchools = existing.schools + Number(region.schools);
+        const totalStudents = existing.students + Number(region.students);
+        // Weighted average for progress
+        const weightedProgress = (existing.progress * existing.count + Number(region.progress || 0) * Number(region.schools)) / 
+                                 (existing.count + Number(region.schools));
+        countryMap.set(normalizedCountry, {
+          country: normalizedCountry,
+          schools: totalSchools,
+          students: totalStudents,
+          progress: weightedProgress,
+          count: existing.count + Number(region.schools)
+        });
+      } else {
+        countryMap.set(normalizedCountry, {
+          country: normalizedCountry,
+          schools: Number(region.schools),
+          students: Number(region.students),
+          progress: Number(region.progress || 0),
+          count: Number(region.schools)
+        });
+      }
+    }
+    
+    // Convert map to array, remove count field, and sort by school count
+    const schoolsByRegion = Array.from(countryMap.values())
+      .map(({ country, schools, students, progress }) => ({ country, schools, students, progress }))
+      .sort((a, b) => b.schools - a.schools);
+    
+    // Count unique normalized countries
+    const uniqueCountries = countryMap.size;
+
     // Global reach summary
     const [globalSummary] = await db
       .select({
-        totalCountries: sql<number>`COUNT(DISTINCT country)`,
         totalCities: sql<number>`COUNT(DISTINCT COALESCE(address, 'Unknown'))`
       })
       .from(schools);
 
-    // School coordinates (for mapping)
-    const coordinates = await db
+    // School coordinates (for mapping) - also normalize country names
+    const coordinatesRaw = await db
       .select({
         lat: sql<number>`latitude::float`,
         lng: sql<number>`longitude::float`,
@@ -3691,11 +3733,16 @@ export class DatabaseStorage implements IStorage {
       ))
       .groupBy(schools.latitude, schools.longitude, schools.country)
       .limit(100);
+    
+    const coordinates = coordinatesRaw.map(coord => ({
+      ...coord,
+      country: COUNTRY_CODE_MAP[coord.country?.toUpperCase() || ''] || coord.country || 'Unknown'
+    }));
 
     return {
       schoolsByRegion,
       globalReach: {
-        totalCountries: globalSummary.totalCountries,
+        totalCountries: uniqueCountries,
         totalCities: globalSummary.totalCities,
         coordinates
       }

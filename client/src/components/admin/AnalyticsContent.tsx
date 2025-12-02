@@ -36,11 +36,11 @@ import {
 } from "lucide-react";
 import { 
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, 
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+  XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  Tooltip as UITooltip, 
+  Tooltip, 
   TooltipContent, 
   TooltipProvider, 
   TooltipTrigger 
@@ -360,14 +360,14 @@ const getHolidaysInRange = (startDate: Date | undefined, endDate: Date | undefin
 
 const StatTooltip = ({ explanation }: { explanation: string }) => (
   <TooltipProvider>
-    <UITooltip>
+    <Tooltip>
       <TooltipTrigger asChild>
         <Info className="h-3.5 w-3.5 text-gray-400 cursor-help ml-1 inline-block" />
       </TooltipTrigger>
       <TooltipContent className="max-w-xs text-sm">
         <p>{explanation}</p>
       </TooltipContent>
-    </UITooltip>
+    </Tooltip>
   </TooltipProvider>
 );
 
@@ -1991,7 +1991,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                             <Cell key={`referral-cell-${index}`} fill={ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]} />
                           ))}
                         </Pie>
-                        <Tooltip 
+                        <RechartsTooltip 
                           formatter={(value: number, name: string) => [
                             `${value} (${referralSourceQuery.data?.distribution.find(d => d.source === name)?.percentage || 0}%)`,
                             formatReferralSource(name)
@@ -2099,7 +2099,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis type="number" />
                       <YAxis dataKey="stage" type="category" width={100} />
-                      <Tooltip formatter={(value: number, name: string) => [value, name === 'count' ? 'Schools' : name]} />
+                      <RechartsTooltip formatter={(value: number, name: string) => [value, name === 'count' ? 'Schools' : name]} />
                       <Bar dataKey="count" fill={ANALYTICS_COLORS[1]}>
                         {stageFunnelQuery.data.stages.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]} />
@@ -2150,7 +2150,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="stage" />
                       <YAxis label={{ value: 'Days', angle: -90, position: 'insideLeft' }} />
-                      <Tooltip formatter={(value: number) => [`${value} days`, 'Avg Days from Registration']} />
+                      <RechartsTooltip formatter={(value: number) => [`${value} days`, 'Avg Days from Registration']} />
                       <Bar dataKey="avgDays" fill={ANALYTICS_COLORS[0]} name="Avg Days" />
                     </BarChart>
                   </ResponsiveContainer>
@@ -2511,7 +2511,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                               <Cell key={`cell-${index}`} fill={ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]} />
                             ))}
                           </Pie>
-                          <Tooltip formatter={(value: number, name: string) => [value, 'Promises']} />
+                          <RechartsTooltip formatter={(value: number, name: string) => [value, 'Promises']} />
                         </PieChart>
                       </ResponsiveContainer>
                     )}
@@ -2783,7 +2783,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis type="number" />
                       <YAxis dataKey="resourceTitle" type="category" width={200} tick={{ fontSize: 10 }} />
-                      <Tooltip 
+                      <RechartsTooltip 
                         formatter={(value: number, name: string) => [
                           name === 'downloads' ? `${value} downloads` : `${value}%`,
                           name === 'downloads' ? 'Downloads' : 'Correlation Score'
