@@ -65,6 +65,7 @@ interface Resource {
   fileSize: number;
   downloadCount: number;
   visibility: 'public' | 'private';
+  coverImageUrl: string | null;
   createdAt: string;
 }
 
@@ -427,7 +428,32 @@ export default function Resources() {
   const ResourceThumbnail = ({ resource }: { resource: Resource }) => {
     const fileType = resource.fileType?.toLowerCase() || '';
     
-    // Image files
+    // Priority 1: Use cover image if available
+    if (resource.coverImageUrl) {
+      const coverImageSrc = resource.coverImageUrl.startsWith('/objects/') 
+        ? `/api/objects${resource.coverImageUrl.slice(8)}` 
+        : resource.coverImageUrl;
+      return (
+        <div className="w-full h-48 bg-gray-100 relative overflow-hidden">
+          <img 
+            src={coverImageSrc} 
+            alt={resource.title}
+            crossOrigin="anonymous"
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              // Fallback to icon on error
+              e.currentTarget.style.display = 'none';
+              const parent = e.currentTarget.parentElement;
+              if (parent) {
+                parent.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-pcs_blue/10"><svg class="h-16 w-16 text-pcs_blue/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>';
+              }
+            }}
+          />
+        </div>
+      );
+    }
+    
+    // Priority 2: Image files
     if (fileType.includes('image')) {
       return (
         <div className="w-full h-48 bg-gray-100 relative overflow-hidden">
@@ -449,7 +475,7 @@ export default function Resources() {
       );
     }
     
-    // PDF files
+    // Priority 3: PDF files
     if (fileType.includes('pdf')) {
       const pdfProxyUrl = getProxyUrl(resource.fileUrl);
       return (
@@ -459,7 +485,7 @@ export default function Resources() {
       );
     }
     
-    // Video files
+    // Priority 4: Video files
     if (fileType.includes('video')) {
       return (
         <div className="w-full h-48 bg-coral/10 flex items-center justify-center">
@@ -468,7 +494,7 @@ export default function Resources() {
       );
     }
     
-    // Other file types
+    // Priority 5: Other file types
     return (
       <div className="w-full h-48 bg-pcs_blue/10 flex items-center justify-center">
         <FileText className="h-16 w-16 text-pcs_blue/30" />

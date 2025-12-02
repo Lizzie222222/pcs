@@ -927,6 +927,131 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Upload cover image for individual resource (admin/partner only)
+  app.post('/api/resources/:id/cover-image', isAuthenticated, (req: any, res: any, next: any) => {
+    coverImageUpload.single('coverImage')(req, res, (err: any) => {
+      if (err) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({ message: "File too large. Maximum size is 5MB." });
+        }
+        if (err.message?.includes('Invalid file type')) {
+          return res.status(400).json({ message: err.message });
+        }
+        return res.status(400).json({ message: "Error uploading file: " + (err.message || "Unknown error") });
+      }
+      next();
+    });
+  }, async (req: any, res) => {
+    try {
+      if (!req.user?.isAdmin && req.user?.role !== 'partner') {
+        return res.status(403).json({ message: "Admin or Partner access required" });
+      }
+
+      const resourceId = req.params.id;
+      
+      // Verify resource exists
+      const existingResource = await storage.getResourceById(resourceId);
+      if (!existingResource) {
+        return res.status(404).json({ message: "Resource not found" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file provided" });
+      }
+
+      const userId = req.user.id;
+      const objectStorageService = new ObjectStorageService();
+      const file = req.file;
+      const mimeType = file.mimetype;
+      const fileSize = file.buffer.length;
+
+      // Sanitize the filename to prevent path traversal
+      const safeFilename = sanitizeFilename(file.originalname);
+
+      // Get upload URL from object storage
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+
+      // Upload file to object storage
+      const uploadResponse = await fetch(uploadURL, {
+        method: 'PUT',
+        body: file.buffer,
+        headers: {
+          'Content-Type': mimeType,
+          'Content-Length': fileSize.toString(),
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error(`Failed to upload file: ${uploadResponse.statusText}`);
+      }
+
+      // Set ACL policy with public visibility using sanitized filename
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        uploadURL.split('?')[0],
+        {
+          owner: userId,
+          visibility: 'public',
+        },
+        safeFilename
+      );
+
+      // Update the resource with the cover image URL
+      const updatedResource = await storage.updateResource(resourceId, {
+        coverImageUrl: objectPath,
+      });
+
+      res.json({ 
+        success: true, 
+        coverImageUrl: objectPath,
+        resource: updatedResource
+      });
+    } catch (error) {
+      console.error("Error uploading resource cover image:", error);
+      res.status(500).json({ message: "Failed to upload cover image" });
+    }
+  });
+
+  // Remove cover image from individual resource (admin/partner only)
+  app.delete('/api/resources/:id/cover-image', isAuthenticated, async (req: any, res) => {
+    try {
+      if (!req.user?.isAdmin && req.user?.role !== 'partner') {
+        return res.status(403).json({ message: "Admin or Partner access required" });
+      }
+
+      const resourceId = req.params.id;
+      
+      // Verify resource exists
+      const existingResource = await storage.getResourceById(resourceId);
+      if (!existingResource) {
+        return res.status(404).json({ message: "Resource not found" });
+      }
+
+      // Delete the old cover image from object storage if it exists
+      if (existingResource.coverImageUrl) {
+        try {
+          const objectStorageService = new ObjectStorageService();
+          await objectStorageService.deleteObject(existingResource.coverImageUrl);
+        } catch (deleteError) {
+          // Log but don't fail if we can't delete the old file
+          console.warn("Could not delete old resource cover image:", deleteError);
+        }
+      }
+
+      // Update the resource to remove cover image URL
+      const updatedResource = await storage.updateResource(resourceId, {
+        coverImageUrl: null,
+      });
+
+      res.json({ 
+        success: true,
+        resource: updatedResource
+      });
+    } catch (error) {
+      console.error("Error removing resource cover image:", error);
+      res.status(500).json({ message: "Failed to remove cover image" });
+    }
+  });
+
   // Bulk upload resources (admin/partner only)
   // (using bulkResourceUpload from utils/uploads.ts)
   app.post('/api/resources/bulk-upload', isAuthenticated, bulkResourceUpload.array('files', 50), async (req: any, res) => {

@@ -409,6 +409,7 @@ export const resources = pgTable("resources", {
   isActive: boolean("is_active").default(true),
   hiddenOnResourcesPage: boolean("hidden_on_resources_page").default(false),
   isPinned: boolean("is_pinned").default(false),
+  coverImageUrl: varchar("cover_image_url"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
