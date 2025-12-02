@@ -497,9 +497,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Download resource (increment counter)
-  app.get('/api/resources/:id/download', async (req, res) => {
+  app.get('/api/resources/:id/download', async (req: any, res) => {
     try {
-      await storage.updateResourceDownloads(req.params.id);
+      const resourceId = req.params.id;
+      
+      // Get resource details for logging
+      const resource = await storage.getResourceById(resourceId);
+      
+      await storage.updateResourceDownloads(resourceId);
+      
+      // Log the download activity if we have resource info
+      if (resource) {
+        const userId = req.user?.id;
+        const userEmail = req.user?.email;
+        
+        await logUserActivity(
+          userId,
+          userEmail,
+          'resource_download',
+          {
+            resourceId,
+            resourceTitle: resource.title,
+            resourceStage: resource.stage,
+            resourceType: resource.resourceType,
+          },
+          resourceId,
+          'resource',
+          req
+        );
+      }
+      
       res.json({ success: true });
     } catch (error) {
       console.error("Error updating download count:", error);
@@ -605,9 +632,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Download resource pack (increment counter)
-  app.get('/api/resource-packs/:id/download', async (req, res) => {
+  app.get('/api/resource-packs/:id/download', async (req: any, res) => {
     try {
-      await storage.updateResourcePackDownloads(req.params.id);
+      const packId = req.params.id;
+      
+      // Get resource pack details for logging
+      const pack = await storage.getResourcePackById(packId);
+      
+      await storage.updateResourcePackDownloads(packId);
+      
+      // Log the download activity if we have pack info
+      if (pack) {
+        const userId = req.user?.id;
+        const userEmail = req.user?.email;
+        
+        await logUserActivity(
+          userId,
+          userEmail,
+          'resource_pack_download',
+          {
+            resourcePackId: packId,
+            resourcePackTitle: pack.title,
+            resourcePackStage: pack.stage,
+          },
+          packId,
+          'resource_pack',
+          req
+        );
+      }
+      
       res.json({ success: true });
     } catch (error) {
       console.error("Error updating download count:", error);
@@ -5859,6 +5912,137 @@ Return JSON with:
     } catch (error) {
       console.error("Error fetching activity logs:", error);
       res.status(500).json({ message: "Failed to fetch activity logs" });
+    }
+  });
+
+  /**
+   * @description GET /api/admin/schools/:id/activity-logs - Get activity logs for a specific school
+   * @returns {{ logs: UserActivityLog[], total: number, page: number, limit: number, totalPages: number }}
+   * @location server/routes.ts
+   * @related shared/schema.ts (userActivityLogs, schoolUsers tables), client/src/pages/SchoolProfile.tsx
+   */
+  app.get('/api/admin/schools/:id/activity-logs', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const { id: schoolId } = req.params;
+      const { actionType, startDate, endDate, page, limit } = req.query;
+
+      // Parse pagination parameters
+      const parsedPage = page ? parseInt(page as string) : 1;
+      const parsedLimit = limit ? parseInt(limit as string) : 50;
+      const parsedOffset = (parsedPage - 1) * parsedLimit;
+
+      // Get all user IDs associated with this school
+      const schoolUserIds = await db
+        .select({ userId: schoolUsers.userId })
+        .from(schoolUsers)
+        .where(eq(schoolUsers.schoolId, schoolId));
+
+      const userIds = schoolUserIds.map(su => su.userId);
+
+      // Build the base conditions:
+      // 1. Activity by users who belong to this school
+      // 2. OR activity targeting this school directly
+      // 3. OR activity where actionDetails contains this schoolId
+      const schoolConditions: any[] = [];
+      
+      if (userIds.length > 0) {
+        schoolConditions.push(inArray(userActivityLogs.userId, userIds));
+      }
+      schoolConditions.push(
+        and(
+          eq(userActivityLogs.targetType, 'school'),
+          eq(userActivityLogs.targetId, schoolId)
+        )
+      );
+      // Check for schoolId in actionDetails using JSON extraction
+      schoolConditions.push(
+        sql`${userActivityLogs.actionDetails}->>'schoolId' = ${schoolId}`
+      );
+
+      // Combine school conditions with OR
+      const baseCondition = or(...schoolConditions);
+
+      // Build additional filter conditions
+      const filterConditions: any[] = [];
+
+      if (actionType) {
+        filterConditions.push(eq(userActivityLogs.actionType, actionType as string));
+      }
+
+      if (startDate) {
+        filterConditions.push(gte(userActivityLogs.createdAt, new Date(startDate as string)));
+      }
+
+      if (endDate) {
+        filterConditions.push(lte(userActivityLogs.createdAt, new Date(endDate as string)));
+      }
+
+      // Combine base condition with filters
+      const whereCondition = filterConditions.length > 0
+        ? and(baseCondition, ...filterConditions)
+        : baseCondition;
+
+      // Get total count
+      const totalResult = await db
+        .select({ count: count() })
+        .from(userActivityLogs)
+        .leftJoin(users, eq(userActivityLogs.userId, users.id))
+        .where(whereCondition);
+
+      const total = Number(totalResult[0]?.count || 0);
+      const totalPages = Math.ceil(total / parsedLimit);
+
+      // Get paginated logs with user information
+      const rawLogs = await db
+        .select({
+          id: userActivityLogs.id,
+          userId: userActivityLogs.userId,
+          actionType: userActivityLogs.actionType,
+          actionDetails: userActivityLogs.actionDetails,
+          targetId: userActivityLogs.targetId,
+          targetType: userActivityLogs.targetType,
+          ipAddress: userActivityLogs.ipAddress,
+          userAgent: userActivityLogs.userAgent,
+          createdAt: userActivityLogs.createdAt,
+          userEmail: users.email,
+          userFirstName: users.firstName,
+          userLastName: users.lastName,
+        })
+        .from(userActivityLogs)
+        .leftJoin(users, eq(userActivityLogs.userId, users.id))
+        .where(whereCondition)
+        .orderBy(desc(userActivityLogs.createdAt))
+        .limit(parsedLimit)
+        .offset(parsedOffset);
+
+      // Transform logs to match expected frontend structure
+      const logs = rawLogs.map(log => ({
+        id: log.id,
+        userId: log.userId,
+        actionType: log.actionType,
+        actionDetails: log.actionDetails,
+        targetId: log.targetId,
+        targetType: log.targetType,
+        ipAddress: log.ipAddress,
+        userAgent: log.userAgent,
+        createdAt: log.createdAt,
+        user: {
+          email: log.userEmail,
+          firstName: log.userFirstName,
+          lastName: log.userLastName,
+        },
+      }));
+
+      res.json({
+        logs,
+        total,
+        page: parsedPage,
+        limit: parsedLimit,
+        totalPages
+      });
+    } catch (error) {
+      console.error("Error fetching school activity logs:", error);
+      res.status(500).json({ message: "Failed to fetch school activity logs" });
     }
   });
 

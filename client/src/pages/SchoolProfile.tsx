@@ -54,6 +54,13 @@ import {
   EyeOff,
   ClipboardCheck,
   Shield,
+  History,
+  LogIn,
+  FileCheck,
+  FolderDown,
+  UserCheck,
+  RefreshCw,
+  Send,
 } from "lucide-react";
 import type { ReductionPromise } from "@shared/schema";
 import { calculateAggregateMetrics } from "@shared/plasticMetrics";
@@ -1642,11 +1649,77 @@ function EvidenceTab({ schoolId, evidence, isLoading, roundFilter, setRoundFilte
   );
 }
 
+// Activity log type for API response
+interface ActivityLog {
+  id: string;
+  userId: string | null;
+  actionType: string;
+  actionDetails: Record<string, any>;
+  targetId: string | null;
+  targetType: string | null;
+  ipAddress: string | null;
+  userAgent: string | null;
+  createdAt: string;
+  user: {
+    email: string | null;
+    firstName: string | null;
+    lastName: string | null;
+  };
+}
+
+// Helper function to get human-readable action label and icon
+function getActionDisplay(actionType: string): { label: string; icon: JSX.Element; color: string } {
+  const actionMap: Record<string, { label: string; icon: JSX.Element; color: string }> = {
+    'login': { label: 'Logged in', icon: <LogIn className="h-4 w-4" />, color: 'text-blue-600' },
+    'logout': { label: 'Logged out', icon: <LogIn className="h-4 w-4" />, color: 'text-gray-500' },
+    'evidence_submit': { label: 'Submitted evidence', icon: <FileCheck className="h-4 w-4" />, color: 'text-green-600' },
+    'evidence_update': { label: 'Updated evidence', icon: <Edit className="h-4 w-4" />, color: 'text-amber-600' },
+    'evidence_delete': { label: 'Deleted evidence', icon: <Trash className="h-4 w-4" />, color: 'text-red-600' },
+    'evidence_approved': { label: 'Evidence approved', icon: <CheckCircle className="h-4 w-4" />, color: 'text-green-600' },
+    'evidence_rejected': { label: 'Evidence rejected', icon: <XCircle className="h-4 w-4" />, color: 'text-red-600' },
+    'evidence_resubmit_requested': { label: 'Resubmission requested', icon: <RefreshCw className="h-4 w-4" />, color: 'text-amber-600' },
+    'resource_download': { label: 'Downloaded resource', icon: <FolderDown className="h-4 w-4" />, color: 'text-purple-600' },
+    'resource_pack_download': { label: 'Downloaded resource pack', icon: <FolderDown className="h-4 w-4" />, color: 'text-purple-600' },
+    'school_create': { label: 'School created', icon: <School className="h-4 w-4" />, color: 'text-green-600' },
+    'school_progression_update': { label: 'Progression updated', icon: <TrendingUp className="h-4 w-4" />, color: 'text-blue-600' },
+    'certificate_regenerated': { label: 'Certificate regenerated', icon: <Award className="h-4 w-4" />, color: 'text-amber-600' },
+    'manual_email': { label: 'Manual email sent', icon: <Send className="h-4 w-4" />, color: 'text-blue-600' },
+    'promise_update': { label: 'Promise updated', icon: <Target className="h-4 w-4" />, color: 'text-green-600' },
+    'user_verified': { label: 'User verified', icon: <UserCheck className="h-4 w-4" />, color: 'text-green-600' },
+  };
+  
+  return actionMap[actionType] || { 
+    label: actionType.replace(/_/g, ' '), 
+    icon: <History className="h-4 w-4" />, 
+    color: 'text-gray-600' 
+  };
+}
+
+// Helper function to format relative time
+function formatRelativeTime(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins} min ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  
+  return format(date, 'MMM d, yyyy h:mm a');
+}
+
 // Analytics Tab Component
 function AnalyticsTab({ school, reductionPromises }: {
   school: SchoolData;
   reductionPromises: ReductionPromise[];
 }) {
+  const [activityPage, setActivityPage] = useState(1);
+  const [activityFilter, setActivityFilter] = useState<string>('all');
+  
   const promiseMetrics = reductionPromises.length > 0
     ? calculateAggregateMetrics(reductionPromises)
     : null;
@@ -1663,97 +1736,242 @@ function AnalyticsTab({ school, reductionPromises }: {
   }, 0);
   const totalAnnualWeightKg = promiseMetrics ? (promiseMetrics.totalGramsReduced / 1000) : 0;
 
+  // Fetch activity logs for this school
+  const { data: activityData, isLoading: isLoadingActivity } = useQuery<{
+    logs: ActivityLog[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }>({
+    queryKey: ['/api/admin/schools', school.id, 'activity-logs', { page: activityPage, actionType: activityFilter !== 'all' ? activityFilter : undefined }],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: activityPage.toString(),
+        limit: '20',
+      });
+      if (activityFilter !== 'all') {
+        params.set('actionType', activityFilter);
+      }
+      const response = await fetch(`/api/admin/schools/${school.id}/activity-logs?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch activity logs');
+      return response.json();
+    },
+  });
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {/* Progress Overview */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-pcs_blue" />
-            Progress Overview
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-gray-600">Round Progress</span>
-              <span className="font-medium">{school.totalApproved ?? 0}/{school.totalRequired ?? 0} submissions</span>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Progress Overview */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-pcs_blue" />
+              Progress Overview
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-600">Round Progress</span>
+                <span className="font-medium">{school.totalApproved ?? 0}/{school.totalRequired ?? 0} submissions</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3">
+                <div
+                  className="bg-pcs_blue h-3 rounded-full transition-all"
+                  style={{ width: `${school.progressPercentage}%` }}
+                />
+              </div>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
-              <div
-                className="bg-pcs_blue h-3 rounded-full transition-all"
-                style={{ width: `${school.progressPercentage}%` }}
-              />
+            <div>
+              <p className="text-sm text-gray-600">Current Round</p>
+              <p className="text-2xl font-bold text-pcs_blue">Round {school.currentRound || 1}</p>
             </div>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Current Round</p>
-            <p className="text-2xl font-bold text-pcs_blue">Round {school.currentRound || 1}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Current Stage</p>
-            <p className="text-2xl font-bold capitalize">{school.currentStage}</p>
-          </div>
-        </CardContent>
-      </Card>
+            <div>
+              <p className="text-sm text-gray-600">Current Stage</p>
+              <p className="text-2xl font-bold capitalize">{school.currentStage}</p>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Reduction Promises */}
+        {/* Reduction Promises */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Award className="h-5 w-5 text-pcs_blue" />
+              Reduction Promises
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="text-sm text-gray-600">Total Promises</p>
+              <p className="text-3xl font-bold text-pcs_blue">{totalPromises}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Annual Items Reduced</p>
+              <p className="text-2xl font-bold">{totalAnnualReduction.toLocaleString()}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Annual Weight (kg)</p>
+              <p className="text-2xl font-bold">{totalAnnualWeightKg.toFixed(2)} kg</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Stage Completion */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-pcs_blue" />
+              Stage Completion
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Inspire</span>
+              {school.inspireCompleted ? (
+                <CheckCircle className="h-5 w-5 text-green-600" />
+              ) : (
+                <XCircle className="h-5 w-5 text-gray-400" />
+              )}
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Investigate</span>
+              {school.investigateCompleted ? (
+                <CheckCircle className="h-5 w-5 text-green-600" />
+              ) : (
+                <XCircle className="h-5 w-5 text-gray-400" />
+              )}
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Act</span>
+              {school.actCompleted ? (
+                <CheckCircle className="h-5 w-5 text-green-600" />
+              ) : (
+                <XCircle className="h-5 w-5 text-gray-400" />
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Activity History */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Award className="h-5 w-5 text-pcs_blue" />
-            Reduction Promises
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <History className="h-5 w-5 text-pcs_blue" />
+              Activity History
+            </CardTitle>
+            <Select value={activityFilter} onValueChange={setActivityFilter}>
+              <SelectTrigger className="w-[180px]" data-testid="activity-filter-select">
+                <SelectValue placeholder="Filter by action" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Activities</SelectItem>
+                <SelectItem value="login">Logins</SelectItem>
+                <SelectItem value="evidence_submit">Evidence Submissions</SelectItem>
+                <SelectItem value="resource_download">Resource Downloads</SelectItem>
+                <SelectItem value="resource_pack_download">Resource Pack Downloads</SelectItem>
+                <SelectItem value="evidence_approved">Evidence Approved</SelectItem>
+                <SelectItem value="evidence_rejected">Evidence Rejected</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <p className="text-sm text-gray-600">Total Promises</p>
-            <p className="text-3xl font-bold text-pcs_blue">{totalPromises}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Annual Items Reduced</p>
-            <p className="text-2xl font-bold">{totalAnnualReduction.toLocaleString()}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Annual Weight (kg)</p>
-            <p className="text-2xl font-bold">{totalAnnualWeightKg.toFixed(2)} kg</p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Stage Completion */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-pcs_blue" />
-            Stage Completion
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Inspire</span>
-            {school.inspireCompleted ? (
-              <CheckCircle className="h-5 w-5 text-green-600" />
-            ) : (
-              <XCircle className="h-5 w-5 text-gray-400" />
-            )}
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Investigate</span>
-            {school.investigateCompleted ? (
-              <CheckCircle className="h-5 w-5 text-green-600" />
-            ) : (
-              <XCircle className="h-5 w-5 text-gray-400" />
-            )}
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Act</span>
-            {school.actCompleted ? (
-              <CheckCircle className="h-5 w-5 text-green-600" />
-            ) : (
-              <XCircle className="h-5 w-5 text-gray-400" />
-            )}
-          </div>
+        <CardContent>
+          {isLoadingActivity ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-pcs_blue" />
+            </div>
+          ) : !activityData?.logs?.length ? (
+            <div className="text-center py-8 text-gray-500">
+              <History className="h-12 w-12 mx-auto mb-3 opacity-30" />
+              <p>No activity recorded yet</p>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {activityData.logs.map((log) => {
+                const { label, icon, color } = getActionDisplay(log.actionType);
+                const userName = log.user?.firstName && log.user?.lastName 
+                  ? `${log.user.firstName} ${log.user.lastName}`
+                  : log.user?.email || 'Unknown user';
+                
+                return (
+                  <div
+                    key={log.id}
+                    className="flex items-start gap-3 py-3 border-b last:border-b-0 hover:bg-gray-50 px-2 rounded"
+                    data-testid={`activity-log-${log.id}`}
+                  >
+                    <div className={`mt-0.5 ${color}`}>
+                      {icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-sm truncate">{userName}</span>
+                        <span className="text-gray-500 text-sm">{label}</span>
+                      </div>
+                      {log.actionDetails && Object.keys(log.actionDetails).length > 0 && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          {log.actionDetails.resourceTitle && (
+                            <span>"{log.actionDetails.resourceTitle}"</span>
+                          )}
+                          {log.actionDetails.resourcePackTitle && (
+                            <span>"{log.actionDetails.resourcePackTitle}"</span>
+                          )}
+                          {log.actionDetails.evidenceTitle && (
+                            <span>"{log.actionDetails.evidenceTitle}"</span>
+                          )}
+                          {log.actionDetails.stage && (
+                            <Badge variant="outline" className="ml-2 text-xs capitalize">
+                              {log.actionDetails.stage}
+                            </Badge>
+                          )}
+                          {log.actionDetails.round && (
+                            <Badge variant="outline" className="ml-2 text-xs">
+                              Round {log.actionDetails.round}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-400 whitespace-nowrap">
+                      {formatRelativeTime(log.createdAt)}
+                    </div>
+                  </div>
+                );
+              })}
+              
+              {/* Pagination */}
+              {activityData.totalPages > 1 && (
+                <div className="flex items-center justify-between pt-4 mt-2 border-t">
+                  <span className="text-sm text-gray-500">
+                    Showing {((activityData.page - 1) * activityData.limit) + 1} - {Math.min(activityData.page * activityData.limit, activityData.total)} of {activityData.total}
+                  </span>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setActivityPage(p => Math.max(1, p - 1))}
+                      disabled={activityPage === 1}
+                      data-testid="activity-prev-page"
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setActivityPage(p => p + 1)}
+                      disabled={activityPage >= activityData.totalPages}
+                      data-testid="activity-next-page"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
