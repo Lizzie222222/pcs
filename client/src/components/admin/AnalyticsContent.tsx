@@ -627,7 +627,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = url;
-      a.download = `analytics_${new Date().toISOString().split('T')[0]}.${format === 'excel' ? 'xlsx' : 'csv'}`;
+      a.download = `pcs_full_export_${new Date().toISOString().split('T')[0]}.${format === 'excel' ? 'xlsx' : 'csv'}`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -731,9 +731,10 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
             onClick={() => exportAnalytics('csv')}
             data-testid="button-export-csv"
             className="min-h-11 text-xs sm:text-sm px-3 sm:px-4"
+            title="Export all schools and users data as CSV"
           >
             <Download className="w-4 h-4 sm:mr-2" />
-            <span className="hidden sm:inline">Export CSV</span>
+            <span className="hidden sm:inline">Export All Data (CSV)</span>
             <span className="sm:hidden">CSV</span>
           </Button>
           <Button
@@ -741,9 +742,10 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
             onClick={() => exportAnalytics('excel')}
             data-testid="button-export-excel"
             className="min-h-11 text-xs sm:text-sm px-3 sm:px-4"
+            title="Export all schools and users data as Excel with multiple sheets"
           >
             <Download className="w-4 h-4 sm:mr-2" />
-            <span className="hidden sm:inline">Export Excel</span>
+            <span className="hidden sm:inline">Export All Data (Excel)</span>
             <span className="sm:hidden">Excel</span>
           </Button>
         </div>

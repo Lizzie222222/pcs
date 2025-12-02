@@ -8327,71 +8327,223 @@ Return JSON with:
     }
   });
 
-  // Export analytics data as CSV/Excel (MUST come before the general export endpoint) - Partners cannot download data
+  // Export comprehensive data as CSV/Excel (MUST come before the general export endpoint) - Partners cannot download data
   app.get('/api/admin/export/analytics', isAuthenticated, requireFullAdmin, async (req, res) => {
     try {
       const { format = 'csv' } = req.query;
 
-      // Get all analytics data
-      const [overview, schoolProgress, evidenceAnalytics, userEngagement] = await Promise.all([
-        storage.getAnalyticsOverview(),
-        storage.getSchoolProgressAnalytics(),
-        storage.getEvidenceAnalytics(), 
-        storage.getUserEngagementAnalytics()
-      ]);
+      // Get ALL schools data (no limit)
+      const allSchools = await db.select().from(schools).orderBy(desc(schools.createdAt));
+      
+      // Get ALL users data (excluding password hashes for security)
+      const allUsers = await db
+        .select({
+          id: users.id,
+          email: users.email,
+          emailVerified: users.emailVerified,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          phoneNumber: users.phoneNumber,
+          role: users.role,
+          isAdmin: users.isAdmin,
+          preferredLanguage: users.preferredLanguage,
+          hasSeenOnboarding: users.hasSeenOnboarding,
+          needsPasswordReset: users.needsPasswordReset,
+          lastViewedEventsAt: users.lastViewedEventsAt,
+          lastActiveAt: users.lastActiveAt,
+          hasInteracted: users.hasInteracted,
+          deletedAt: users.deletedAt,
+          isMigrated: users.isMigrated,
+          legacyUserId: users.legacyUserId,
+          needsEvidenceResubmission: users.needsEvidenceResubmission,
+          migratedAt: users.migratedAt,
+          welcomeEmailSentAt: users.welcomeEmailSentAt,
+          sendgridSyncedAt: users.sendgridSyncedAt,
+          createdAt: users.createdAt,
+          updatedAt: users.updatedAt,
+        })
+        .from(users)
+        .orderBy(desc(users.createdAt));
 
-      // Compile comprehensive analytics summary
-      const analyticsData = [
-        // Overview metrics
-        { category: 'Overview', metric: 'Total Schools', value: overview.totalSchools },
-        { category: 'Overview', metric: 'Total Users', value: overview.totalUsers },
-        { category: 'Overview', metric: 'Total Evidence', value: overview.totalEvidence },
-        { category: 'Overview', metric: 'Completed Awards', value: overview.completedAwards },
-        { category: 'Overview', metric: 'Pending Evidence', value: overview.pendingEvidence },
-        { category: 'Overview', metric: 'Average Progress', value: `${Math.round(overview.averageProgress)}%` },
-        { category: 'Overview', metric: 'Students Impacted', value: overview.studentsImpacted },
-        { category: 'Overview', metric: 'Countries Reached', value: overview.countriesReached },
-        
-        // School progress metrics
-        ...schoolProgress.stageDistribution.map(item => ({ 
-          category: 'School Stages', 
-          metric: `${item.stage} Schools`, 
-          value: item.count 
-        })),
-        
-        // Evidence metrics
-        ...evidenceAnalytics.stageBreakdown.map(item => ({ 
-          category: 'Evidence by Stage', 
-          metric: `${item.stage} Approved`, 
-          value: item.approved 
-        })),
-        
-        // User engagement metrics
-        ...userEngagement.roleDistribution.map(item => ({ 
-          category: 'User Roles', 
-          metric: `${item.role} Users`, 
-          value: item.count 
-        }))
-      ];
+      // Get user-school memberships
+      const memberships = await db
+        .select({
+          userId: schoolMembers.userId,
+          schoolId: schoolMembers.schoolId,
+          schoolRole: schoolMembers.role,
+          isVerified: schoolMembers.isVerified,
+        })
+        .from(schoolMembers);
 
-      const filename = `analytics_${new Date().toISOString().split('T')[0]}`;
+      // Create a map of user IDs to their school names
+      const userSchoolMap = new Map<string, string[]>();
+      for (const m of memberships) {
+        const school = allSchools.find(s => s.id === m.schoolId);
+        if (school && m.userId) {
+          if (!userSchoolMap.has(m.userId)) {
+            userSchoolMap.set(m.userId, []);
+          }
+          userSchoolMap.get(m.userId)!.push(school.name);
+        }
+      }
+
+      const filename = `pcs_full_export_${new Date().toISOString().split('T')[0]}`;
 
       if (format === 'csv') {
-        const csv = generateCSV(analyticsData, 'analytics');
+        // For CSV, create a combined format with sections
+        const schoolsData = allSchools.map(s => ({
+          id: s.id,
+          name: s.name,
+          type: s.type || '',
+          country: s.country,
+          address: s.address || '',
+          website: s.website || '',
+          adminEmail: s.adminEmail || '',
+          postcode: s.postcode || '',
+          zipCode: s.zipCode || '',
+          primaryLanguage: s.primaryLanguage || '',
+          ageRanges: s.ageRanges?.join('; ') || '',
+          studentCount: s.studentCount || 0,
+          registrationCompleted: s.registrationCompleted ? 'Yes' : 'No',
+          currentStage: s.currentStage || '',
+          progressPercentage: s.progressPercentage || 0,
+          inspireCompleted: s.inspireCompleted ? 'Yes' : 'No',
+          investigateCompleted: s.investigateCompleted ? 'Yes' : 'No',
+          actCompleted: s.actCompleted ? 'Yes' : 'No',
+          awardCompleted: s.awardCompleted ? 'Yes' : 'No',
+          currentRound: s.currentRound || 1,
+          roundsCompleted: s.roundsCompleted || 0,
+          auditQuizCompleted: s.auditQuizCompleted ? 'Yes' : 'No',
+          featuredSchool: s.featuredSchool ? 'Yes' : 'No',
+          showOnMap: s.showOnMap ? 'Yes' : 'No',
+          photoConsentStatus: s.photoConsentStatus || '',
+          isMigrated: s.isMigrated ? 'Yes' : 'No',
+          legacyDistrict: s.legacyDistrict || '',
+          legacyEvidenceCount: s.legacyEvidenceCount || 0,
+          lastActiveAt: s.lastActiveAt ? new Date(s.lastActiveAt).toISOString() : '',
+          lastActionType: s.lastActionType || '',
+          createdAt: s.createdAt ? new Date(s.createdAt).toISOString() : '',
+          updatedAt: s.updatedAt ? new Date(s.updatedAt).toISOString() : '',
+        }));
+
+        const usersData = allUsers.map(u => ({
+          id: u.id,
+          email: u.email || '',
+          emailVerified: u.emailVerified ? 'Yes' : 'No',
+          firstName: u.firstName || '',
+          lastName: u.lastName || '',
+          phoneNumber: u.phoneNumber || '',
+          role: u.role || '',
+          isAdmin: u.isAdmin ? 'Yes' : 'No',
+          preferredLanguage: u.preferredLanguage || '',
+          hasSeenOnboarding: u.hasSeenOnboarding ? 'Yes' : 'No',
+          hasInteracted: u.hasInteracted ? 'Yes' : 'No',
+          schoolNames: userSchoolMap.get(u.id)?.join('; ') || '',
+          isMigrated: u.isMigrated ? 'Yes' : 'No',
+          legacyUserId: u.legacyUserId || '',
+          deletedAt: u.deletedAt ? new Date(u.deletedAt).toISOString() : '',
+          lastActiveAt: u.lastActiveAt ? new Date(u.lastActiveAt).toISOString() : '',
+          createdAt: u.createdAt ? new Date(u.createdAt).toISOString() : '',
+          updatedAt: u.updatedAt ? new Date(u.updatedAt).toISOString() : '',
+        }));
+
+        // Generate schools CSV
+        const schoolsCsv = generateCSV(schoolsData, 'schools');
+        const usersCsv = generateCSV(usersData, 'users');
+        
+        // Combine into single file with section headers
+        const combinedCsv = `=== SCHOOLS DATA (${schoolsData.length} records) ===\n${schoolsCsv}\n\n=== USERS DATA (${usersData.length} records) ===\n${usersCsv}`;
+        
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}.csv"`);
-        res.send(csv);
+        res.send(combinedCsv);
       } else if (format === 'excel' || format === 'xlsx') {
-        const excel = generateExcel(analyticsData, 'analytics');
+        // For Excel, create a workbook with multiple sheets
+        const XLSX = await import('xlsx');
+        const workbook = XLSX.utils.book_new();
+
+        // Schools sheet
+        const schoolsData = allSchools.map(s => ({
+          'ID': s.id,
+          'Name': s.name,
+          'Type': s.type || '',
+          'Country': s.country,
+          'Address': s.address || '',
+          'Website': s.website || '',
+          'Admin Email': s.adminEmail || '',
+          'Postcode': s.postcode || '',
+          'Zip Code': s.zipCode || '',
+          'Primary Language': s.primaryLanguage || '',
+          'Age Ranges': s.ageRanges?.join('; ') || '',
+          'Student Count': s.studentCount || 0,
+          'Registration Completed': s.registrationCompleted ? 'Yes' : 'No',
+          'Current Stage': s.currentStage || '',
+          'Progress %': s.progressPercentage || 0,
+          'Inspire Completed': s.inspireCompleted ? 'Yes' : 'No',
+          'Investigate Completed': s.investigateCompleted ? 'Yes' : 'No',
+          'Act Completed': s.actCompleted ? 'Yes' : 'No',
+          'Award Completed': s.awardCompleted ? 'Yes' : 'No',
+          'Current Round': s.currentRound || 1,
+          'Rounds Completed': s.roundsCompleted || 0,
+          'Audit Quiz Completed': s.auditQuizCompleted ? 'Yes' : 'No',
+          'Featured School': s.featuredSchool ? 'Yes' : 'No',
+          'Show On Map': s.showOnMap ? 'Yes' : 'No',
+          'Photo Consent Status': s.photoConsentStatus || '',
+          'Is Migrated': s.isMigrated ? 'Yes' : 'No',
+          'Legacy District': s.legacyDistrict || '',
+          'Legacy Evidence Count': s.legacyEvidenceCount || 0,
+          'Last Active At': s.lastActiveAt ? new Date(s.lastActiveAt).toISOString() : '',
+          'Last Action Type': s.lastActionType || '',
+          'Created At': s.createdAt ? new Date(s.createdAt).toISOString() : '',
+          'Updated At': s.updatedAt ? new Date(s.updatedAt).toISOString() : '',
+        }));
+        const schoolsSheet = XLSX.utils.json_to_sheet(schoolsData);
+        XLSX.utils.book_append_sheet(workbook, schoolsSheet, 'Schools');
+
+        // Users sheet
+        const usersData = allUsers.map(u => ({
+          'ID': u.id,
+          'Email': u.email || '',
+          'Email Verified': u.emailVerified ? 'Yes' : 'No',
+          'First Name': u.firstName || '',
+          'Last Name': u.lastName || '',
+          'Phone Number': u.phoneNumber || '',
+          'Role': u.role || '',
+          'Is Admin': u.isAdmin ? 'Yes' : 'No',
+          'Preferred Language': u.preferredLanguage || '',
+          'Has Seen Onboarding': u.hasSeenOnboarding ? 'Yes' : 'No',
+          'Has Interacted': u.hasInteracted ? 'Yes' : 'No',
+          'School Names': userSchoolMap.get(u.id)?.join('; ') || '',
+          'Is Migrated': u.isMigrated ? 'Yes' : 'No',
+          'Legacy User ID': u.legacyUserId || '',
+          'Deleted At': u.deletedAt ? new Date(u.deletedAt).toISOString() : '',
+          'Last Active At': u.lastActiveAt ? new Date(u.lastActiveAt).toISOString() : '',
+          'Created At': u.createdAt ? new Date(u.createdAt).toISOString() : '',
+          'Updated At': u.updatedAt ? new Date(u.updatedAt).toISOString() : '',
+        }));
+        const usersSheet = XLSX.utils.json_to_sheet(usersData);
+        XLSX.utils.book_append_sheet(workbook, usersSheet, 'Users');
+
+        // Summary sheet
+        const summaryData = [
+          { 'Metric': 'Total Schools', 'Value': allSchools.length },
+          { 'Metric': 'Total Users', 'Value': allUsers.length },
+          { 'Metric': 'Export Date', 'Value': new Date().toISOString() },
+        ];
+        const summarySheet = XLSX.utils.json_to_sheet(summaryData);
+        XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+
+        const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+        
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}.xlsx"`);
-        res.send(excel);
+        res.send(excelBuffer);
       } else {
-        res.json(analyticsData);
+        res.json({ schools: allSchools.length, users: allUsers.length });
       }
     } catch (error) {
-      console.error("Error exporting analytics:", error);
-      res.status(500).json({ message: "Failed to export analytics data" });
+      console.error("Error exporting data:", error);
+      res.status(500).json({ message: "Failed to export data" });
     }
   });
 
