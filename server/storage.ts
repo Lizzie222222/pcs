@@ -5548,10 +5548,10 @@ export class DatabaseStorage implements IStorage {
     
     if (requirementIds.length > 0) {
       const reqs = await db
-        .select({ id: evidenceRequirements.id, titleKey: evidenceRequirements.titleKey })
+        .select({ id: evidenceRequirements.id, title: evidenceRequirements.title })
         .from(evidenceRequirements)
         .where(inArray(evidenceRequirements.id, requirementIds));
-      reqs.forEach(r => requirementMap.set(r.id, r.titleKey || 'Unknown'));
+      reqs.forEach(r => requirementMap.set(r.id, r.title || 'Unknown'));
     }
 
     const byRequirement = evidenceByReq.map(e => {
@@ -5594,37 +5594,37 @@ export class DatabaseStorage implements IStorage {
     byCategory: Array<{ category: string; total: number; completed: number; rate: number }>;
     trends: Array<{ month: string; created: number; completed: number }>;
   }> {
-    // Overall promise stats
+    // Overall promise stats - enum values are: active, achieved, cancelled
     const [stats] = await db
       .select({
         total: sql<number>`COUNT(*)`,
-        completed: sql<number>`COUNT(*) FILTER (WHERE status = 'completed')`,
+        completed: sql<number>`COUNT(*) FILTER (WHERE status = 'achieved')`,
         inProgress: sql<number>`COUNT(*) FILTER (WHERE status = 'active')`,
-        notStarted: sql<number>`COUNT(*) FILTER (WHERE status = 'pending')`,
+        cancelled: sql<number>`COUNT(*) FILTER (WHERE status = 'cancelled')`,
       })
       .from(reductionPromises);
 
     const total = Number(stats.total) || 0;
     const completed = Number(stats.completed) || 0;
 
-    // By plastic item category
+    // By plastic item category - use 'achieved' status for completed
     const byCategory = await db
       .select({
-        category: reductionPromises.plasticItem,
+        category: reductionPromises.plasticItemType,
         total: sql<number>`COUNT(*)`,
-        completed: sql<number>`COUNT(*) FILTER (WHERE status = 'completed')`,
+        completed: sql<number>`COUNT(*) FILTER (WHERE status = 'achieved')`,
       })
       .from(reductionPromises)
-      .groupBy(reductionPromises.plasticItem)
+      .groupBy(reductionPromises.plasticItemType)
       .orderBy(sql`COUNT(*) DESC`)
       .limit(10);
 
-    // Monthly trends
+    // Monthly trends - use 'achieved' status for completed
     const trends = await db
       .select({
         month: sql<string>`TO_CHAR(created_at, 'YYYY-MM')`,
         created: sql<number>`COUNT(*)`,
-        completed: sql<number>`COUNT(*) FILTER (WHERE status = 'completed')`,
+        completed: sql<number>`COUNT(*) FILTER (WHERE status = 'achieved')`,
       })
       .from(reductionPromises)
       .where(sql`created_at >= NOW() - INTERVAL '12 months'`)
@@ -5636,7 +5636,7 @@ export class DatabaseStorage implements IStorage {
         total,
         completed,
         inProgress: Number(stats.inProgress) || 0,
-        notStarted: Number(stats.notStarted) || 0,
+        notStarted: Number(stats.cancelled) || 0,
         completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
       },
       byCategory: byCategory.map(c => ({
@@ -5773,13 +5773,13 @@ export class DatabaseStorage implements IStorage {
     // Get reduction by plastic category
     const categoryData = await db
       .select({
-        category: reductionPromises.plasticItem,
+        category: reductionPromises.plasticItemType,
         totalReduction: sql<number>`SUM(reduction_amount)`,
         promiseCount: sql<number>`COUNT(*)`,
       })
       .from(reductionPromises)
       .where(sql`reduction_amount > 0`)
-      .groupBy(reductionPromises.plasticItem)
+      .groupBy(reductionPromises.plasticItemType)
       .orderBy(sql`SUM(reduction_amount) DESC`)
       .limit(10);
 
@@ -5789,20 +5789,20 @@ export class DatabaseStorage implements IStorage {
       promiseCount: Number(c.promiseCount) || 0,
     }));
 
-    // Calculate impact metrics
+    // Calculate impact metrics using reduction_amount (no annual columns exist)
     const [totals] = await db
       .select({
-        annualReduction: sql<number>`SUM(annual_reduction)`,
-        annualWeight: sql<number>`SUM(annual_weight_kg)`,
+        totalReduction: sql<number>`SUM(reduction_amount)`,
       })
       .from(reductionPromises);
 
-    const totalAnnualReduction = Number(totals?.annualReduction) || 0;
-    const totalWeightKg = Number(totals?.annualWeight) || 0;
+    const totalAnnualReduction = Number(totals?.totalReduction) || 0;
+    // Estimate weight: assume average plastic item is ~25g (0.025 kg)
+    const totalWeightKg = Math.round(totalAnnualReduction * 0.025);
     
     // Fun equivalents (approximate calculations)
     const treesEquivalent = Math.round(totalWeightKg * 0.02); // ~50kg plastic = 1 tree worth of carbon
-    const oceanBottles = Math.round(totalWeightKg / 0.025); // Average plastic bottle = 25g
+    const oceanBottles = totalAnnualReduction; // Each item is roughly equivalent to a bottle
 
     return {
       monthlyReduction,
