@@ -5261,30 +5261,63 @@ export class DatabaseStorage implements IStorage {
     stages: Array<{ stage: string; count: number; percentage: number }>;
     dropoffs: Array<{ from: string; to: string; dropoffRate: number }>;
   }> {
+    // Hybrid approach: Count schools using BOTH completion flags AND current_stage/rounds_completed
+    // This captures legacy data where flags might not be set but progression is indicated by stage
+    // Note: current_stage enum values are 'inspire', 'investigate', 'act' (no 'completed' value)
     const [totals] = await db
       .select({
         total: sql<number>`COUNT(*)`,
-        inspire: sql<number>`COUNT(*) FILTER (WHERE current_stage IN ('inspire', 'investigate', 'act') OR inspire_completed = true)`,
-        investigate: sql<number>`COUNT(*) FILTER (WHERE current_stage IN ('investigate', 'act') OR investigate_completed = true)`,
-        act: sql<number>`COUNT(*) FILTER (WHERE current_stage = 'act' OR act_completed = true)`,
+        // Schools that completed Inspire: flag is set OR progressed to investigate/act stage OR completed rounds
+        inspire: sql<number>`COUNT(*) FILTER (WHERE 
+          inspire_completed = true 
+          OR investigate_completed = true 
+          OR act_completed = true 
+          OR current_stage IN ('investigate', 'act') 
+          OR rounds_completed > 0
+        )`,
+        // Schools that completed Investigate: flag is set OR progressed to act stage OR completed rounds
+        investigate: sql<number>`COUNT(*) FILTER (WHERE 
+          investigate_completed = true 
+          OR act_completed = true 
+          OR current_stage = 'act' 
+          OR rounds_completed > 0
+        )`,
+        // Schools that completed Act: flag is set OR completed rounds
+        act: sql<number>`COUNT(*) FILTER (WHERE 
+          act_completed = true 
+          OR rounds_completed > 0
+        )`,
+        // Schools that have completed at least one full round
         completed: sql<number>`COUNT(*) FILTER (WHERE rounds_completed > 0)`,
       })
       .from(schools);
 
     const total = Number(totals.total) || 1;
+    const inspireCount = Number(totals.inspire) || 0;
+    const investigateCount = Number(totals.investigate) || 0;
+    const actCount = Number(totals.act) || 0;
+    const completedCount = Number(totals.completed) || 0;
+
     const stages = [
       { stage: 'Registered', count: total, percentage: 100 },
-      { stage: 'Inspire', count: Number(totals.inspire) || 0, percentage: Math.round(((Number(totals.inspire) || 0) / total) * 100) },
-      { stage: 'Investigate', count: Number(totals.investigate) || 0, percentage: Math.round(((Number(totals.investigate) || 0) / total) * 100) },
-      { stage: 'Act', count: Number(totals.act) || 0, percentage: Math.round(((Number(totals.act) || 0) / total) * 100) },
-      { stage: 'Completed', count: Number(totals.completed) || 0, percentage: Math.round(((Number(totals.completed) || 0) / total) * 100) },
+      { stage: 'Completed Inspire', count: inspireCount, percentage: Math.round((inspireCount / total) * 100) },
+      { stage: 'Completed Investigate', count: investigateCount, percentage: Math.round((investigateCount / total) * 100) },
+      { stage: 'Completed Act', count: actCount, percentage: Math.round((actCount / total) * 100) },
+      { stage: 'Completed Round', count: completedCount, percentage: Math.round((completedCount / total) * 100) },
     ];
 
+    // Calculate drop-off rates (clamped to 0-100% range)
+    const calcDropoff = (from: number, to: number) => {
+      if (from <= 0) return 0;
+      const rate = Math.round((1 - to / from) * 100);
+      return Math.max(0, Math.min(100, rate)); // Clamp between 0-100%
+    };
+
     const dropoffs = [
-      { from: 'Registered', to: 'Inspire', dropoffRate: stages[0].count > 0 ? Math.round((1 - stages[1].count / stages[0].count) * 100) : 0 },
-      { from: 'Inspire', to: 'Investigate', dropoffRate: stages[1].count > 0 ? Math.round((1 - stages[2].count / stages[1].count) * 100) : 0 },
-      { from: 'Investigate', to: 'Act', dropoffRate: stages[2].count > 0 ? Math.round((1 - stages[3].count / stages[2].count) * 100) : 0 },
-      { from: 'Act', to: 'Completed', dropoffRate: stages[3].count > 0 ? Math.round((1 - stages[4].count / stages[3].count) * 100) : 0 },
+      { from: 'Registered', to: 'Completed Inspire', dropoffRate: calcDropoff(total, inspireCount) },
+      { from: 'Completed Inspire', to: 'Completed Investigate', dropoffRate: calcDropoff(inspireCount, investigateCount) },
+      { from: 'Completed Investigate', to: 'Completed Act', dropoffRate: calcDropoff(investigateCount, actCount) },
+      { from: 'Completed Act', to: 'Completed Round', dropoffRate: calcDropoff(actCount, completedCount) },
     ];
 
     return { stages, dropoffs };
