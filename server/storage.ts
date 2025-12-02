@@ -309,14 +309,17 @@ export interface IStorage {
   createResource(resource: InsertResource): Promise<Resource>;
   getResources(filters?: {
     stage?: string;
+    curriculumStage?: string;
     country?: string;
     language?: string;
     ageRange?: string;
     resourceType?: string;
     theme?: string;
+    tags?: string[];
     search?: string;
     visibility?: 'public' | 'private';
     includeHidden?: boolean;
+    includeInactive?: boolean;
     limit?: number;
     offset?: number;
   }): Promise<Resource[]>;
@@ -1879,6 +1882,7 @@ export class DatabaseStorage implements IStorage {
 
   async getResources(filters: {
     stage?: string;
+    curriculumStage?: string;
     country?: string;
     language?: string;
     ageRange?: string;
@@ -1906,6 +1910,9 @@ export class DatabaseStorage implements IStorage {
     
     if (filters.stage) {
       conditions.push(eq(resources.stage, filters.stage as any));
+    }
+    if (filters.curriculumStage) {
+      conditions.push(sql`${filters.curriculumStage} = ANY(${resources.curriculumStages})`);
     }
     if (filters.country) {
       conditions.push(eq(resources.country, filters.country));

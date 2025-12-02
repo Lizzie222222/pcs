@@ -53,6 +53,7 @@ interface Resource {
   title: string;
   description: string;
   stage: 'inspire' | 'investigate' | 'act';
+  curriculumStages?: string[];
   ageRange: string;
   language: string;
   languages?: string[];
@@ -68,6 +69,16 @@ interface Resource {
   coverImageUrl: string | null;
   createdAt: string;
 }
+
+const CURRICULUM_STAGES = [
+  { value: 'early_years', label: 'Early Years (EYFS)' },
+  { value: 'key_stage_1', label: 'Key Stage 1 (Ages 5-7)' },
+  { value: 'key_stage_2', label: 'Key Stage 2 (Ages 7-11)' },
+  { value: 'key_stage_3', label: 'Key Stage 3 (Ages 11-14)' },
+  { value: 'key_stage_4', label: 'Key Stage 4 (Ages 14-16)' },
+  { value: 'post_16', label: 'Post-16 / Sixth Form' },
+  { value: 'all_ages', label: 'All Ages' },
+];
 
 interface ResourcePack {
   id: string;
@@ -112,6 +123,7 @@ export default function Resources() {
     resourceType: '',
     theme: '',
     stage: '',
+    curriculumStage: '',
     tags: [] as string[],
   });
   const [selectedLanguageTab, setSelectedLanguageTab] = useState<string>('');
@@ -615,14 +627,42 @@ export default function Resources() {
             )}
           </div>
           
-          {/* Second row: Stage badge */}
-          <div className="flex items-center gap-2">
+          {/* Second row: Stage badge and country */}
+          <div className="flex items-center gap-2 flex-wrap">
             <Badge className={`${getStageColor(resource.stage)} shadow-sm`}>
               {t(`stages.${resource.stage}`)}
             </Badge>
+            {resource.country && resource.country !== 'global' && (
+              <Badge 
+                variant="outline" 
+                className="text-xs bg-blue-50 text-blue-700 border-blue-200"
+                data-testid={`badge-country-${resource.id}`}
+              >
+                {resource.country}
+              </Badge>
+            )}
           </div>
 
-          {/* Third row: Tags (including language) */}
+          {/* Third row: Curriculum stages */}
+          {resource.curriculumStages && resource.curriculumStages.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {resource.curriculumStages.slice(0, 3).map((stage) => {
+                const stageInfo = CURRICULUM_STAGES.find(s => s.value === stage);
+                return (
+                  <Badge 
+                    key={stage}
+                    variant="outline" 
+                    className="text-xs bg-purple-50 text-purple-700 border-purple-200"
+                    data-testid={`badge-curriculum-${resource.id}-${stage}`}
+                  >
+                    {stageInfo?.label || stage}
+                  </Badge>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Fourth row: Tags (including language) */}
           <div className="flex flex-wrap gap-2">
             {resource.language && (
               <Badge 
@@ -1000,14 +1040,28 @@ export default function Resources() {
                 <SelectContent>
                   <SelectItem value="all">{t('search.all_themes')}</SelectItem>
                   <SelectItem value="ocean_literacy">Ocean Literacy</SelectItem>
+                  <SelectItem value="plastic_pollution">Ocean Plastics</SelectItem>
                   <SelectItem value="climate_change">Climate Change</SelectItem>
-                  <SelectItem value="plastic_pollution">Plastic Pollution</SelectItem>
                   <SelectItem value="science">Science</SelectItem>
                   <SelectItem value="design_technology">Design & Technology</SelectItem>
                   <SelectItem value="geography">Geography</SelectItem>
                   <SelectItem value="cross_curricular">Cross-curricular</SelectItem>
                   <SelectItem value="enrichment">Enrichment</SelectItem>
                   <SelectItem value="student_action">Student Action</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filters.curriculumStage} onValueChange={(value) => handleFilterChange('curriculumStage', value)}>
+                <SelectTrigger data-testid="select-curriculum-stage">
+                  <SelectValue placeholder="All Curriculum Stages" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Curriculum Stages</SelectItem>
+                  {CURRICULUM_STAGES.map((stage) => (
+                    <SelectItem key={stage.value} value={stage.value}>
+                      {stage.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -1182,6 +1236,7 @@ export default function Resources() {
                           resourceType: '',
                           theme: '',
                           stage: '',
+                          curriculumStage: '',
                           tags: [],
                         });
                         setSelectedLanguageTab('');
@@ -1275,6 +1330,7 @@ export default function Resources() {
                           resourceType: '',
                           theme: '',
                           stage: '',
+                          curriculumStage: '',
                           tags: [],
                         });
                         setPackPage(0);

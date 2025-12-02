@@ -35,6 +35,7 @@ interface Resource {
   title: string;
   description: string | null;
   stage: 'inspire' | 'investigate' | 'act';
+  curriculumStages?: string[] | null;
   ageRange: string | null;
   language: string | null;
   languages?: string[] | null;
@@ -55,8 +56,33 @@ interface Resource {
 // All 14 supported language codes
 const SUPPORTED_LANGUAGES = ['en', 'es', 'fr', 'de', 'it', 'pt', 'nl', 'ar', 'zh', 'el', 'ru', 'ko', 'id', 'cy'];
 const RESOURCE_TYPES = ['lesson_plan', 'assembly', 'teacher_toolkit', 'student_workbook', 'printable_activities'];
-const RESOURCE_THEMES = ['ocean_literacy', 'climate_change', 'plastic_pollution', 'science', 'design_technology', 'geography', 'cross_curricular', 'enrichment', 'student_action'];
+const RESOURCE_THEMES = ['ocean_literacy', 'plastic_pollution', 'climate_change', 'science', 'design_technology', 'geography', 'cross_curricular', 'enrichment', 'student_action'];
 const RESOURCE_TAGS = ['all_stages', 'beginner', 'advanced', 'featured', 'events', 'teacher_toolkits', 'student_workbooks'];
+const CURRICULUM_STAGES = [
+  { value: 'early_years', label: 'Early Years (EYFS)' },
+  { value: 'key_stage_1', label: 'Key Stage 1 (Ages 5-7)' },
+  { value: 'key_stage_2', label: 'Key Stage 2 (Ages 7-11)' },
+  { value: 'key_stage_3', label: 'Key Stage 3 (Ages 11-14)' },
+  { value: 'key_stage_4', label: 'Key Stage 4 (Ages 14-16)' },
+  { value: 'post_16', label: 'Post-16 / Sixth Form' },
+  { value: 'all_ages', label: 'All Ages' },
+];
+
+const THEME_LABELS: Record<string, string> = {
+  'ocean_literacy': 'Ocean Literacy',
+  'plastic_pollution': 'Ocean Plastics',
+  'climate_change': 'Climate Change',
+  'science': 'Science',
+  'design_technology': 'Design & Technology',
+  'geography': 'Geography',
+  'cross_curricular': 'Cross-curricular',
+  'enrichment': 'Enrichment',
+  'student_action': 'Student Action',
+};
+
+const getThemeLabel = (theme: string): string => {
+  return THEME_LABELS[theme] || theme.replace(/_/g, ' ');
+};
 
 function ResourceForm({ resource, onClose, onSuccess }: {
   resource?: Resource;
@@ -76,6 +102,7 @@ function ResourceForm({ resource, onClose, onSuccess }: {
     title: resource?.title || '',
     description: resource?.description || '',
     stage: resource?.stage || 'inspire',
+    curriculumStages: resource?.curriculumStages || [],
     ageRange: resource?.ageRange || '',
     resourceType: (resource as any)?.resourceType || '',
     theme: (resource as any)?.theme || '',
@@ -156,6 +183,25 @@ function ResourceForm({ resource, onClose, onSuccess }: {
         return {
           ...prev,
           tags: [...currentTags, tagValue]
+        };
+      }
+    });
+  };
+
+  const handleCurriculumStageToggle = (stageValue: string) => {
+    setFormData(prev => {
+      const currentStages = prev.curriculumStages as string[];
+      const isSelected = currentStages.includes(stageValue);
+      
+      if (isSelected) {
+        return {
+          ...prev,
+          curriculumStages: currentStages.filter(s => s !== stageValue)
+        };
+      } else {
+        return {
+          ...prev,
+          curriculumStages: [...currentStages, stageValue]
         };
       }
     });
@@ -552,6 +598,35 @@ function ResourceForm({ resource, onClose, onSuccess }: {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
+                Curriculum Stages
+              </label>
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {CURRICULUM_STAGES.map((stage) => (
+                    <div key={stage.value} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`curriculum-${stage.value}`}
+                        checked={(formData.curriculumStages as string[]).includes(stage.value)}
+                        onCheckedChange={() => handleCurriculumStageToggle(stage.value)}
+                        data-testid={`checkbox-curriculum-${stage.value}`}
+                      />
+                      <label
+                        htmlFor={`curriculum-${stage.value}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      >
+                        {stage.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-3">
+                  Select applicable curriculum stages (UK Key Stages)
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Available Languages *
               </label>
               <div className="border rounded-lg p-4 bg-gray-50">
@@ -843,8 +918,8 @@ function ResourceForm({ resource, onClose, onSuccess }: {
                           className="rounded border-gray-300"
                           data-testid={`checkbox-theme-${theme}`}
                         />
-                        <span className="text-sm capitalize">
-                          {theme.replace(/_/g, ' ')}
+                        <span className="text-sm">
+                          {getThemeLabel(theme)}
                         </span>
                       </label>
                     ))}

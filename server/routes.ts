@@ -433,7 +433,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get resources with filters
   app.get('/api/resources', async (req: any, res) => {
     try {
-      const { stage, country, language, ageRange, resourceType, theme, tags, search, limit, offset, includeHidden, includeInactive } = req.query;
+      const { stage, curriculumStage, country, language, ageRange, resourceType, theme, tags, search, limit, offset, includeHidden, includeInactive } = req.query;
       
       // Check if user is authenticated
       const isAuthenticated = req.isAuthenticated && req.isAuthenticated();
@@ -455,6 +455,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Include inactive resources if explicitly requested (for admin panel)
       const resources = await storage.getResources({
         stage: stage as string,
+        curriculumStage: curriculumStage as string,
         country: country as string,
         language: language as string,
         ageRange: ageRange as string,

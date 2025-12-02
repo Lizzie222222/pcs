@@ -104,6 +104,16 @@ export const resourceThemeEnum = pgEnum('resource_theme', [
   'student_action'
 ]);
 
+export const curriculumStageEnum = pgEnum('curriculum_stage', [
+  'early_years',
+  'key_stage_1',
+  'key_stage_2',
+  'key_stage_3',
+  'key_stage_4',
+  'post_16',
+  'all_ages'
+]);
+
 export const schoolRoleEnum = pgEnum('school_role', [
   'head_teacher',
   'teacher',
@@ -393,6 +403,7 @@ export const resources = pgTable("resources", {
   title: varchar("title").notNull(),
   description: text("description"),
   stage: programStageEnum("stage").notNull(),
+  curriculumStages: text("curriculum_stages").array(),
   ageRange: varchar("age_range"),
   language: varchar("language").default("English"),
   languages: text("languages").array(),
@@ -419,6 +430,7 @@ export const resourcePacks = pgTable("resource_packs", {
   title: varchar("title").notNull(),
   description: text("description"),
   stage: programStageEnum("stage").notNull(),
+  curriculumStages: text("curriculum_stages").array(),
   theme: resourceThemeEnum("theme"),
   visibility: visibilityEnum("visibility").default('public'),
   isActive: boolean("is_active").default(true),

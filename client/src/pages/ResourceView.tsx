@@ -14,6 +14,23 @@ import { useAuth } from "@/hooks/useAuth";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
 
+// Theme label mapping to align with Common Seas curriculum terminology
+const THEME_LABELS: Record<string, string> = {
+  'ocean_literacy': 'Ocean Literacy',
+  'plastic_pollution': 'Ocean Plastics',
+  'climate_change': 'Climate Change',
+  'science': 'Science',
+  'design_technology': 'Design & Technology',
+  'geography': 'Geography',
+  'cross_curricular': 'Cross-curricular',
+  'enrichment': 'Enrichment',
+  'student_action': 'Student Action',
+};
+
+const getThemeLabel = (theme: string): string => {
+  return THEME_LABELS[theme] || theme.replace(/_/g, ' ');
+};
+
 // Helper function to convert GCS URLs to proxy URLs for CORS support
 function getProxyUrl(url: string | null): string {
   if (!url) return '';
@@ -314,7 +331,7 @@ export default function ResourceView() {
             )}
             {resource.theme && (
               <Badge variant="outline" data-testid="badge-theme">
-                {resource.theme.replace(/_/g, ' ').toUpperCase()}
+                {getThemeLabel(resource.theme).toUpperCase()}
               </Badge>
             )}
             {resource.language && (
