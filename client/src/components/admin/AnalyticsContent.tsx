@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { subDays, subMonths, subWeeks, subYears, format } from "date-fns";
+import { subDays, subMonths, subWeeks, subYears, format, isWithinInterval, areIntervalsOverlapping } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { 
   School, 
@@ -266,6 +266,87 @@ const formatReferralSource = (source: string): string => {
   return sourceLabels[source] || source.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 };
 
+interface UKSchoolHoliday {
+  name: string;
+  getDateRange: (year: number) => { start: Date; end: Date };
+}
+
+const UK_SCHOOL_HOLIDAYS: UKSchoolHoliday[] = [
+  {
+    name: 'Christmas Break',
+    getDateRange: (year: number) => ({
+      start: new Date(year, 11, 20),
+      end: new Date(year + 1, 0, 4)
+    })
+  },
+  {
+    name: 'February Half-term',
+    getDateRange: (year: number) => ({
+      start: new Date(year, 1, 10),
+      end: new Date(year, 1, 18)
+    })
+  },
+  {
+    name: 'Easter Break',
+    getDateRange: (year: number) => ({
+      start: new Date(year, 2, 25),
+      end: new Date(year, 3, 10)
+    })
+  },
+  {
+    name: 'May Half-term',
+    getDateRange: (year: number) => ({
+      start: new Date(year, 4, 24),
+      end: new Date(year, 5, 1)
+    })
+  },
+  {
+    name: 'Summer Break',
+    getDateRange: (year: number) => ({
+      start: new Date(year, 6, 20),
+      end: new Date(year, 8, 3)
+    })
+  },
+  {
+    name: 'October Half-term',
+    getDateRange: (year: number) => ({
+      start: new Date(year, 9, 21),
+      end: new Date(year, 9, 29)
+    })
+  }
+];
+
+const getHolidaysInRange = (startDate: Date | undefined, endDate: Date | undefined): string[] => {
+  if (!startDate || !endDate) {
+    return [];
+  }
+  
+  const holidays: string[] = [];
+  const startYear = startDate.getFullYear();
+  const endYear = endDate.getFullYear();
+  
+  for (let year = startYear - 1; year <= endYear + 1; year++) {
+    for (const holiday of UK_SCHOOL_HOLIDAYS) {
+      const holidayRange = holiday.getDateRange(year);
+      
+      try {
+        const overlaps = areIntervalsOverlapping(
+          { start: startDate, end: endDate },
+          { start: holidayRange.start, end: holidayRange.end }
+        );
+        
+        if (overlaps && !holidays.includes(holiday.name)) {
+          holidays.push(holiday.name);
+        }
+      } catch {
+        continue;
+      }
+    }
+  }
+  
+  return holidays;
+};
+
 const StatTooltip = ({ explanation }: { explanation: string }) => (
   <TooltipProvider>
     <UITooltip>
@@ -482,6 +563,38 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
     userEngagement: true,
     aiInsights: true,
   });
+
+  const heatmapHolidays = useMemo(() => {
+    const now = new Date();
+    let startDate: Date | undefined;
+    let endDate: Date | undefined = now;
+    
+    switch (heatmapDateRange) {
+      case "1week":
+        startDate = subWeeks(now, 1);
+        break;
+      case "1month":
+        startDate = subMonths(now, 1);
+        break;
+      case "3months":
+        startDate = subMonths(now, 3);
+        break;
+      case "6months":
+        startDate = subMonths(now, 6);
+        break;
+      case "1year":
+        startDate = subYears(now, 1);
+        break;
+      case "all":
+        startDate = new Date(2020, 0, 1);
+        endDate = now;
+        break;
+      default:
+        startDate = subMonths(now, 6);
+    }
+    
+    return getHolidaysInRange(startDate, endDate);
+  }, [heatmapDateRange]);
 
   const exportAnalytics = async (format: 'csv' | 'excel') => {
     try {
@@ -2185,6 +2298,23 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                   </div>
                 </div>
               )}
+              
+              {/* UK School Holiday Context Panel */}
+              <div className="mt-4 pt-3 border-t border-gray-100" data-testid="holiday-context-panel">
+                <div className="flex items-start gap-2 text-sm">
+                  <Info className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <div className="text-gray-500">
+                    {heatmapHolidays.length > 0 ? (
+                      <span>
+                        <span className="text-gray-600 font-medium">UK school holidays in this period: </span>
+                        {heatmapHolidays.join(', ')}
+                      </span>
+                    ) : (
+                      <span>No major UK school holidays in this period</span>
+                    )}
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
