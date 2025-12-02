@@ -16,10 +16,18 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useCountries } from '@/hooks/useCountries';
 import { 
   Users, School, FileText, Award, Mail, Globe,
   TrendingUp, BarChart3, PieChart as PieChartIcon,
-  Download, Eye, MapPin, Clock
+  Download, Eye, MapPin, Clock, Filter
 } from 'lucide-react';
 
 // Analytics data types
@@ -101,48 +109,131 @@ export default function AnalyticsPage() {
   const [activityDialogOpen, setActivityDialogOpen] = useState(false);
   const [selectedActivityRange, setSelectedActivityRange] = useState<{ range: string; count: number; schools: Array<{ id: string; name: string; country: string; lastActiveAt: Date | null; currentStage: string; progressPercentage: number }> } | null>(null);
   
+  // Filter state for country, school type, and round
+  const [filters, setFilters] = useState({
+    country: 'all',
+    schoolType: 'all',
+    round: 'all'
+  });
+
+  // Fetch countries for filter dropdown
+  const { data: countryOptions = [] } = useCountries();
+
+  // School type options (matching schema)
+  const schoolTypeOptions = [
+    { value: 'all', label: 'All School Types' },
+    { value: 'kindergarten', label: 'Kindergarten' },
+    { value: 'primary', label: 'Primary' },
+    { value: 'secondary', label: 'Secondary' },
+    { value: 'high_school', label: 'High School' },
+    { value: 'international', label: 'International' },
+    { value: 'other', label: 'Other' }
+  ];
+
+  // Round options (typically schools go through multiple rounds)
+  const roundOptions = [
+    { value: 'all', label: 'All Rounds' },
+    { value: '1', label: 'Round 1' },
+    { value: '2', label: 'Round 2' },
+    { value: '3', label: 'Round 3' },
+    { value: '4', label: 'Round 4' },
+    { value: '5', label: 'Round 5+' }
+  ];
+
+  // Build query params from filters
+  const buildFilterParams = () => {
+    const params = new URLSearchParams();
+    if (filters.country !== 'all') params.set('country', filters.country);
+    if (filters.schoolType !== 'all') params.set('schoolType', filters.schoolType);
+    if (filters.round !== 'all') params.set('round', filters.round);
+    return params.toString();
+  };
+
+  const filterQueryString = buildFilterParams();
+  const filterQuerySuffix = filterQueryString ? `?${filterQueryString}` : '';
+
   // Chart animation and accessibility hooks
   const chartAnimation = useChartAnimation();
   const { announceChart, AnnouncementRegion } = useChartAnnouncement();
 
-  // Analytics queries
+  // Analytics queries - all include filter parameters
   const overviewQuery = useQuery<AnalyticsOverview>({
-    queryKey: ['/api/admin/analytics/overview'],
+    queryKey: ['/api/admin/analytics/overview', filters],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/analytics/overview${filterQuerySuffix}`);
+      if (!response.ok) throw new Error('Failed to fetch overview');
+      return response.json();
+    },
     enabled: true
   });
 
   const schoolProgressQuery = useQuery<SchoolProgressAnalytics>({
-    queryKey: ['/api/admin/analytics/school-progress'],
+    queryKey: ['/api/admin/analytics/school-progress', filters],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/analytics/school-progress${filterQuerySuffix}`);
+      if (!response.ok) throw new Error('Failed to fetch school progress');
+      return response.json();
+    },
     enabled: selectedTab === 'schools'
   });
 
   const schoolActivityAgingQuery = useQuery<SchoolActivityAging>({
-    queryKey: ['/api/admin/analytics/school-activity-aging'],
+    queryKey: ['/api/admin/analytics/school-activity-aging', filters],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/analytics/school-activity-aging${filterQuerySuffix}`);
+      if (!response.ok) throw new Error('Failed to fetch school activity aging');
+      return response.json();
+    },
     enabled: selectedTab === 'schools'
   });
 
   const evidenceQuery = useQuery<EvidenceAnalytics>({
-    queryKey: ['/api/admin/analytics/evidence'],
+    queryKey: ['/api/admin/analytics/evidence', filters],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/analytics/evidence${filterQuerySuffix}`);
+      if (!response.ok) throw new Error('Failed to fetch evidence analytics');
+      return response.json();
+    },
     enabled: selectedTab === 'evidence'
   });
 
   const userEngagementQuery = useQuery<UserEngagementAnalytics>({
-    queryKey: ['/api/admin/analytics/user-engagement'],
+    queryKey: ['/api/admin/analytics/user-engagement', filters],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/analytics/user-engagement${filterQuerySuffix}`);
+      if (!response.ok) throw new Error('Failed to fetch user engagement');
+      return response.json();
+    },
     enabled: selectedTab === 'users'
   });
 
   const resourceQuery = useQuery<ResourceAnalytics>({
-    queryKey: ['/api/admin/analytics/resources'],
+    queryKey: ['/api/admin/analytics/resources', filters],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/analytics/resources${filterQuerySuffix}`);
+      if (!response.ok) throw new Error('Failed to fetch resources');
+      return response.json();
+    },
     enabled: selectedTab === 'resources'
   });
 
   const emailQuery = useQuery<EmailAnalytics>({
-    queryKey: ['/api/admin/analytics/email'],
+    queryKey: ['/api/admin/analytics/email', filters],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/analytics/email${filterQuerySuffix}`);
+      if (!response.ok) throw new Error('Failed to fetch email analytics');
+      return response.json();
+    },
     enabled: selectedTab === 'email'
   });
 
   const geographicQuery = useQuery<GeographicAnalytics>({
-    queryKey: ['/api/admin/analytics/geographic'],
+    queryKey: ['/api/admin/analytics/geographic', filters],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/analytics/geographic${filterQuerySuffix}`);
+      if (!response.ok) throw new Error('Failed to fetch geographic data');
+      return response.json();
+    },
     enabled: selectedTab === 'geographic'
   });
 
@@ -257,6 +348,77 @@ export default function AnalyticsPage() {
             </Button>
           </div>
         </div>
+
+        {/* Filters Bar */}
+        <Card className="mb-6">
+          <CardContent className="py-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                <Filter className="h-4 w-4" />
+                Filters:
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1 w-full">
+                <Select 
+                  value={filters.country} 
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, country: value }))}
+                >
+                  <SelectTrigger className="w-full" data-testid="select-filter-country">
+                    <SelectValue placeholder="Select Country" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {countryOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select 
+                  value={filters.schoolType} 
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, schoolType: value }))}
+                >
+                  <SelectTrigger className="w-full" data-testid="select-filter-school-type">
+                    <SelectValue placeholder="Select School Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {schoolTypeOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select 
+                  value={filters.round} 
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, round: value }))}
+                >
+                  <SelectTrigger className="w-full" data-testid="select-filter-round">
+                    <SelectValue placeholder="Select Round" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roundOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {(filters.country !== 'all' || filters.schoolType !== 'all' || filters.round !== 'all') && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setFilters({ country: 'all', schoolType: 'all', round: 'all' })}
+                  data-testid="button-clear-filters"
+                >
+                  Clear Filters
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Overview Cards */}
         {overviewQuery.data && (

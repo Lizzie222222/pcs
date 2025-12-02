@@ -4700,12 +4700,19 @@ Return JSON with:
 
   // Analytics endpoints
   // Date filtering is optional - defaults to lifetime totals when not specified
+  // Filter parameters: country, schoolType, round - all optional
   app.get('/api/admin/analytics/overview', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
-      const { startDate, endDate } = req.query;
+      const { startDate, endDate, country, schoolType, round } = req.query;
+      const filters = {
+        country: country as string | undefined,
+        schoolType: schoolType as string | undefined,
+        round: round as string | undefined
+      };
       const analytics = await storage.getAnalyticsOverview(
         startDate as string | undefined,
-        endDate as string | undefined
+        endDate as string | undefined,
+        filters
       );
       
       // Build date filter for user queries to match storage behavior
@@ -4762,10 +4769,16 @@ Return JSON with:
 
   app.get('/api/admin/analytics/school-progress', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
-      const { startDate, endDate } = req.query;
+      const { startDate, endDate, country, schoolType, round } = req.query;
+      const filters = {
+        country: country as string | undefined,
+        schoolType: schoolType as string | undefined,
+        round: round as string | undefined
+      };
       const analytics = await storage.getSchoolProgressAnalytics(
         startDate as string | undefined,
-        endDate as string | undefined
+        endDate as string | undefined,
+        filters
       );
       res.json(analytics);
     } catch (error) {
@@ -4776,7 +4789,13 @@ Return JSON with:
 
   app.get('/api/admin/analytics/school-activity-aging', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
-      const analytics = await storage.getSchoolActivityAging();
+      const { country, schoolType, round } = req.query;
+      const filters = {
+        country: country as string | undefined,
+        schoolType: schoolType as string | undefined,
+        round: round as string | undefined
+      };
+      const analytics = await storage.getSchoolActivityAging(filters);
       res.json(analytics);
     } catch (error) {
       console.error("Error fetching school activity aging:", error);
@@ -4786,10 +4805,16 @@ Return JSON with:
 
   app.get('/api/admin/analytics/user-engagement', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
-      const { startDate, endDate } = req.query;
+      const { startDate, endDate, country, schoolType, round } = req.query;
+      const filters = {
+        country: country as string | undefined,
+        schoolType: schoolType as string | undefined,
+        round: round as string | undefined
+      };
       const analytics = await storage.getUserEngagementAnalytics(
         startDate as string | undefined,
-        endDate as string | undefined
+        endDate as string | undefined,
+        filters
       );
       res.json(analytics);
     } catch (error) {
@@ -4800,7 +4825,13 @@ Return JSON with:
 
   app.get('/api/admin/analytics/resources', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
-      const analytics = await storage.getResourceAnalytics();
+      const { country, schoolType, round } = req.query;
+      const filters = {
+        country: country as string | undefined,
+        schoolType: schoolType as string | undefined,
+        round: round as string | undefined
+      };
+      const analytics = await storage.getResourceAnalytics(filters);
       res.json(analytics);
     } catch (error) {
       console.error("Error fetching resource analytics:", error);
@@ -4810,7 +4841,13 @@ Return JSON with:
 
   app.get('/api/admin/analytics/email', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
-      const analytics = await storage.getEmailAnalytics();
+      const { country, schoolType, round } = req.query;
+      const filters = {
+        country: country as string | undefined,
+        schoolType: schoolType as string | undefined,
+        round: round as string | undefined
+      };
+      const analytics = await storage.getEmailAnalytics(filters);
       res.json(analytics);
     } catch (error) {
       console.error("Error fetching email analytics:", error);
@@ -4820,7 +4857,13 @@ Return JSON with:
 
   app.get('/api/admin/analytics/geographic', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
-      const analytics = await storage.getGeographicAnalytics();
+      const { country, schoolType, round } = req.query;
+      const filters = {
+        country: country as string | undefined,
+        schoolType: schoolType as string | undefined,
+        round: round as string | undefined
+      };
+      const analytics = await storage.getGeographicAnalytics(filters);
       res.json(analytics);
     } catch (error) {
       console.error("Error fetching geographic analytics:", error);
@@ -4982,10 +5025,16 @@ Return JSON with:
 
   app.get('/api/admin/analytics/evidence', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
-      const { startDate, endDate } = req.query;
+      const { startDate, endDate, country, schoolType, round } = req.query;
+      const filters = {
+        country: country as string | undefined,
+        schoolType: schoolType as string | undefined,
+        round: round as string | undefined
+      };
       const analytics = await storage.getEvidenceAnalytics(
         startDate as string | undefined,
-        endDate as string | undefined
+        endDate as string | undefined,
+        filters
       );
       res.json(analytics);
     } catch (error) {

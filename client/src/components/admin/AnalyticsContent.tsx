@@ -10,6 +10,7 @@ import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { subDays, subMonths, subWeeks, subYears, format, isWithinInterval, areIntervalsOverlapping } from "date-fns";
 import type { DateRange } from "react-day-picker";
+import { useCountries } from "@/hooks/useCountries";
 import { 
   School, 
   Clock, 
@@ -32,7 +33,8 @@ import {
   Factory,
   Trash,
   UserCheck,
-  UserMinus
+  UserMinus,
+  Filter
 } from "lucide-react";
 import { 
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, 
@@ -398,38 +400,44 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
   
   // Date range state - default to All Time (undefined means no date filtering)
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  
+  // Filter state for Country, School Type, and Round
+  const [countryFilter, setCountryFilter] = useState<string>('all');
+  const [schoolTypeFilter, setSchoolTypeFilter] = useState<string>('all');
+  const [roundFilter, setRoundFilter] = useState<string>('all');
+  
+  // Get countries for filter dropdown
+  const countriesQuery = useCountries();
+  const countries = countriesQuery.data ?? [];
+  
+  // Build filter params for API calls
+  const filterParams = {
+    startDate: dateRange?.from?.toISOString(), 
+    endDate: dateRange?.to?.toISOString(),
+    country: countryFilter !== 'all' ? countryFilter : undefined,
+    schoolType: schoolTypeFilter !== 'all' ? schoolTypeFilter : undefined,
+    round: roundFilter !== 'all' ? roundFilter : undefined
+  };
 
   // Analytics queries - only load when this component is mounted (overview tab is active)
   // Date filtering is optional - defaults to All Time (undefined) which shows lifetime totals
   const overviewQuery = useQuery<AnalyticsOverview>({
-    queryKey: ['/api/admin/analytics/overview', { 
-      startDate: dateRange?.from?.toISOString(), 
-      endDate: dateRange?.to?.toISOString() 
-    }],
+    queryKey: ['/api/admin/analytics/overview', filterParams],
     enabled: activeTab === 'overview'
   });
 
   const schoolProgressQuery = useQuery<SchoolProgressAnalytics>({
-    queryKey: ['/api/admin/analytics/school-progress', { 
-      startDate: dateRange?.from?.toISOString(), 
-      endDate: dateRange?.to?.toISOString() 
-    }],
+    queryKey: ['/api/admin/analytics/school-progress', filterParams],
     enabled: activeTab === 'overview'
   });
 
   const evidenceQuery = useQuery<EvidenceAnalytics>({
-    queryKey: ['/api/admin/analytics/evidence', { 
-      startDate: dateRange?.from?.toISOString(), 
-      endDate: dateRange?.to?.toISOString() 
-    }],
+    queryKey: ['/api/admin/analytics/evidence', filterParams],
     enabled: activeTab === 'overview'
   });
 
   const userEngagementQuery = useQuery<UserEngagementAnalytics>({
-    queryKey: ['/api/admin/analytics/user-engagement', { 
-      startDate: dateRange?.from?.toISOString(), 
-      endDate: dateRange?.to?.toISOString() 
-    }],
+    queryKey: ['/api/admin/analytics/user-engagement', filterParams],
     enabled: activeTab === 'overview'
   });
 
@@ -454,7 +462,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
   });
 
   const schoolActivityAgingQuery = useQuery<SchoolActivityAging>({
-    queryKey: ['/api/admin/analytics/school-activity-aging'],
+    queryKey: ['/api/admin/analytics/school-activity-aging', filterParams],
     enabled: activeTab === 'overview' // Loads when overview tab is active, displayed in schools-evidence tab
   });
 
@@ -463,7 +471,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
   });
 
   const resourceAnalyticsQuery = useQuery<ResourceAnalytics>({
-    queryKey: ['/api/admin/analytics/resources'],
+    queryKey: ['/api/admin/analytics/resources', filterParams],
   });
 
   const activeUsersOverTimeQuery = useQuery<ActiveUsersOverTimeAnalytics>({
@@ -749,6 +757,78 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
             <span className="sm:hidden">Excel</span>
           </Button>
         </div>
+      </div>
+
+      {/* Filter Controls */}
+      <div className="flex flex-wrap gap-3 items-center bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-gray-500" />
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Filters:</span>
+        </div>
+        
+        {/* Country Filter */}
+        <Select value={countryFilter} onValueChange={setCountryFilter}>
+          <SelectTrigger className="w-[180px]" data-testid="select-country-filter">
+            <Globe className="w-4 h-4 mr-2 text-gray-500" />
+            <SelectValue placeholder="All Countries" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Countries</SelectItem>
+            {countries.filter(c => c.value !== 'all').map((country) => (
+              <SelectItem key={country.value} value={country.value}>
+                {country.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        
+        {/* School Type Filter */}
+        <Select value={schoolTypeFilter} onValueChange={setSchoolTypeFilter}>
+          <SelectTrigger className="w-[160px]" data-testid="select-school-type-filter">
+            <School className="w-4 h-4 mr-2 text-gray-500" />
+            <SelectValue placeholder="All Types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="kindergarten">Kindergarten</SelectItem>
+            <SelectItem value="primary">Primary</SelectItem>
+            <SelectItem value="secondary">Secondary</SelectItem>
+            <SelectItem value="high_school">High School</SelectItem>
+            <SelectItem value="international">International</SelectItem>
+            <SelectItem value="other">Other</SelectItem>
+          </SelectContent>
+        </Select>
+        
+        {/* Round Filter */}
+        <Select value={roundFilter} onValueChange={setRoundFilter}>
+          <SelectTrigger className="w-[140px]" data-testid="select-round-filter">
+            <Award className="w-4 h-4 mr-2 text-gray-500" />
+            <SelectValue placeholder="All Rounds" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Rounds</SelectItem>
+            <SelectItem value="1">Round 1</SelectItem>
+            <SelectItem value="2">Round 2</SelectItem>
+            <SelectItem value="3">Round 3</SelectItem>
+          </SelectContent>
+        </Select>
+        
+        {/* Clear Filters Button */}
+        {(countryFilter !== 'all' || schoolTypeFilter !== 'all' || roundFilter !== 'all') && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setCountryFilter('all');
+              setSchoolTypeFilter('all');
+              setRoundFilter('all');
+            }}
+            data-testid="button-clear-filters"
+            className="text-xs"
+          >
+            Clear Filters
+          </Button>
+        )}
       </div>
 
       {/* Date Range Picker and PDF Export */}
