@@ -1,6 +1,6 @@
 import { Fragment, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
@@ -312,7 +312,13 @@ export default function SchoolsTable({
                       />
                     </td>
                     <td className="p-3">
-                      <div className="font-medium text-navy">{school.name}</div>
+                      <Link 
+                        href={`/admin/school/${school.id}`}
+                        className="font-medium text-navy hover:text-pcs_blue hover:underline cursor-pointer"
+                        data-testid={`link-school-name-${school.id}`}
+                      >
+                        {school.name}
+                      </Link>
                     </td>
                     <td className="p-3 text-gray-600">{school.country}</td>
                     <td className="p-3">
