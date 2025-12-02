@@ -14,8 +14,6 @@ The application features a modern web architecture with distinct frontend and ba
 -   **UI/Styling**: Radix UI primitives, shadcn/ui components, Tailwind CSS for styling, adhering to PCS brand colors and specific fonts.
 -   **Forms**: React Hook Form with Zod validation.
 -   **File Uploads**: Uppy.js.
--   **Icons**: Lucide React.
--   **Avatars**: DiceBear.
 
 ### Backend
 -   **Runtime**: Node.js with Express.js.
@@ -23,55 +21,47 @@ The application features a modern web architecture with distinct frontend and ba
 -   **Authentication**: Local password and Google OAuth, utilizing Express sessions.
 -   **API**: RESTful architecture.
 -   **File Storage**: Google Cloud Storage.
--   **Architecture Pattern**: Feature-based modularization with delegation pattern for improved maintainability and AI editability (e.g., Schools, Evidence, Case Studies Modules).
+-   **Architecture Pattern**: Feature-based modularization with delegation pattern.
 
 ### Authentication & Authorization
 -   **Identity Providers**: Local password and Google OAuth.
 -   **Role-Based Access Control (RBAC)**: Supports roles such as Teacher, Head Teacher, Pending Teacher, and Platform Admin.
--   **User Management**: Includes hierarchical school team management and a token-based admin invitation system.
--   **Migrated User Onboarding**: Smart two-step onboarding flow for users migrated from legacy systems.
+-   **User Management**: Hierarchical school team management, token-based admin invitation, and smart two-step onboarding for migrated users.
 
-### Key Data Models
-Core entities include Users, Schools, Evidence, Audit Logs, Reduction Promises (Action Plans), Resources, Case Studies, Events, Media Assets, and Notifications.
--   **Content Visibility System**: Evidence and Resources support Public and Private visibility levels.
-
-### UI/UX Decisions
--   **Design System**: Component-based design using Radix UI and shadcn/ui, custom favicon, consistent branding, and professional typography.
--   **Navigation**: Public and authenticated routes, tab-based dashboard, enhanced admin navigation.
--   **Core Features**: Comprehensive analytics, dynamic evidence requirements, student-led action plans, multi-step school registration (country-adaptive with i18n), multi-language support (14 languages, including RTL) with persistent language preferences.
--   **Admin UI**: Integrated evidence requirements with i18n, school detail management, manual school progression, Case Study Wizard, Resource Management, Data Import System with Legacy User Migration, multi-language event creator, bulk resource upload with AI auto-fill, and a Review Queue for Evidence, Audits, and Photo Consent. Admin searches use debouncing, and school management features server-side pagination and sortable columns. Enhanced School Quick View dialog in Evidence Gallery displays comprehensive school details (name, country, address, student count, type, primary contact), progress metrics, evidence summary statistics, and filterable evidence grid with batch-fetched primary contacts to prevent N+1 queries. Evidence items display requirement badges showing which specific requirement each piece satisfies (e.g., "School Assembly", "Share Your Success"), with shared translation utility supporting regional language fallback.
--   **Admin Override System**: When admins check override boxes for evidence requirements, the system automatically creates approved evidence records that appear identical to school-submitted evidence. Override-created evidence is fully integrated into dashboards, counts toward progression, and includes transactional safety to prevent orphaned records. A migration script (`server/scripts/backfill-override-evidence.ts`) backfills historical overrides with evidence records, using idempotent logic to safely handle reruns.
--   **User Interaction Tracking**: Tracks `lastActiveAt`, `lastActiveBy`, `lastActionType`, and `hasInteracted` for engagement metrics and filtering. Analytics now distinguish between teacher activity and PCS team (admin/partner) intervention, showing WHO (name, role, email) performed the last activity and WHAT action they performed (e.g., evidence_submit, school_progression_update). Admin Analytics Overview includes "Active Schools (Last Month)" metric counting schools with activity (user logins or evidence submissions) in the past 30 days, with CSV export on click.
--   **School Activity History**: The Analytics tab in admin school profile pages now includes a comprehensive Activity History section showing a chronological audit log of all user actions on that school. Tracks logins, evidence submissions/updates/approvals, resource downloads, progression updates, and more. Features filtering by action type, pagination, human-readable labels, and relative timestamps. Uses `userActivityLogs` table with API endpoint at GET `/api/admin/schools/:id/activity-logs`.
--   **Plastic Waste Audit System**: Comprehensive 5-step audit workflow covering 11 room types with granular plastic item tracking and automatic annual calculations. Fully internationalized with separate audit submission and action plan development.
+### System Design Choices
+-   **Key Data Models**: Users, Schools, Evidence, Audit Logs, Reduction Promises (Action Plans), Resources, Case Studies, Events, Media Assets, Notifications. Includes a content visibility system for evidence and resources.
+-   **UI/UX**: Component-based design with Radix UI and shadcn/ui, custom favicon, consistent branding, professional typography, and multi-language support (14 languages, including RTL).
+-   **Admin UI**: Enhanced navigation, comprehensive analytics, dynamic evidence requirements, student-led action plans, multi-step school registration, integrated evidence requirements with i18n, school detail management, manual school progression, Case Study Wizard, Resource Management, Data Import, multi-language event creator, bulk resource upload with AI auto-fill, and a Review Queue for Evidence, Audits, and Photo Consent. Features like debounced search, server-side pagination, sortable columns, and an enhanced School Quick View dialog.
+-   **Admin Override System**: Allows admins to create approved evidence records directly, fully integrated into dashboards and progression tracking with transactional safety.
+-   **User Interaction Tracking**: Tracks `lastActiveAt`, `lastActiveBy`, `lastActionType`, `hasInteracted` for engagement metrics and filtering. Analytics distinguish between teacher and PCS team activity, and an "Active Schools (Last Month)" metric with CSV export.
+-   **School Activity History**: Comprehensive audit log in admin school profiles tracking user actions, with filtering, pagination, and human-readable labels.
+-   **Plastic Waste Audit System**: 5-step audit workflow with 11 room types, granular plastic item tracking, and automatic annual calculations, fully internationalized.
 -   **Mobile Responsiveness**: Full mobile optimization for the admin panel.
--   **Events System**: Full lifecycle management, multi-language landing pages, automated email reminders, capacity tracking, and calendar integration with auto-translate features.
--   **Inspiration Page**: Unified gallery of case studies and approved evidence with smart sorting/filtering by country, school type, stage, and content type.
--   **Resources System**: Enhanced page with language tabs, gradient-styled cards, badges, smart ordering, locked visibility, automatic notifications, and visual thumbnail previews. **Resource Pack Cover Images**: Admins can upload custom cover images for resource packs via the Pack Details tab in the editor. The system automatically falls back to auto-generated thumbnails from pack resources when no custom cover is uploaded. Cover image uploads use sanitized filenames and proper error handling (file size/type validation). Frontend displays use safe React state-based rendering for security.
+-   **Events System**: Full lifecycle management, multi-language landing pages, automated email reminders, capacity tracking, and calendar integration.
+-   **Inspiration Page**: Unified gallery of case studies and approved evidence with smart sorting/filtering.
+-   **Resources System**: Enhanced page with language tabs, gradient-styled cards, badges, smart ordering, locked visibility, automatic notifications, visual thumbnail previews, custom pack cover images (with fallback), curriculum stage filtering, and theme terminology alignment.
 -   **Notifications System**: Real-time notifications via bell icon and dashboard banners.
--   **Content Management**: Printable forms with admin review, advanced filtering for the Evidence Gallery, and server-side image compression.
--   **Communication**: Enhanced bulk email editor with AI auto-translation, Contact Us, and Help Center pages. All email templates are overhauled and fully internationalized. Bulk emails now auto-convert plain text to styled HTML paragraphs for consistent formatting. Email recipient groups system supports predefined auto-updating groups (Active Schools Last Month, Inactive Schools, Schools by Stage, Completed Schools) and custom saved groups based on filter criteria.
+-   **Content Management**: Printable forms with admin review, advanced filtering for Evidence Gallery, and server-side image compression.
+-   **Communication**: Enhanced bulk email editor with AI auto-translation, overhauled i18n email templates, and recipient groups.
 -   **SEO Optimization**: Server-side meta tag injection, JSON-LD, proper heading hierarchy.
 -   **User Profile Management**: Comprehensive page for editing user details, language, password, and account deletion.
 -   **Legal Pages**: Fully internationalized Privacy Policy and Terms & Conditions.
--   **Real-Time Collaboration**: Admin dashboard features online presence tracking, document locking, admin chat, and activity history. WebSocket connections are restricted to admin and partner users only. Client-side role checks prevent non-admin connection attempts. Server-side rate limiting (5 attempts per minute, 5-minute cooldown) stops repeated failed connections from outdated cached JavaScript, encouraging browser refreshes while preventing expensive server costs.
--   **Health Monitoring**: Internal uptime monitoring and a system health dashboard.
+-   **Real-Time Collaboration**: Admin dashboard features online presence tracking, document locking, admin chat, and activity history. WebSocket connections are restricted to admin/partner users with client-side role checks and server-side rate limiting.
 -   **Program Stages**: All program stages (Inspire, Investigate, Act) are fully unlocked and simultaneously accessible.
--   **Round Completion Celebration System**: When schools complete all three stages (Inspire, Investigate, Act), they see a celebration with confetti animation instead of being automatically advanced to the next round. Schools can dismiss the celebration (compact "Start Next Round" card persists) and manually choose when to begin Round 2. The `roundCelebrationDismissed` flag tracks whether the celebration banner was dismissed. This allows schools to remain in "completed" status and celebrate their achievement before moving forward.
--   **Registration Form**: Redesigned age selection for granular student demographic tracking. School type selection (Kindergarten, Primary, Secondary, High School, International, Other) required during signup to enable targeted filtering and resource recommendations.
--   **Bonus Evidence System**: Tracks bonus/additional evidence that doesn't count toward stage completion requirements, with admin tools for triage.
--   **Action Plan Approval Workflow**: Action plans (reduction promises) require admin approval before counting toward progression. New action plans default to 'pending' status. Admin review queue includes filtering, bulk actions, and detail views. Admin overrides for "Action Plan Development" requirement are recognized in progression logic. Manual triggers available for celebration emails and certificate regeneration from school profile. Action plan submissions are counted at the submission level (unique schoolId + roundNumber combinations) rather than by individual reduction promise items, ensuring one submission with multiple items counts as a single notification. Review tab badge displays accurate counts including pending action plans without requiring navigation to sub-tabs.
--   **Audit & Action Plan Progression**: When admins approve audits or action plans, the system automatically triggers school progression checks to determine if schools should advance rounds, receive certificates, and get celebration emails. Audits are included in the school evidence list and count display, appearing as special evidence items with the `isAuditQuiz` flag.
--   **Round Progression Safety**: When admins manually advance a school to a new round via the Progress Override Controls, the system automatically resets all stage completion flags (inspireCompleted, investigateCompleted, actCompleted, awardCompleted, auditQuizCompleted), progressPercentage to 0, and roundCelebrationDismissed to false. This prevents stale completion states from previous rounds carrying over. The admin School Progress Override view initializes round selection only after school data loads to prevent race conditions where wrong-round data could be fetched. Diagnostic logging tracks round advancement for debugging.
--   **Configurable Evidence Requirements**: Evidence requirements now include a `requirementType` enum field (standard/audit/action_plan) that determines UI behavior. Admins can assign any requirement to display as an audit form, action plan, or standard file upload through the admin panel. The system uses dynamic lookups based on `requirementType` instead of hardcoded IDs, making the platform portable for GitHub downloads. An "Initialize Default Requirements" button in the admin panel seeds the database with standard requirements for new installations. Progress percentages automatically scale based on the actual number of requirements per stage.
--   **Duplicate School Detection System**: Automatically detects potential duplicate school registrations by email domain and postcode. Dashboard notification alerts admins when new duplicates are detected. "Potential Duplicates" filter in School Management allows admins to review, dismiss (mark as not duplicates), or merge confirmed duplicate schools. Merge workflow allows admins to choose which field values to keep. Automatic duplicate checking runs on new school registrations. Match types include: email_domain, same_postcode, similar_name. Duplicate groups have status workflow: new → reviewed → dismissed/merged. **Enhanced User Merge During School Merge**: When merging schools, the system detects potential duplicate users by matching emails and names. Merge preview shows user counts, potential duplicates with match reasons, and recommended survivor based on most recent activity. Admins can merge duplicate user accounts (keeps survivor account, deactivates duplicate, transfers school memberships and evidence). Merged users receive notification email with password reset link.
+-   **Round Completion Celebration System**: Confetti animation and persistent "Start Next Round" card for schools completing all stages, allowing manual progression to the next round.
+-   **Registration Form**: Redesigned age selection and required school type selection for granular demographic tracking and targeted recommendations.
+-   **Bonus Evidence System**: Tracks bonus/additional evidence not counting toward stage completion.
+-   **Action Plan Approval Workflow**: Action plans require admin approval, default to 'pending', with a review queue for filtering, bulk actions, and detail views. Admin overrides are recognized in progression logic.
+-   **Audit & Action Plan Progression**: Approval of audits or action plans automatically triggers school progression checks for round advancement, certificates, and celebration emails.
+-   **Round Progression Safety**: Manual advancement of schools resets stage completion flags, progress percentage, and celebration dismissal status to prevent stale data.
+-   **Configurable Evidence Requirements**: `requirementType` enum determines UI behavior (standard/audit/action_plan), allowing dynamic configuration via admin panel and portability.
+-   **Duplicate School Detection System**: Automatically detects potential duplicate school registrations by email domain and postcode, with admin alerts, review, dismiss, and merge functionalities. Includes enhanced user merge during school merge operations.
 
 ## External Dependencies
 -   **Database**: Neon PostgreSQL
 -   **File Storage**: Google Cloud Storage
 -   **Authentication**: Google OAuth
 -   **Email Services**: SendGrid (with automatic contact sync to Marketing Contacts)
-    -   **SendGrid Contact Sync**: Admin UI provides incremental sync that only processes contacts not synced in the last 24 hours (tracked via `sendgridSyncedAt` timestamp on users table). "Force Sync All" option available for full re-sync when needed. Custom fields include: `has_interacted`, `school_name`, `school_stage`, `user_role`, `school_type`, `rounds_completed` (Number type), `inspire_completed`, `investigate_completed`, `act_completed`, `is_migrated`, `user_language`, `is_active` for segmentation.
 -   **Build Tool**: Vite
 -   **Hosting/Deployment**: Replit
 -   **AI Integration**: OpenAI GPT-4o-mini
