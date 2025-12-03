@@ -805,6 +805,38 @@ export class EvidenceStorage {
       .where(eq(evidence.id, id))
       .returning();
 
+    // CRITICAL: If this is action plan evidence, also update the reduction promises
+    // This ensures round completion works correctly (hasActionPlan check requires approved promises)
+    if (evidenceRecord.evidenceRequirementId) {
+      const [requirement] = await db
+        .select({ requirementType: evidenceRequirements.requirementType })
+        .from(evidenceRequirements)
+        .where(eq(evidenceRequirements.id, evidenceRecord.evidenceRequirementId))
+        .limit(1);
+      
+      if (requirement?.requirementType === 'action_plan') {
+        // Update all reduction promises for this school/round to match the evidence status
+        const promiseReviewStatus = status === 'approved' ? 'approved' : 'rejected';
+        await db
+          .update(reductionPromises)
+          .set({
+            reviewStatus: promiseReviewStatus,
+            reviewedBy,
+            reviewedAt: new Date(),
+            reviewNotes,
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(reductionPromises.schoolId, evidenceRecord.schoolId),
+              eq(reductionPromises.roundNumber, evidenceRecord.roundNumber)
+            )
+          );
+        
+        console.log(`[Action Plan] Updated reduction promises for school ${evidenceRecord.schoolId} round ${evidenceRecord.roundNumber} to ${promiseReviewStatus}`);
+      }
+    }
+
     // CRITICAL: Trigger school progression check if approved
     // This may advance the school to the next stage or complete a round
     // Pass submitter email so they get the celebration email if this completes the round
