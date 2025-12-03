@@ -2357,6 +2357,23 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_coral"></div>
                 </div>
               ) : activityHeatmapQuery.data?.heatmap && activityHeatmapQuery.data.heatmap.length > 0 ? (
+                <>
+                  {/* Show info message when data is sparse */}
+                  {(() => {
+                    const totalSubmissions = activityHeatmapQuery.data.heatmap.reduce((sum, h) => sum + h.count, 0);
+                    if (totalSubmissions < 10 && heatmapDateRange !== 'all') {
+                      return (
+                        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2 text-sm text-amber-800">
+                          <Info className="w-4 h-4 flex-shrink-0" />
+                          <span>
+                            Only {totalSubmissions} evidence submission{totalSubmissions !== 1 ? 's' : ''} in this period. 
+                            Try selecting "All Time" for a complete activity picture.
+                          </span>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                 <div className="overflow-x-auto">
                   <div className="min-w-[600px]">
                     <div className="flex">
@@ -2406,6 +2423,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                     ))}
                   </div>
                 </div>
+                </>
               ) : (
                 <div className="h-[300px] flex items-center justify-center text-gray-500">
                   <div className="text-center">
