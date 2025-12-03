@@ -1589,14 +1589,16 @@ schoolsRouter.get('/api/admin/schools/:schoolId/teachers', isAuthenticated, requ
 schoolsRouter.get('/api/admin/schools/:schoolId/evidence-overrides', isAuthenticated, requireAdmin, async (req, res) => {
   try {
     const { schoolId } = req.params;
+    const { roundNumber } = req.query;
     const school = await storage.getSchool(schoolId);
     
     if (!school) {
       return res.status(404).json({ message: "School not found" });
     }
 
-    const currentRound = school.currentRound || 1;
-    const overrides = await storage.getAdminEvidenceOverrides(schoolId, currentRound);
+    // Use provided roundNumber or fall back to school's current round
+    const targetRound = roundNumber ? parseInt(roundNumber as string) : (school.currentRound || 1);
+    const overrides = await storage.getAdminEvidenceOverrides(schoolId, targetRound);
     
     res.json(overrides);
   } catch (error) {
@@ -1622,7 +1624,7 @@ schoolsRouter.post('/api/admin/schools/:schoolId/evidence-overrides/toggle', isA
       });
     }
 
-    const { evidenceRequirementId, stage } = validation.data;
+    const { evidenceRequirementId, stage, roundNumber } = validation.data;
 
     if (!req.user?.id) {
       return res.status(401).json({ message: "User not authenticated" });
@@ -1634,8 +1636,9 @@ schoolsRouter.post('/api/admin/schools/:schoolId/evidence-overrides/toggle', isA
       return res.status(404).json({ message: "School not found" });
     }
 
-    const currentRound = school.currentRound || 1;
-    console.log(`[Admin Override] School current round: ${currentRound}`);
+    // Use provided roundNumber or fall back to school's current round
+    const targetRound = roundNumber !== undefined ? roundNumber : (school.currentRound || 1);
+    console.log(`[Admin Override] Target round: ${targetRound} (school current: ${school.currentRound})`);
     
     // Verify evidence requirement exists and matches school's round/stage
     const requirement = await storage.getEvidenceRequirement(evidenceRequirementId);
@@ -1656,7 +1659,7 @@ schoolsRouter.post('/api/admin/schools/:schoolId/evidence-overrides/toggle', isA
       schoolId,
       evidenceRequirementId,
       stage,
-      currentRound,
+      targetRound,
       req.user.id
     );
 
