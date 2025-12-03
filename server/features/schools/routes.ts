@@ -28,7 +28,7 @@ import {
 import { nanoid } from 'nanoid';
 import { z } from 'zod';
 import { db } from '../../db';
-import { eq, and, or, sql, count, ilike, inArray, gte } from 'drizzle-orm';
+import { eq, and, or, sql, count, ilike, inArray, gte, isNull } from 'drizzle-orm';
 import { getAllCountryCodes } from './utils/countryMapping';
 import { storage } from '../../storage';
 
@@ -1223,12 +1223,12 @@ schoolsRouter.get('/api/admin/schools', isAuthenticated, requireAdminOrPartner, 
         conditions.push(eq(schools.currentStage, stage as any));
       }
       
-      // Completion status filter
+      // Completion status filter - must match getSchools logic in storage.ts
       if (completionStatus) {
         if (completionStatus === 'plastic-clever') {
-          conditions.push(eq(schools.awardCompleted, true));
+          conditions.push(gte(schools.roundsCompleted, 1));
         } else if (completionStatus === 'in-progress') {
-          conditions.push(eq(schools.awardCompleted, false));
+          conditions.push(or(eq(schools.roundsCompleted, 0), isNull(schools.roundsCompleted)));
         }
       }
       

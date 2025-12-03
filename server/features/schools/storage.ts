@@ -390,10 +390,13 @@ export class SchoolStorage {
     
     if (filters.country) {
       const allCodes = getAllCountryCodes(filters.country);
-      if (allCodes.length > 1) {
-        conditions.push(inArray(schools.country, allCodes));
+      // Include both country codes AND the original input to match getSchools behavior
+      // This ensures schools stored as 'Greece' are found when filtering by 'GR' and vice versa
+      const searchValues = [...allCodes, filters.country];
+      if (searchValues.length > 1) {
+        conditions.push(inArray(schools.country, searchValues));
       } else {
-        conditions.push(eq(schools.country, allCodes[0]));
+        conditions.push(eq(schools.country, searchValues[0]));
       }
     }
     
