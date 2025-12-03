@@ -6126,8 +6126,7 @@ export class DatabaseStorage implements IStorage {
     impactMetrics: {
       totalAnnualReduction: number;
       totalWeightKg: number;
-      treesEquivalent: number;
-      oceanBottles: number;
+      carbonSavedKg: number;
     };
   }> {
     // Get reduction promises grouped by month
@@ -6178,9 +6177,11 @@ export class DatabaseStorage implements IStorage {
     // Estimate weight: assume average plastic item is ~25g (0.025 kg)
     const totalWeightKg = Math.round(totalAnnualReduction * 0.025);
     
-    // Fun equivalents (approximate calculations)
-    const treesEquivalent = Math.round(totalWeightKg * 0.02); // ~50kg plastic = 1 tree worth of carbon
-    const oceanBottles = totalAnnualReduction; // Each item is roughly equivalent to a bottle
+    // Carbon saved calculation: ~6 kg CO2 emissions per kg of virgin plastic produced
+    // Based on lifecycle assessment studies (production, processing, transport)
+    // Source: European Commission JRC studies on plastic lifecycle emissions
+    const CARBON_FACTOR_KG_CO2_PER_KG_PLASTIC = 6;
+    const carbonSavedKg = Math.round(totalWeightKg * CARBON_FACTOR_KG_CO2_PER_KG_PLASTIC);
 
     return {
       monthlyReduction,
@@ -6188,8 +6189,7 @@ export class DatabaseStorage implements IStorage {
       impactMetrics: {
         totalAnnualReduction,
         totalWeightKg,
-        treesEquivalent,
-        oceanBottles,
+        carbonSavedKg,
       },
     };
   }
