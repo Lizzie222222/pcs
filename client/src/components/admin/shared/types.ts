@@ -10,6 +10,28 @@ export interface AdminStats {
   totalResourceDownloads: number;
 }
 
+export interface ActionPlanPromise {
+  id: string;
+  schoolId: string;
+  auditId: string | null;
+  roundNumber: number;
+  plasticItemType: string;
+  plasticItemLabel: string;
+  baselineQuantity: number;
+  targetQuantity: number;
+  reductionAmount: number;
+  timeframeUnit: string;
+  status: 'active' | 'completed' | 'abandoned';
+  notes: string | null;
+  createdBy: string;
+  reviewStatus: 'pending' | 'approved' | 'rejected';
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  reviewNotes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface PendingEvidence {
   id: string;
   title: string;
@@ -26,6 +48,8 @@ export interface PendingEvidence {
   isBonus?: boolean;
   files: any[];
   videoLinks: string | null;
+  isActionPlanEvidence?: boolean;
+  actionPlanPromises?: ActionPlanPromise[];
   school?: {
     id: string;
     name: string;

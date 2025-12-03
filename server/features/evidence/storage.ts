@@ -5,13 +5,15 @@ import {
   schools, 
   users,
   adminEvidenceOverrides,
+  reductionPromises,
   type Evidence, 
   type InsertEvidence, 
   type EvidenceWithSchool,
   type EvidenceRequirement,
   type InsertEvidenceRequirement,
   type AdminEvidenceOverride,
-  type InsertAdminEvidenceOverride
+  type InsertAdminEvidenceOverride,
+  type ReductionPromise
 } from '@shared/schema';
 import { eq, and, or, desc, asc, inArray, sql, ilike } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
@@ -165,8 +167,8 @@ export class EvidenceStorage {
     sortBy?: 'newest' | 'oldest' | 'schoolName' | 'stage';
     dateFrom?: Date;
     dateTo?: Date;
-    excludeActionPlanEvidence?: boolean; // Exclude "Action Plan Development" evidence from review queue
-  }): Promise<EvidenceWithSchool[]> {
+    includeActionPlanDetails?: boolean; // Include reduction promises for action plan evidence
+  }): Promise<(EvidenceWithSchool & { actionPlanPromises?: ReductionPromise[] })[]> {
     // Build WHERE conditions
     const conditions = [];
     
@@ -201,21 +203,8 @@ export class EvidenceStorage {
       conditions.push(sql`${evidence.submittedAt} <= ${filters.dateTo}`);
     }
     
-    // CRITICAL: Exclude action plan evidence from admin review queue
-    // Action plans are reviewed separately in the Action Plan Review Queue
-    // This prevents double work for admins
-    // Dynamically looks up requirements with requirementType = 'action_plan'
-    if (filters?.excludeActionPlanEvidence) {
-      const actionPlanRequirements = await db
-        .select({ id: evidenceRequirements.id })
-        .from(evidenceRequirements)
-        .where(eq(evidenceRequirements.requirementType, 'action_plan'));
-      
-      const actionPlanIds = actionPlanRequirements.map(r => r.id);
-      if (actionPlanIds.length > 0) {
-        conditions.push(sql`${evidence.evidenceRequirementId} NOT IN (${sql.join(actionPlanIds.map(id => sql`${id}`), sql`, `)})`);
-      }
-    }
+    // Action plan evidence is now included in the evidence queue
+    // with their reduction promises displayed inline for full context
     
     // Add search filter for school name, title, and description
     if (filters?.search) {
@@ -352,7 +341,7 @@ export class EvidenceStorage {
     );
     
     // Transform results to use nested photoConsent and primaryContact structures
-    return results
+    const transformedResults = results
       .filter(r => r.school !== null)
       .map(r => {
         const school = r.school!; // Already filtered null above
@@ -382,6 +371,69 @@ export class EvidenceStorage {
           }
         };
       }) as Array<EvidenceWithSchool>;
+
+    // If includeActionPlanDetails is true, fetch reduction promises for action plan evidence
+    if (filters?.includeActionPlanDetails) {
+      // First, get the action plan requirement IDs
+      const actionPlanRequirements = await db
+        .select({ id: evidenceRequirements.id })
+        .from(evidenceRequirements)
+        .where(eq(evidenceRequirements.requirementType, 'action_plan'));
+      
+      const actionPlanRequirementIds = new Set(actionPlanRequirements.map(r => r.id));
+      
+      // Find evidence items that are action plan submissions
+      const actionPlanEvidence = transformedResults.filter(
+        e => e.evidenceRequirementId && actionPlanRequirementIds.has(e.evidenceRequirementId)
+      );
+      
+      if (actionPlanEvidence.length > 0) {
+        // Get unique school/round combinations to fetch promises
+        const schoolRoundKeys = new Set(
+          actionPlanEvidence.map(e => `${e.schoolId}-${e.roundNumber}`)
+        );
+        
+        // Fetch all reduction promises for these schools/rounds in one query
+        const schoolIds = [...new Set(actionPlanEvidence.map(e => e.schoolId))];
+        const roundNumbers = [...new Set(actionPlanEvidence.map(e => e.roundNumber))];
+        
+        const promises = await db
+          .select()
+          .from(reductionPromises)
+          .where(
+            and(
+              inArray(reductionPromises.schoolId, schoolIds),
+              inArray(reductionPromises.roundNumber, roundNumbers)
+            )
+          )
+          .orderBy(desc(reductionPromises.createdAt));
+        
+        // Create a map of school-round to promises
+        const promiseMap = new Map<string, ReductionPromise[]>();
+        for (const promise of promises) {
+          const key = `${promise.schoolId}-${promise.roundNumber}`;
+          if (!promiseMap.has(key)) {
+            promiseMap.set(key, []);
+          }
+          promiseMap.get(key)!.push(promise);
+        }
+        
+        // Attach promises to action plan evidence
+        return transformedResults.map(e => {
+          if (e.evidenceRequirementId && actionPlanRequirementIds.has(e.evidenceRequirementId)) {
+            const key = `${e.schoolId}-${e.roundNumber}`;
+            return {
+              ...e,
+              actionPlanPromises: promiseMap.get(key) || [],
+              isActionPlanEvidence: true,
+            };
+          }
+          return e;
+        }) as Array<EvidenceWithSchool & { actionPlanPromises?: ReductionPromise[] }>;
+      }
+    }
+    
+    return transformedResults as Array<EvidenceWithSchool & { actionPlanPromises?: ReductionPromise[] }>;
   }
 
   /**
@@ -782,23 +834,32 @@ export class EvidenceStorage {
    * Supports:
    * - Filtering by status, stage, school, country, visibility, assignment
    * - Full school and reviewer details in response
+   * - Including action plan evidence with their reduction promises for inline display
    * 
    * Note: Pagination and advanced sorting should be handled at the route level
    * or by using the underlying getAllEvidence method with custom post-processing.
    * 
    * @param filters - Filter criteria for evidence retrieval
-   * @returns Array of evidence with school details
+   * @returns Array of evidence with school details and optional action plan promises
    */
   async getAdminEvidence(filters?: {
     status?: 'pending' | 'approved' | 'rejected';
-    stage?: 'inspire' | 'investigate' | 'act';
+    stage?: 'inspire' | 'investigate' | 'act' | 'above_and_beyond';
     schoolId?: string;
     country?: string;
     visibility?: 'public' | 'private';
     assignedTo?: string;
-  }): Promise<EvidenceWithSchool[]> {
+    evidenceRequirementId?: string;
+    search?: string;
+    sortBy?: 'newest' | 'oldest' | 'schoolName' | 'stage';
+    roundNumber?: number;
+    dateFrom?: Date;
+    dateTo?: Date;
+    includeActionPlanDetails?: boolean;
+  }): Promise<(EvidenceWithSchool & { actionPlanPromises?: ReductionPromise[] })[]> {
     // Delegate to the getAllEvidence method (already implemented above)
     // This method already provides all the admin review functionality
+    // including action plan evidence with reduction promises when includeActionPlanDetails is true
     return await this.getAllEvidence(filters);
   }
 

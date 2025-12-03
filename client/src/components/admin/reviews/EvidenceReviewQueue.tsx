@@ -75,6 +75,7 @@ import {
   TrendingUp,
   Check,
   MessageSquare,
+  Target,
 } from "lucide-react";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
@@ -1157,6 +1158,64 @@ export default function EvidenceReviewQueue({
                           files={evidence.files}
                           className="mt-3"
                         />
+                      )}
+
+                      {/* Action Plan Promises Display */}
+                      {evidence.isActionPlanEvidence && evidence.actionPlanPromises && evidence.actionPlanPromises.length > 0 && (
+                        <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200" data-testid={`action-plan-promises-${evidence.id}`}>
+                          <div className="flex items-center gap-2 mb-3">
+                            <Target className="h-5 w-5 text-purple-600" />
+                            <h4 className="font-semibold text-purple-900">Action Plan Promises ({evidence.actionPlanPromises.length})</h4>
+                          </div>
+                          <div className="space-y-3">
+                            {evidence.actionPlanPromises.map((promise, idx) => (
+                              <div key={promise.id} className="p-3 bg-white rounded-md border border-purple-100 shadow-sm" data-testid={`promise-${promise.id}`}>
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <div className="font-medium text-navy">{promise.plasticItemType}</div>
+                                    <div className="text-sm text-gray-600">{promise.plasticItemLabel}</div>
+                                  </div>
+                                  <Badge 
+                                    variant="outline"
+                                    className={
+                                      promise.reviewStatus === 'approved' ? 'bg-green-50 text-green-700 border-green-200' :
+                                      promise.reviewStatus === 'rejected' ? 'bg-red-50 text-red-700 border-red-200' :
+                                      'bg-yellow-50 text-yellow-700 border-yellow-200'
+                                    }
+                                  >
+                                    {promise.reviewStatus}
+                                  </Badge>
+                                </div>
+                                <div className="mt-2 grid grid-cols-4 gap-3 text-sm">
+                                  <div>
+                                    <div className="text-gray-500">Baseline</div>
+                                    <div className="font-semibold">{promise.baselineQuantity}</div>
+                                  </div>
+                                  <div>
+                                    <div className="text-gray-500">Target</div>
+                                    <div className="font-semibold text-green-600">{promise.targetQuantity}</div>
+                                  </div>
+                                  <div>
+                                    <div className="text-gray-500">Reduction</div>
+                                    <div className="flex items-center gap-1 font-semibold text-green-600">
+                                      <TrendingUp className="h-3 w-3" />
+                                      {promise.reductionAmount}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <div className="text-gray-500">Timeframe</div>
+                                    <div className="font-semibold capitalize">{promise.timeframeUnit}</div>
+                                  </div>
+                                </div>
+                                {promise.notes && (
+                                  <div className="mt-2 text-sm text-gray-600 italic">
+                                    "{promise.notes}"
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       )}
                     </div>
 

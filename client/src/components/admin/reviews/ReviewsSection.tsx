@@ -8,8 +8,7 @@ import ReviewsFilters from "./ReviewsFilters";
 import EvidenceReviewQueue from "./EvidenceReviewQueue";
 import AuditReviewQueue from "./AuditReviewQueue";
 import PhotoConsentQueue from "./PhotoConsentQueue";
-import ActionPlanReviewQueue from "./ActionPlanReviewQueue";
-import type { AdminStats, PendingEvidence, PendingAudit, PendingActionPlan } from "@/components/admin/shared/types";
+import type { AdminStats, PendingEvidence, PendingAudit } from "@/components/admin/shared/types";
 import type { User } from "@shared/schema";
 
 interface ReviewsSectionProps {
@@ -30,7 +29,7 @@ export default function ReviewsSection({
   const { t } = useTranslation('admin');
 
   // Review state
-  const [reviewType, setReviewType] = useState<'evidence' | 'audits' | 'photo-consent' | 'action-plans'>('evidence');
+  const [reviewType, setReviewType] = useState<'evidence' | 'audits' | 'photo-consent'>('evidence');
   const [evidenceStatusFilter, setEvidenceStatusFilter] = useState<'all' | 'pending' | 'approved' | 'revision_requested' | 'rejected'>('pending');
   const [evidenceAssigneeFilter, setEvidenceAssigneeFilter] = useState<string>('all');
   const [evidenceStageFilter, setEvidenceStageFilter] = useState<'all' | 'inspire' | 'investigate' | 'act' | 'above_and_beyond'>('all');
@@ -57,25 +56,6 @@ export default function ReviewsSection({
   const [bulkEvidenceDialogOpen, setBulkEvidenceDialogOpen] = useState(false);
   const [bulkAction, setBulkAction] = useState<{
     type: 'approve' | 'request_revision' | 'reject' | 'delete';
-    notes?: string;
-  } | null>(null);
-
-  // Action Plan review state
-  const [actionPlanReviewData, setActionPlanReviewData] = useState<{
-    actionPlanId: string;
-    action: 'approved' | 'rejected';
-    notes: string;
-  } | null>(null);
-  const [actionPlanStatusFilter, setActionPlanStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
-  const [actionPlanSearchQuery, setActionPlanSearchQuery] = useState<string>('');
-  const [actionPlanSortBy, setActionPlanSortBy] = useState<'newest' | 'oldest' | 'schoolName' | 'reductionAmount'>('newest');
-  const [actionPlanCountryFilter, setActionPlanCountryFilter] = useState<string>('all');
-  const [actionPlanRoundFilter, setActionPlanRoundFilter] = useState<string>('all');
-  const [actionPlanViewMode, setActionPlanViewMode] = useState<'card' | 'table'>('card');
-  const [selectedActionPlans, setSelectedActionPlans] = useState<string[]>([]);
-  const [bulkActionPlanDialogOpen, setBulkActionPlanDialogOpen] = useState(false);
-  const [bulkActionPlanAction, setBulkActionPlanAction] = useState<{
-    type: 'approve' | 'reject';
     notes?: string;
   } | null>(null);
 
@@ -177,47 +157,6 @@ export default function ReviewsSection({
   }>>({
     queryKey: ['/api/admin/photo-consent/pending'],
     enabled: true,
-    retry: false,
-  });
-
-  // Debounce action plan search query
-  const debouncedActionPlanSearchQuery = useDebounce(actionPlanSearchQuery, 300);
-
-  // Action Plans query with all filters
-  const { data: pendingActionPlans, isLoading: actionPlansLoading } = useQuery<PendingActionPlan[]>({
-    queryKey: [
-      '/api/admin/action-plans',
-      actionPlanStatusFilter,
-      actionPlanCountryFilter,
-      actionPlanRoundFilter,
-      debouncedActionPlanSearchQuery,
-      actionPlanSortBy,
-    ],
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      
-      if (actionPlanStatusFilter && actionPlanStatusFilter !== 'all') {
-        params.append('reviewStatus', actionPlanStatusFilter);
-      }
-      if (actionPlanCountryFilter && actionPlanCountryFilter !== 'all') {
-        params.append('country', actionPlanCountryFilter);
-      }
-      if (actionPlanRoundFilter && actionPlanRoundFilter !== 'all') {
-        params.append('roundNumber', actionPlanRoundFilter);
-      }
-      if (debouncedActionPlanSearchQuery) {
-        params.append('search', debouncedActionPlanSearchQuery);
-      }
-      if (actionPlanSortBy && actionPlanSortBy !== 'newest') {
-        params.append('sortBy', actionPlanSortBy);
-      }
-      
-      const url = `/api/admin/action-plans${params.toString() ? `?${params.toString()}` : ''}`;
-      const res = await fetch(url, { credentials: 'include' });
-      if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
-      return res.json();
-    },
-    enabled: activeTab === 'reviews',
     retry: false,
   });
 
@@ -480,94 +419,15 @@ export default function ReviewsSection({
     },
   });
 
-  // Action Plan review mutation
-  const reviewActionPlanMutation = useMutation({
-    mutationFn: async ({ actionPlanId, reviewStatus, reviewNotes }: {
-      actionPlanId: string;
-      reviewStatus: 'approved' | 'rejected';
-      reviewNotes: string;
-    }) => {
-      return await apiRequest('PATCH', `/api/admin/action-plans/${actionPlanId}/review`, {
-        reviewStatus,
-        reviewNotes,
-      });
-    },
-    onMutate: async (variables) => {
-      await queryClient.cancelQueries({ queryKey: ['/api/admin/action-plans'] });
-      const previousActionPlans = queryClient.getQueryData<PendingActionPlan[]>(['/api/admin/action-plans']);
-      queryClient.setQueryData<PendingActionPlan[]>(['/api/admin/action-plans'], (old = []) => {
-        return old.filter(ap => ap.id !== variables.actionPlanId);
-      });
-      return { previousActionPlans };
-    },
-    onSuccess: (_, variables) => {
-      setActionPlanReviewData(null);
-      toast({
-        title: "Success",
-        description: `Action plan ${variables.reviewStatus === 'approved' ? 'approved' : 'rejected'} successfully.`,
-      });
-    },
-    onError: (error: any, variables, context) => {
-      if (context?.previousActionPlans) {
-        queryClient.setQueryData(['/api/admin/action-plans'], context.previousActionPlans);
-      }
-      toast({
-        title: "Review Failed",
-        description: error.message || "Failed to review action plan.",
-        variant: "destructive",
-      });
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/action-plans'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
-    },
-  });
-
-  // Bulk Action Plan review mutation
-  const bulkActionPlanReviewMutation = useMutation({
-    mutationFn: async ({ actionPlanIds, reviewStatus, reviewNotes }: {
-      actionPlanIds: string[];
-      reviewStatus: 'approved' | 'rejected';
-      reviewNotes: string;
-    }) => {
-      return await apiRequest('POST', '/api/admin/action-plans/bulk-review', {
-        actionPlanIds,
-        reviewStatus,
-        reviewNotes,
-      });
-    },
-    onSuccess: () => {
-      setBulkActionPlanDialogOpen(false);
-      setBulkActionPlanAction(null);
-      setSelectedActionPlans([]);
-      toast({
-        title: "Success",
-        description: "Bulk action plan review completed successfully.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Bulk Review Failed",
-        description: error.message || "Failed to review action plans in bulk.",
-        variant: "destructive",
-      });
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/action-plans'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
-    },
-  });
-
   return (
     <div className="space-y-4">
-      {/* Sub-tabs for Evidence, Audits, Photo Consent, and Action Plans */}
+      {/* Sub-tabs for Evidence, Audits, and Photo Consent */}
       <ReviewsFilters
         reviewTab={reviewType}
         setReviewTab={setReviewType}
         evidenceCount={stats?.pendingEvidence || 0}
         auditsCount={pendingAudits.length}
         photoConsentCount={pendingPhotoConsent.length}
-        actionPlansCount={stats?.pendingActionPlansCount || 0}
       />
 
       {/* Evidence Review Content */}
@@ -636,37 +496,6 @@ export default function ReviewsSection({
           photoConsentLoading={false}
           approvePhotoConsentMutation={approvePhotoConsentMutation}
           rejectPhotoConsentMutation={rejectPhotoConsentMutation}
-        />
-      )}
-
-      {/* Action Plans Review Content */}
-      {reviewType === 'action-plans' && (
-        <ActionPlanReviewQueue
-          activeTab={activeTab}
-          actionPlansPending={pendingActionPlans}
-          actionPlansLoading={actionPlansLoading}
-          reviewData={actionPlanReviewData}
-          setReviewData={setActionPlanReviewData}
-          reviewActionPlanMutation={reviewActionPlanMutation}
-          bulkActionPlanReviewMutation={bulkActionPlanReviewMutation}
-          bulkActionPlanDialogOpen={bulkActionPlanDialogOpen}
-          setBulkActionPlanDialogOpen={setBulkActionPlanDialogOpen}
-          bulkAction={bulkActionPlanAction}
-          setBulkAction={setBulkActionPlanAction}
-          selectedActionPlans={selectedActionPlans}
-          setSelectedActionPlans={setSelectedActionPlans}
-          actionPlanStatusFilter={actionPlanStatusFilter}
-          setActionPlanStatusFilter={setActionPlanStatusFilter}
-          actionPlanSearchQuery={actionPlanSearchQuery}
-          setActionPlanSearchQuery={setActionPlanSearchQuery}
-          actionPlanSortBy={actionPlanSortBy}
-          setActionPlanSortBy={setActionPlanSortBy}
-          actionPlanCountryFilter={actionPlanCountryFilter}
-          setActionPlanCountryFilter={setActionPlanCountryFilter}
-          actionPlanRoundFilter={actionPlanRoundFilter}
-          setActionPlanRoundFilter={setActionPlanRoundFilter}
-          actionPlanViewMode={actionPlanViewMode}
-          setActionPlanViewMode={setActionPlanViewMode}
         />
       )}
     </div>
