@@ -5980,51 +5980,70 @@ Return JSON with:
     try {
       console.log('[Export PDF] Request received from admin');
       
-      // Validate request body
+      // Validate request body - dateRange is now optional for "All Time" exports
       const exportRequestSchema = z.object({
         dateRange: z.object({
           start: z.string(),
           end: z.string()
-        }),
+        }).nullable().optional(),
+        filters: z.object({
+          country: z.string().optional(),
+          schoolType: z.string().optional(),
+          round: z.string().optional()
+        }).optional(),
         sections: z.object({
           overview: z.boolean().default(true),
           scoresEvidence: z.boolean().default(true),
           plasticWasteAudits: z.boolean().default(true),
           userEngagement: z.boolean().default(true),
+          advancedAnalytics: z.boolean().default(true),
           aiInsights: z.boolean().default(true),
         }).default({
           overview: true,
           scoresEvidence: true,
           plasticWasteAudits: true,
           userEngagement: true,
+          advancedAnalytics: true,
           aiInsights: true,
         })
       });
 
-      const { dateRange, sections } = exportRequestSchema.parse(req.body);
+      const { dateRange, filters, sections } = exportRequestSchema.parse(req.body);
       
-      console.log('[Export PDF] Fetching analytics data for date range:', dateRange);
+      // Use undefined for "All Time" when dateRange is null
+      const startDate = dateRange?.start;
+      const endDate = dateRange?.end;
+      
+      console.log('[Export PDF] Fetching analytics data for date range:', dateRange || 'All Time');
+      console.log('[Export PDF] Applied filters:', filters);
       console.log('[Export PDF] Selected sections:', sections);
       
-      // Fetch only the data for selected sections
+      // Build filter object for storage methods (AnalyticsFilters interface)
+      const analyticsFilters = {
+        country: filters?.country,
+        schoolType: filters?.schoolType,
+        round: filters?.round
+      };
+      
+      // Fetch only the data for selected sections with filters applied
       const fetchPromises: any[] = [];
       
       if (sections.overview) {
-        fetchPromises.push(storage.getAnalyticsOverview(dateRange.start, dateRange.end));
+        fetchPromises.push(storage.getAnalyticsOverview(startDate, endDate, analyticsFilters));
       } else {
         fetchPromises.push(null);
       }
       
       if (sections.scoresEvidence) {
-        fetchPromises.push(storage.getSchoolProgressAnalytics(dateRange.start, dateRange.end));
-        fetchPromises.push(storage.getEvidenceAnalytics(dateRange.start, dateRange.end));
+        fetchPromises.push(storage.getSchoolProgressAnalytics(startDate, endDate, analyticsFilters));
+        fetchPromises.push(storage.getEvidenceAnalytics(startDate, endDate, analyticsFilters));
       } else {
         fetchPromises.push(null);
         fetchPromises.push(null);
       }
       
       if (sections.userEngagement) {
-        fetchPromises.push(storage.getUserEngagementAnalytics(dateRange.start, dateRange.end));
+        fetchPromises.push(storage.getUserEngagementAnalytics(startDate, endDate, analyticsFilters));
       } else {
         fetchPromises.push(null);
       }
@@ -6037,7 +6056,43 @@ Return JSON with:
         fetchPromises.push(null);
       }
       
-      const [overview, schoolEvidence, evidenceAnalytics, userEngagement, auditOverview, auditBySchool] = await Promise.all(fetchPromises);
+      // Fetch advanced analytics data (stage funnel, cohort, promises, resources, plastic reduction, geographic)
+      if (sections.advancedAnalytics) {
+        fetchPromises.push(storage.getStageFunnel());
+        fetchPromises.push(storage.getCohortAnalysis());
+        fetchPromises.push(storage.getPromiseCompletionRate());
+        fetchPromises.push(storage.getResourceEffectiveness());
+        fetchPromises.push(storage.getPlasticReductionTrends());
+        fetchPromises.push(storage.getGeographicAnalytics(analyticsFilters));
+        fetchPromises.push(storage.getReferralSourceAnalytics());
+        fetchPromises.push(storage.getResourceAnalytics());
+      } else {
+        fetchPromises.push(null); // stageFunnel
+        fetchPromises.push(null); // cohortAnalysis
+        fetchPromises.push(null); // promiseCompletion
+        fetchPromises.push(null); // resourceEffectiveness
+        fetchPromises.push(null); // plasticReductionTrends
+        fetchPromises.push(null); // geographicAnalytics
+        fetchPromises.push(null); // referralSources
+        fetchPromises.push(null); // resourceAnalytics
+      }
+      
+      const [
+        overview, 
+        schoolEvidence, 
+        evidenceAnalytics, 
+        userEngagement, 
+        auditOverview, 
+        auditBySchool,
+        stageFunnel,
+        cohortAnalysis,
+        promiseCompletion,
+        resourceEffectiveness,
+        plasticReductionTrends,
+        geographicAnalytics,
+        referralSources,
+        resourceAnalytics
+      ] = await Promise.all(fetchPromises);
       
       // Generate AI insights if requested
       let aiInsights;
@@ -6048,7 +6103,7 @@ Return JSON with:
           schoolEvidence: schoolEvidence || {},
           evidenceAnalytics: evidenceAnalytics || {},
           userEngagement: userEngagement || {},
-          dateRange
+          dateRange: dateRange || undefined
         });
       } else {
         // Provide default insights structure if not requested
@@ -6060,9 +6115,10 @@ Return JSON with:
         };
       }
       
-      // Prepare report data
+      // Prepare report data with filter information and all analytics
       const reportData = {
-        dateRange,
+        dateRange: dateRange || { start: 'All Time', end: 'Present' },
+        filters,
         sections,
         overview,
         schoolEvidence,
@@ -6070,6 +6126,14 @@ Return JSON with:
         userEngagement,
         auditOverview,
         auditBySchool,
+        stageFunnel,
+        cohortAnalysis,
+        promiseCompletion,
+        resourceEffectiveness,
+        plasticReductionTrends,
+        geographicAnalytics,
+        referralSources,
+        resourceAnalytics,
         aiInsights
       };
       
@@ -6087,9 +6151,13 @@ Return JSON with:
       
       console.log('[Export PDF] PDF generated successfully');
       
-      // Generate filename with current date
+      // Generate filename with current date and filters
       const date = new Date().toISOString().split('T')[0];
-      const filename = `analytics-report-${date}.pdf`;
+      let filename = `analytics-report-${date}`;
+      if (filters?.country) filename += `-${filters.country}`;
+      if (filters?.schoolType) filename += `-${filters.schoolType}`;
+      if (filters?.round) filename += `-round${filters.round}`;
+      filename += '.pdf';
       
       // Set response headers
       res.setHeader('Content-Type', 'application/pdf');

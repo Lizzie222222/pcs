@@ -585,6 +585,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
     scoresEvidence: true,
     plasticWasteAudits: true,
     userEngagement: true,
+    advancedAnalytics: true,
     aiInsights: true,
   });
 
@@ -684,14 +685,15 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
 
   const exportPDFMutation = useMutation({
     mutationFn: async () => {
-      if (!dateRange?.from || !dateRange?.to) {
-        throw new Error('Please select a date range');
-      }
-
       const response = await apiRequest('POST', '/api/admin/analytics/export-pdf', {
-        dateRange: {
+        dateRange: dateRange?.from && dateRange?.to ? {
           start: dateRange.from.toISOString(),
           end: dateRange.to.toISOString()
+        } : null,
+        filters: {
+          country: countryFilter !== 'all' ? countryFilter : undefined,
+          schoolType: schoolTypeFilter !== 'all' ? schoolTypeFilter : undefined,
+          round: roundFilter !== 'all' ? roundFilter : undefined
         },
         sections: selectedSections
       });
@@ -845,7 +847,6 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
             <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
               <DialogTrigger asChild>
                 <Button
-                  disabled={!dateRange?.from || !dateRange?.to}
                   data-testid="button-export-pdf"
                   className="bg-pcs_blue hover:bg-pcs_navy min-h-11 text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4"
                 >
@@ -858,10 +859,23 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                 <DialogHeader>
                   <DialogTitle>Export PDF Report</DialogTitle>
                   <DialogDescription>
-                    Select which sections to include in your analytics report. The report will include data from{' '}
-                    {dateRange?.from && dateRange?.to && (
-                      <span className="font-medium text-gray-900">
-                        {format(dateRange.from, 'dd/MM/yyyy')} - {format(dateRange.to, 'dd/MM/yyyy')}
+                    Select which sections to include in your analytics report.{' '}
+                    {dateRange?.from && dateRange?.to ? (
+                      <>
+                        The report will include data from{' '}
+                        <span className="font-medium text-gray-900">
+                          {format(dateRange.from, 'dd/MM/yyyy')} - {format(dateRange.to, 'dd/MM/yyyy')}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="font-medium text-gray-900">The report will include all time data.</span>
+                    )}
+                    {(countryFilter !== 'all' || schoolTypeFilter !== 'all' || roundFilter !== 'all') && (
+                      <span className="block mt-2 text-sm">
+                        <span className="font-medium">Active filters:</span>{' '}
+                        {countryFilter !== 'all' && <Badge variant="secondary" className="mr-1">{countryFilter}</Badge>}
+                        {schoolTypeFilter !== 'all' && <Badge variant="secondary" className="mr-1">{schoolTypeFilter}</Badge>}
+                        {roundFilter !== 'all' && <Badge variant="secondary">Round {roundFilter}</Badge>}
                       </span>
                     )}
                   </DialogDescription>
@@ -933,6 +947,23 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                       className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
                       User Engagement
+                    </label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="section-advanced-analytics"
+                      checked={selectedSections.advancedAnalytics}
+                      onCheckedChange={(checked) => 
+                        setSelectedSections({ ...selectedSections, advancedAnalytics: checked as boolean })
+                      }
+                      data-testid="checkbox-section-advanced-analytics"
+                    />
+                    <label
+                      htmlFor="section-advanced-analytics"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Advanced Analytics (Stage Funnel, Cohort, Resources, Geographic)
                     </label>
                   </div>
 

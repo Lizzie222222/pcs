@@ -7,11 +7,17 @@
 
 export interface ReportData {
   dateRange: { start: string; end: string };
+  filters?: {
+    country?: string;
+    schoolType?: string;
+    round?: string;
+  };
   sections?: {
     overview: boolean;
     scoresEvidence: boolean;
     plasticWasteAudits: boolean;
     userEngagement: boolean;
+    advancedAnalytics: boolean;
     aiInsights: boolean;
   };
   overview?: {
@@ -60,6 +66,40 @@ export interface ReportData {
     hasComposting: boolean;
     hasPolicy: boolean;
   }>;
+  stageFunnel?: {
+    stages: Array<{ stage: string; count: number; percentage: number }>;
+    dropoffs: Array<{ from: string; to: string; dropoffRate: number }>;
+  };
+  cohortAnalysis?: {
+    cohorts: Array<{ month: string; registered: number; reachedInvestigate: number; reachedAct: number; completed: number; avgProgress: number }>;
+  };
+  promiseCompletion?: {
+    overview: { total: number; completed: number; inProgress: number; notStarted: number; completionRate: number };
+    byCategory: Array<{ category: string; total: number; completed: number; rate: number }>;
+    trends: Array<{ month: string; created: number; completed: number }>;
+  };
+  resourceEffectiveness?: {
+    resourceImpact: Array<{ resourceId: string; resourceTitle: string; stage: string; downloads: number; schoolsProgressed: number; correlationScore: number }>;
+    stageCorrelation: Array<{ stage: string; totalDownloads: number; avgDownloadsPerProgression: number }>;
+  };
+  plasticReductionTrends?: {
+    monthlyReduction: Array<{ month: string; estimatedReduction: number; schoolsWithReduction: number }>;
+    categoryReduction: Array<{ category: string; totalReduction: number; promiseCount: number }>;
+    impactMetrics: { totalAnnualReduction: number; totalWeightKg: number; carbonSavedKg: number };
+  };
+  geographicAnalytics?: {
+    schoolsByRegion: Array<{ country: string; schools: number; students: number; progress: number }>;
+    globalReach: { totalCountries: number; totalCities: number };
+  };
+  referralSources?: {
+    distribution: Array<{ source: string; count: number; percentage: number }>;
+    totalResponses: number;
+  };
+  resourceAnalytics?: {
+    downloadTrends: Array<{ month: string; downloads: number }>;
+    popularResources: Array<{ title: string; downloads: number; stage: string }>;
+    resourcesByStage: Array<{ stage: string; count: number; totalDownloads: number }>;
+  };
   aiInsights: {
     executiveSummary: string;
     keyInsights: string[];
@@ -80,14 +120,55 @@ export function generateHTMLReport(data: ReportData): string {
     day: 'numeric' 
   });
   
-  const dateRangeFormatted = `${new Date(data.dateRange.start).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${new Date(data.dateRange.end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  // Handle "All Time" or specific date range
+  const isAllTime = data.dateRange.start === 'All Time';
+  const dateRangeFormatted = isAllTime 
+    ? 'All Time Data' 
+    : `${new Date(data.dateRange.start).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${new Date(data.dateRange.end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  
+  // Format filter information for display
+  const formatSchoolType = (type: string) => {
+    const typeLabels: Record<string, string> = {
+      'kindergarten': 'Kindergarten',
+      'primary': 'Primary School',
+      'secondary': 'Secondary School',
+      'high_school': 'High School',
+      'international': 'International School',
+      'other': 'Other'
+    };
+    return typeLabels[type] || type;
+  };
+  
+  const hasFilters = data.filters && (data.filters.country || data.filters.schoolType || data.filters.round);
+  const filtersText = hasFilters 
+    ? [
+        data.filters?.country ? `Country: ${data.filters.country}` : null,
+        data.filters?.schoolType ? `Type: ${formatSchoolType(data.filters.schoolType)}` : null,
+        data.filters?.round ? `Round: ${data.filters.round}` : null
+      ].filter(Boolean).join(' | ')
+    : null;
   
   // Determine which sections to show (default to true if not specified)
   const showOverview = data.sections?.overview !== false;
   const showScoresEvidence = data.sections?.scoresEvidence !== false;
   const showAudits = data.sections?.plasticWasteAudits !== false;
   const showUserEngagement = data.sections?.userEngagement !== false;
+  const showAdvancedAnalytics = data.sections?.advancedAnalytics !== false;
   const showAIInsights = data.sections?.aiInsights !== false;
+  
+  // Helper to format referral source names
+  const formatReferralSource = (source: string): string => {
+    const sourceLabels: Record<string, string> = {
+      'google_search': 'Google Search',
+      'social_media': 'Social Media',
+      'colleague': 'Colleague',
+      'conference': 'Conference/Event',
+      'email': 'Email',
+      'website': 'Website',
+      'other': 'Other',
+    };
+    return sourceLabels[source] || source.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  };
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -264,6 +345,13 @@ export function generateHTMLReport(data: ReportData): string {
       margin: 2rem 0;
       font-size: 1.1rem;
       line-height: 1.8;
+    }
+
+    .section-description {
+      color: #666;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+      line-height: 1.6;
     }
 
     /* Lists */
@@ -526,6 +614,12 @@ export function generateHTMLReport(data: ReportData): string {
       <strong>Reporting Period:</strong><br>
       ${dateRangeFormatted}
     </div>
+    ${filtersText ? `
+    <div class="cover-date" style="margin-top: 1rem; font-size: 1rem;">
+      <strong>Applied Filters:</strong><br>
+      ${filtersText}
+    </div>
+    ` : ''}
     <div class="cover-generated">
       Generated on ${generatedDate}
     </div>
@@ -924,6 +1018,210 @@ export function generateHTMLReport(data: ReportData): string {
             `).join('')}
           </tbody>
         </table>
+    </section>
+    <div class="page-break"></div>
+    ` : ''}
+
+    ${showAdvancedAnalytics ? `
+    <!-- Advanced Analytics -->
+    <section class="section">
+      <h2>Advanced Analytics</h2>
+      
+      ${data.stageFunnel && data.stageFunnel.stages.length > 0 ? `
+      <!-- Stage Funnel -->
+      <h3>Programme Stage Funnel</h3>
+      <p class="section-description">Distribution of schools across programme stages, showing progression through the Plastic Clever journey.</p>
+      <div class="chart-container">
+        <div class="bar-chart">
+          ${data.stageFunnel.stages.map((stage, index) => {
+            const colors = ['#8CC63F', '#009ADE', '#FFC557', '#02BBB4', '#FF595A'];
+            return `
+              <div class="bar-item">
+                <div class="bar-label">${stage.stage}</div>
+                <div class="bar-visual">
+                  <div class="bar-fill" style="width: ${stage.percentage}%; background: ${colors[index % colors.length]};">
+                    ${stage.count} (${stage.percentage.toFixed(1)}%)
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+      ` : ''}
+      
+      ${data.cohortAnalysis && data.cohortAnalysis.cohorts.length > 0 ? `
+      <!-- Cohort Analysis -->
+      <h3>Monthly Cohort Performance</h3>
+      <p class="section-description">Tracking how schools that registered in each month progress through the programme stages.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Registration Month</th>
+            <th>Registered</th>
+            <th>Reached Investigate</th>
+            <th>Reached Act</th>
+            <th>Completed</th>
+            <th>Avg Progress</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.cohortAnalysis.cohorts.slice(0, 12).map(cohort => `
+            <tr>
+              <td><strong>${cohort.month}</strong></td>
+              <td>${cohort.registered.toLocaleString()}</td>
+              <td>${cohort.reachedInvestigate.toLocaleString()}</td>
+              <td>${cohort.reachedAct.toLocaleString()}</td>
+              <td>${cohort.completed.toLocaleString()}</td>
+              <td>${cohort.avgProgress.toFixed(1)}%</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      ` : ''}
+      
+      ${data.promiseCompletion && data.promiseCompletion.overview ? `
+      <!-- Promise Completion -->
+      <h3>Plastic Reduction Promises</h3>
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Total Promises</div>
+          <div class="metric-value">${data.promiseCompletion.overview.total.toLocaleString()}</div>
+        </div>
+        <div class="metric-card inspire">
+          <div class="metric-label">Completed</div>
+          <div class="metric-value">${data.promiseCompletion.overview.completed.toLocaleString()}</div>
+        </div>
+        <div class="metric-card investigate">
+          <div class="metric-label">In Progress</div>
+          <div class="metric-value">${data.promiseCompletion.overview.inProgress.toLocaleString()}</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Completion Rate</div>
+          <div class="metric-value">${data.promiseCompletion.overview.completionRate.toFixed(1)}%</div>
+        </div>
+      </div>
+      
+      ${data.promiseCompletion.byCategory && data.promiseCompletion.byCategory.length > 0 ? `
+      <h4>Promises by Category</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Total</th>
+            <th>Completed</th>
+            <th>Completion Rate</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.promiseCompletion.byCategory.map(cat => `
+            <tr>
+              <td><strong>${cat.category}</strong></td>
+              <td>${cat.total.toLocaleString()}</td>
+              <td>${cat.completed.toLocaleString()}</td>
+              <td>${cat.rate.toFixed(1)}%</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      ` : ''}
+      ` : ''}
+      
+      ${data.plasticReductionTrends && data.plasticReductionTrends.impactMetrics ? `
+      <!-- Plastic Reduction Impact -->
+      <h3>Environmental Impact</h3>
+      <div class="metrics-grid">
+        <div class="metric-card inspire">
+          <div class="metric-label">Annual Plastic Reduction</div>
+          <div class="metric-value">${data.plasticReductionTrends.impactMetrics.totalAnnualReduction.toLocaleString()}</div>
+          <div class="metric-description">Items per year</div>
+        </div>
+        <div class="metric-card investigate">
+          <div class="metric-label">Weight Reduced</div>
+          <div class="metric-value">${(data.plasticReductionTrends.impactMetrics.totalWeightKg / 1000).toFixed(2)}</div>
+          <div class="metric-description">Tonnes per year</div>
+        </div>
+        <div class="metric-card act">
+          <div class="metric-label">Carbon Saved</div>
+          <div class="metric-value">${(data.plasticReductionTrends.impactMetrics.carbonSavedKg / 1000).toFixed(2)}</div>
+          <div class="metric-description">Tonnes CO₂ per year</div>
+        </div>
+      </div>
+      ` : ''}
+      
+      ${data.geographicAnalytics && data.geographicAnalytics.schoolsByRegion && data.geographicAnalytics.schoolsByRegion.length > 0 ? `
+      <!-- Geographic Distribution -->
+      <h3>Geographic Distribution</h3>
+      ${data.geographicAnalytics.globalReach ? `
+      <p class="section-description">
+        The programme reaches <strong>${data.geographicAnalytics.globalReach.totalCountries} countries</strong> 
+        and <strong>${data.geographicAnalytics.globalReach.totalCities.toLocaleString()} cities</strong> worldwide.
+      </p>
+      ` : ''}
+      <table>
+        <thead>
+          <tr>
+            <th>Country</th>
+            <th>Schools</th>
+            <th>Students</th>
+            <th>Avg Progress</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.geographicAnalytics.schoolsByRegion.slice(0, 15).map(region => `
+            <tr>
+              <td><strong>${region.country}</strong></td>
+              <td>${region.schools.toLocaleString()}</td>
+              <td>${region.students.toLocaleString()}</td>
+              <td>${region.progress.toFixed(1)}%</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      ` : ''}
+      
+      ${data.resourceAnalytics && data.resourceAnalytics.popularResources && data.resourceAnalytics.popularResources.length > 0 ? `
+      <!-- Resource Analytics -->
+      <h3>Top Resources</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Resource</th>
+            <th>Stage</th>
+            <th>Downloads</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.resourceAnalytics.popularResources.slice(0, 10).map((resource, index) => `
+            <tr>
+              <td><strong>${index + 1}. ${resource.title}</strong></td>
+              <td>${resource.stage}</td>
+              <td>${resource.downloads.toLocaleString()}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      ` : ''}
+      
+      ${data.referralSources && data.referralSources.distribution && data.referralSources.distribution.length > 0 ? `
+      <!-- Referral Sources -->
+      <h3>How Schools Found Us</h3>
+      <p class="section-description">Based on ${data.referralSources.totalResponses.toLocaleString()} responses.</p>
+      <div class="chart-container">
+        <div class="bar-chart">
+          ${data.referralSources.distribution.map(source => `
+            <div class="bar-item">
+              <div class="bar-label">${formatReferralSource(source.source)}</div>
+              <div class="bar-visual">
+                <div class="bar-fill" style="width: ${source.percentage}%; background: #009ADE;">
+                  ${source.count} (${source.percentage.toFixed(1)}%)
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      ` : ''}
     </section>
     <div class="page-break"></div>
     ` : ''}
