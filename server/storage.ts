@@ -5755,7 +5755,7 @@ export class DatabaseStorage implements IStorage {
     heatmap: Array<{ dayOfWeek: number; hour: number; count: number }>;
     peakTimes: { bestDay: string; bestHour: number };
   }> {
-    // Build date filter - default to last 6 months if no dates provided
+    // Build date filter - when both dates are undefined, return all data (All Time)
     let dateFilter;
     if (options?.startDate && options?.endDate) {
       dateFilter = sql`submitted_at >= ${options.startDate} AND submitted_at <= ${options.endDate} AND submitted_at IS NOT NULL`;
@@ -5764,8 +5764,8 @@ export class DatabaseStorage implements IStorage {
     } else if (options?.endDate) {
       dateFilter = sql`submitted_at <= ${options.endDate} AND submitted_at IS NOT NULL`;
     } else {
-      // Default: last 6 months
-      dateFilter = sql`submitted_at >= NOW() - INTERVAL '6 months' AND submitted_at IS NOT NULL`;
+      // All Time - no date restriction, just ensure submitted_at exists
+      dateFilter = sql`submitted_at IS NOT NULL`;
     }
 
     // Get activity from evidence submissions

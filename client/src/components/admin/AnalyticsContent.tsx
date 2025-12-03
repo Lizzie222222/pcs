@@ -494,8 +494,8 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
     enabled: activeTab === 'overview'
   });
 
-  // Heatmap date range state - default to last 6 months (must be declared before getHeatmapDateParams)
-  const [heatmapDateRange, setHeatmapDateRange] = useState<string>("6months");
+  // Heatmap date range state - default to All Time for complete data view
+  const [heatmapDateRange, setHeatmapDateRange] = useState<string>("all");
 
   // Helper function to compute start/end dates from heatmap preset
   const getHeatmapDateParams = () => {
@@ -2343,7 +2343,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                 </Select>
               </div>
               <p className="text-sm text-gray-500">
-                Activity patterns by day and hour
+                Shows when teachers submit evidence (by day of week and hour). Darker = more submissions.
                 {activityHeatmapQuery.data?.peakTimes && (
                   <span className="ml-2 text-pcs_blue font-medium">
                     Peak: {activityHeatmapQuery.data.peakTimes.bestDay} at {activityHeatmapQuery.data.peakTimes.bestHour}:00
@@ -2378,15 +2378,28 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                           const maxCount = Math.max(...(activityHeatmapQuery.data?.heatmap.map(h => h.count) || [1]));
                           const intensity = maxCount > 0 ? count / maxCount : 0;
                           return (
-                            <div
-                              key={hour}
-                              className="flex-1 h-8 m-0.5 rounded cursor-pointer transition-all hover:scale-105"
-                              style={{
-                                backgroundColor: `rgba(1, 154, 222, ${Math.max(0.1, intensity)})`,
-                              }}
-                              title={`${day} ${hour}:00 - ${count} activities`}
-                              data-testid={`heatmap-cell-${dayIndex}-${hour}`}
-                            />
+                            <TooltipProvider key={hour}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div
+                                    className="flex-1 h-8 m-0.5 rounded cursor-pointer transition-all hover:scale-105"
+                                    style={{
+                                      backgroundColor: `rgba(1, 154, 222, ${Math.max(0.1, intensity)})`,
+                                    }}
+                                    data-testid={`heatmap-cell-${dayIndex}-${hour}`}
+                                  />
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  <div className="text-sm">
+                                    <p className="font-medium">{day} at {hour}:00</p>
+                                    <p className="text-gray-300">{count} evidence submission{count !== 1 ? 's' : ''}</p>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                      Based on when teachers submit evidence to the platform
+                                    </p>
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           );
                         })}
                       </div>
