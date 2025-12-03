@@ -1361,6 +1361,7 @@ export class SchoolStorage {
         auditQuizCompleted: false,
         progressPercentage: 0,
         roundsCompleted: updatedRoundsCompleted,
+        roundCelebrationDismissed: false,
         updatedAt: new Date()
       })
       .where(eq(schools.id, schoolId))
