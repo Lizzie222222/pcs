@@ -5,6 +5,8 @@
  * that presents analytics data and AI insights in a visually appealing format.
  */
 
+import { normalizeCountryName } from '../features/schools/utils/countryMapping';
+
 export interface ReportData {
   dateRange: { start: string; end: string };
   filters?: {
@@ -142,7 +144,7 @@ export function generateHTMLReport(data: ReportData): string {
   const hasFilters = data.filters && (data.filters.country || data.filters.schoolType || data.filters.round);
   const filtersText = hasFilters 
     ? [
-        data.filters?.country ? `Country: ${data.filters.country}` : null,
+        data.filters?.country ? `Country: ${normalizeCountryName(data.filters.country) || data.filters.country}` : null,
         data.filters?.schoolType ? `Type: ${formatSchoolType(data.filters.schoolType)}` : null,
         data.filters?.round ? `Round: ${data.filters.round}` : null
       ].filter(Boolean).join(' | ')
@@ -787,7 +789,7 @@ export function generateHTMLReport(data: ReportData): string {
           <tbody>
             ${data.schoolEvidence.schoolsByCountry.slice(0, 10).map(country => `
               <tr>
-                <td><strong>${country.country}</strong></td>
+                <td><strong>${normalizeCountryName(country.country) || country.country}</strong></td>
                 <td>${country.count.toLocaleString()}</td>
                 <td>${country.students.toLocaleString()}</td>
                 <td>
@@ -953,7 +955,7 @@ export function generateHTMLReport(data: ReportData): string {
             ${data.auditBySchool.slice(0, 10).map((school, index) => `
               <tr>
                 <td><strong>${index + 1}. ${school.schoolName}</strong></td>
-                <td>${school.country}</td>
+                <td>${normalizeCountryName(school.country) || school.country}</td>
                 <td>${school.totalPlasticItems.toLocaleString()}</td>
                 <td>${school.topProblemPlastic || 'N/A'}</td>
                 <td>
@@ -1170,7 +1172,7 @@ export function generateHTMLReport(data: ReportData): string {
         <tbody>
           ${data.geographicAnalytics.schoolsByRegion.slice(0, 15).map(region => `
             <tr>
-              <td><strong>${region.country}</strong></td>
+              <td><strong>${normalizeCountryName(region.country) || region.country}</strong></td>
               <td>${region.schools.toLocaleString()}</td>
               <td>${region.students.toLocaleString()}</td>
               <td>${region.progress.toFixed(1)}%</td>
