@@ -2471,6 +2471,17 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                   </div>
                 ) : reactivationRateQuery.data ? (
                   <div className="space-y-4">
+                    {/* Show explanatory message when we have data but totalDormantSchools is 0 (meaning no schools are 90+ days old yet) */}
+                    {reactivationRateQuery.data.totalDormantSchools === 0 && 
+                     reactivationRateQuery.data.activeFromStart === 0 && (
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2 text-sm text-blue-800">
+                        <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                        <span>
+                          This metric tracks schools registered 90+ days ago. All registered schools are 
+                          still in their initial engagement period. Data will appear as schools reach 90 days.
+                        </span>
+                      </div>
+                    )}
                     <div className="grid grid-cols-2 gap-3">
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -2580,6 +2591,17 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                   </div>
                 ) : promiseCompletionQuery.data?.overview ? (
                   <div className="space-y-4">
+                    {/* Show explanatory message when there are in-progress promises but none completed yet */}
+                    {promiseCompletionQuery.data.overview.inProgress > 0 &&
+                     promiseCompletionQuery.data.overview.completed === 0 && (
+                      <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2 text-sm text-amber-800">
+                        <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                        <span>
+                          No promises have been marked as achieved yet. Teachers update promise status 
+                          to "achieved" when their plastic reduction targets are met.
+                        </span>
+                      </div>
+                    )}
                     <div className="grid grid-cols-2 gap-3">
                       <div className="text-center p-3 bg-green-50 rounded-lg" data-testid="metric-completion-rate">
                         <div className="text-2xl font-bold text-green-600">
