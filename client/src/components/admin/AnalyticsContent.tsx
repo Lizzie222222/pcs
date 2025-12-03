@@ -249,8 +249,7 @@ interface PlasticReductionTrendsAnalytics {
   impactMetrics: {
     totalAnnualReduction: number;
     totalWeightKg: number;
-    treesEquivalent: number;
-    oceanBottles: number;
+    carbonSavedKg: number;
   };
 }
 
@@ -2987,18 +2986,30 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
                       </div>
                       <div className="text-xs text-gray-600">Plastic Weight Saved</div>
                     </div>
-                    <div className="p-4 bg-teal-50 rounded-lg text-center" data-testid="metric-trees-equivalent">
-                      <div className="text-2xl font-bold text-pcs_teal">
-                        {plasticReductionTrendsQuery.data.impactMetrics.treesEquivalent.toLocaleString()}
-                      </div>
-                      <div className="text-xs text-gray-600">Trees Equivalent</div>
-                    </div>
-                    <div className="p-4 bg-cyan-50 rounded-lg text-center" data-testid="metric-ocean-bottles">
-                      <div className="text-2xl font-bold text-cyan-600">
-                        {plasticReductionTrendsQuery.data.impactMetrics.oceanBottles.toLocaleString()}
-                      </div>
-                      <div className="text-xs text-gray-600">Bottles Kept from Ocean</div>
-                    </div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="p-4 bg-teal-50 rounded-lg text-center cursor-help" data-testid="metric-carbon-saved">
+                            <div className="text-2xl font-bold text-pcs_teal">
+                              {plasticReductionTrendsQuery.data.impactMetrics.carbonSavedKg.toLocaleString()} kg
+                            </div>
+                            <div className="text-xs text-gray-600 flex items-center justify-center gap-1">
+                              CO₂ Saved
+                              <Info className="h-3 w-3 text-gray-400" />
+                            </div>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs p-4">
+                          <div className="space-y-2 text-sm">
+                            <p className="font-semibold">Why track carbon?</p>
+                            <p className="text-gray-300">Reducing plastic use helps fight climate change because plastic production is energy-intensive and releases greenhouse gases.</p>
+                            <p className="font-semibold mt-2">How it's calculated:</p>
+                            <p className="text-gray-300">Every 1 kg of plastic reduced prevents approximately 6 kg of CO₂ emissions from production, processing, and transport.</p>
+                            <p className="text-xs text-gray-400 mt-2 italic">Based on European Commission lifecycle assessment studies</p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
 
                   {/* Monthly Reduction Chart */}

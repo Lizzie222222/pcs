@@ -6175,13 +6175,16 @@ export class DatabaseStorage implements IStorage {
 
     const totalAnnualReduction = Number(totals?.totalReduction) || 0;
     // Estimate weight: assume average plastic item is ~25g (0.025 kg)
-    const totalWeightKg = Math.round(totalAnnualReduction * 0.025);
+    // Use precise calculation first, then round for display
+    const preciseWeightKg = totalAnnualReduction * 0.025;
+    const totalWeightKg = Math.round(preciseWeightKg);
     
     // Carbon saved calculation: ~6 kg CO2 emissions per kg of virgin plastic produced
     // Based on lifecycle assessment studies (production, processing, transport)
     // Source: European Commission JRC studies on plastic lifecycle emissions
+    // Calculate from precise weight to avoid double-rounding errors
     const CARBON_FACTOR_KG_CO2_PER_KG_PLASTIC = 6;
-    const carbonSavedKg = Math.round(totalWeightKg * CARBON_FACTOR_KG_CO2_PER_KG_PLASTIC);
+    const carbonSavedKg = Math.round(preciseWeightKg * CARBON_FACTOR_KG_CO2_PER_KG_PLASTIC);
 
     return {
       monthlyReduction,
