@@ -6058,7 +6058,7 @@ Return JSON with:
       
       // Fetch advanced analytics data (stage funnel, cohort, promises, resources, plastic reduction, geographic)
       if (sections.advancedAnalytics) {
-        fetchPromises.push(storage.getStageFunnel());
+        fetchPromises.push(storage.getStageProgressionFunnel());
         fetchPromises.push(storage.getCohortAnalysis());
         fetchPromises.push(storage.getPromiseCompletionRate());
         fetchPromises.push(storage.getResourceEffectiveness());
