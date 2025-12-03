@@ -384,9 +384,9 @@ const STAT_EXPLANATIONS = {
   countriesReached: "Number of unique countries with at least one registered school. Filtered by school registration date if a date range is selected.",
   activeSchoolsLastMonth: "Schools with any recorded activity in the past 30 days. This always shows the current rolling 30-day window regardless of date filter selection.",
   lifetimeTotalUsers: "Total registered users (excludes deleted accounts).",
-  interactedUsers: "Users who have logged in at least once. Tracked when a user successfully authenticates.",
-  notInteractedUsers: "Users who have never logged in. These are accounts that were created but never used.",
-  interactionRate: "Percentage of users who have logged in at least once (Ever Logged In / Total Users).",
+  interactedUsers: "Users who have any recorded activity. Includes both legacy users (imported with historical activity data) and new users who have logged in.",
+  notInteractedUsers: "Users with no recorded activity. These are accounts that were created but have never been active.",
+  interactionRate: "Percentage of users with any recorded activity (Ever Logged In / Total Users).",
   totalResourceDownloads: "Total download count across all resources and resource packs.",
 };
 

@@ -4722,15 +4722,16 @@ Return JSON with:
         : sql``;
       
       // Get user interaction metrics - lifetime totals (these track overall engagement status)
-      // Note: has_interacted is a lifetime flag, not date-bounded, so we query all users for interaction rates
+      // Note: last_active_at tracks when users were last active (includes legacy data migrations)
+      // This is more accurate than has_interacted which only tracks new system logins
       const lifetimeTotalUsersResult = await db.execute(sql`
         SELECT COUNT(*) as count FROM users WHERE deleted_at IS NULL
       `);
       const interactedUsersResult = await db.execute(sql`
-        SELECT COUNT(*) as count FROM users WHERE deleted_at IS NULL AND has_interacted = true
+        SELECT COUNT(*) as count FROM users WHERE deleted_at IS NULL AND last_active_at IS NOT NULL
       `);
       const notInteractedUsersResult = await db.execute(sql`
-        SELECT COUNT(*) as count FROM users WHERE deleted_at IS NULL AND (has_interacted = false OR has_interacted IS NULL)
+        SELECT COUNT(*) as count FROM users WHERE deleted_at IS NULL AND last_active_at IS NULL
       `);
       
       const lifetimeTotalUsers = Number(lifetimeTotalUsersResult.rows[0]?.count || 0);
