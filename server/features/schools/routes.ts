@@ -1987,6 +1987,25 @@ schoolsRouter.get('/api/admin/duplicates/counts', isAuthenticated, requireAdmin,
   }
 });
 
+// GET /api/admin/duplicates/merge-preview - Get merge preview with user analysis
+// NOTE: This route must be defined BEFORE the /:id route to avoid being matched by the parameter
+schoolsRouter.get('/api/admin/duplicates/merge-preview', isAuthenticated, requireAdmin, async (req: any, res) => {
+  try {
+    const { targetSchoolId, sourceSchoolId } = req.query;
+
+    if (!targetSchoolId || !sourceSchoolId) {
+      return res.status(400).json({ message: "Both targetSchoolId and sourceSchoolId are required" });
+    }
+
+    const preview = await schoolStorage.getMergePreview(targetSchoolId, sourceSchoolId);
+    
+    res.json(preview);
+  } catch (error) {
+    console.error("[Admin Duplicates] Error getting merge preview:", error);
+    res.status(500).json({ message: "Failed to get merge preview" });
+  }
+});
+
 // GET /api/admin/duplicates/:id - Get a single duplicate group with full details
 schoolsRouter.get('/api/admin/duplicates/:id', isAuthenticated, requireAdmin, async (req, res) => {
   try {
@@ -2042,24 +2061,6 @@ schoolsRouter.post('/api/admin/duplicates/:id/dismiss', isAuthenticated, require
   } catch (error) {
     console.error("[Admin Duplicates] Error dismissing duplicate group:", error);
     res.status(500).json({ message: "Failed to dismiss duplicate group" });
-  }
-});
-
-// GET /api/admin/duplicates/merge-preview - Get merge preview with user analysis
-schoolsRouter.get('/api/admin/duplicates/merge-preview', isAuthenticated, requireAdmin, async (req: any, res) => {
-  try {
-    const { targetSchoolId, sourceSchoolId } = req.query;
-
-    if (!targetSchoolId || !sourceSchoolId) {
-      return res.status(400).json({ message: "Both targetSchoolId and sourceSchoolId are required" });
-    }
-
-    const preview = await schoolStorage.getMergePreview(targetSchoolId, sourceSchoolId);
-    
-    res.json(preview);
-  } catch (error) {
-    console.error("[Admin Duplicates] Error getting merge preview:", error);
-    res.status(500).json({ message: "Failed to get merge preview" });
   }
 });
 
