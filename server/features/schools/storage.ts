@@ -1668,11 +1668,14 @@ export class SchoolStorage {
 
   /**
    * Find all schools grouped by email domain (for duplicate detection)
+   * Excludes schools that have already been merged
    */
   async findSchoolsByEmailDomainGroups(): Promise<Map<string, School[]>> {
+    // Exclude merged schools from duplicate detection
     const allSchools = await db
       .select()
       .from(schools)
+      .where(or(eq(schools.isMerged, false), isNull(schools.isMerged)))
       .orderBy(asc(schools.createdAt));
 
     const domainMap = new Map<string, School[]>();
@@ -1700,11 +1703,14 @@ export class SchoolStorage {
 
   /**
    * Find schools with the same postcode
+   * Excludes schools that have already been merged
    */
   async findSchoolsByPostcodeGroups(): Promise<Map<string, School[]>> {
+    // Exclude merged schools from duplicate detection
     const allSchools = await db
       .select()
       .from(schools)
+      .where(or(eq(schools.isMerged, false), isNull(schools.isMerged)))
       .orderBy(asc(schools.createdAt));
 
     const postcodeMap = new Map<string, School[]>();
@@ -1732,6 +1738,7 @@ export class SchoolStorage {
 
   /**
    * Find potential duplicates for a newly registered school
+   * Excludes schools that have already been merged
    */
   async findPotentialDuplicatesForSchool(schoolId: string): Promise<Array<{
     matchType: 'email_domain' | 'similar_name' | 'same_postcode';
@@ -1747,7 +1754,7 @@ export class SchoolStorage {
       matchingSchools: School[];
     }> = [];
 
-    // Check email domain matches
+    // Check email domain matches (excluding merged schools)
     const domain = this.extractEmailDomain(school.adminEmail);
     if (domain) {
       const domainMatches = await db
@@ -1756,7 +1763,8 @@ export class SchoolStorage {
         .where(
           and(
             sql`LOWER(SUBSTRING(${schools.adminEmail} FROM POSITION('@' IN ${schools.adminEmail}) + 1)) = ${domain}`,
-            sql`${schools.id} != ${schoolId}`
+            sql`${schools.id} != ${schoolId}`,
+            or(eq(schools.isMerged, false), isNull(schools.isMerged))
           )
         );
 
@@ -1769,7 +1777,7 @@ export class SchoolStorage {
       }
     }
 
-    // Check postcode matches
+    // Check postcode matches (excluding merged schools)
     const postcode = (school.postcode || school.zipCode || '').toLowerCase().trim();
     if (postcode && postcode.length >= 3) {
       const postcodeMatches = await db
@@ -1781,7 +1789,8 @@ export class SchoolStorage {
               sql`LOWER(TRIM(${schools.postcode})) = ${postcode}`,
               sql`LOWER(TRIM(${schools.zipCode})) = ${postcode}`
             ),
-            sql`${schools.id} != ${schoolId}`
+            sql`${schools.id} != ${schoolId}`,
+            or(eq(schools.isMerged, false), isNull(schools.isMerged))
           )
         );
 
@@ -2083,7 +2092,7 @@ export class SchoolStorage {
         await this.updateSchool(targetSchoolId, updates);
       }
 
-      // Mark source school as merged (soft delete)
+      // Mark source school as merged with proper tracking fields
       // Only add [MERGED] prefix if not already present
       const mergedName = sourceSchool.name.startsWith('[MERGED]') 
         ? sourceSchool.name 
@@ -2094,9 +2103,15 @@ export class SchoolStorage {
         .set({
           name: mergedName,
           showOnMap: false,
+          isMerged: true,
+          mergedIntoSchoolId: targetSchoolId,
+          mergedAt: new Date(),
           updatedAt: new Date()
         })
         .where(eq(schools.id, sourceSchoolId));
+
+      // Remove the merged source school from any duplicate groups
+      await this.removeSchoolFromDuplicateGroups(sourceSchoolId);
 
       return { success: true };
     } catch (error) {
@@ -2165,6 +2180,42 @@ export class SchoolStorage {
       .returning();
 
     return updated || null;
+  }
+
+  /**
+   * Remove a school from all duplicate groups it belongs to
+   * This is called after a school is merged to prevent it from appearing in future scans
+   */
+  async removeSchoolFromDuplicateGroups(schoolId: string): Promise<void> {
+    const groups = await db
+      .select()
+      .from(duplicateSchoolGroups)
+      .where(sql`${schoolId} = ANY(${duplicateSchoolGroups.schoolIds})`);
+
+    for (const group of groups) {
+      const updatedSchoolIds = (group.schoolIds || []).filter(id => id !== schoolId);
+      
+      if (updatedSchoolIds.length < 2) {
+        // If less than 2 schools remain, mark the group as merged/resolved
+        await db
+          .update(duplicateSchoolGroups)
+          .set({
+            schoolIds: updatedSchoolIds,
+            status: 'merged',
+            updatedAt: new Date()
+          })
+          .where(eq(duplicateSchoolGroups.id, group.id));
+      } else {
+        // Otherwise just update the schoolIds
+        await db
+          .update(duplicateSchoolGroups)
+          .set({
+            schoolIds: updatedSchoolIds,
+            updatedAt: new Date()
+          })
+          .where(eq(duplicateSchoolGroups.id, group.id));
+      }
+    }
   }
 
   /**
