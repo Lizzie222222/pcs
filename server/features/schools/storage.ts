@@ -90,8 +90,15 @@ export class SchoolStorage {
     sortOrder?: 'asc' | 'desc';
     limit?: number;
     offset?: number;
+    includeMerged?: boolean;
   } = {}): Promise<Array<School & { primaryContactEmail: string | null; primaryContactFirstName: string | null; primaryContactLastName: string | null }>> {
     const conditions = [];
+    
+    // By default, exclude merged schools unless explicitly requested
+    if (!filters.includeMerged) {
+      conditions.push(or(eq(schools.isMerged, false), isNull(schools.isMerged)));
+    }
+    
     if (filters.country && filters.country !== 'all') {
       const allCodes = getAllCountryCodes(filters.country);
       const searchValues = [...allCodes, filters.country];
