@@ -2,6 +2,7 @@ import { db } from '../db';
 import { users, schools, schoolUsers } from '@shared/schema';
 import { eq, isNull, isNotNull, and, asc } from 'drizzle-orm';
 import { Client } from '@sendgrid/client';
+import { normalizeCountryName } from '../features/schools/utils/countryMapping';
 
 const sgClient = new Client();
 if (process.env.SENDGRID_API_KEY) {
@@ -317,7 +318,7 @@ async function runBackfill(dryRun: boolean = false) {
         email: email,
         first_name: user.firstName || undefined,
         last_name: user.lastName || undefined,
-        country: user.schoolCountry || undefined,
+        country: normalizeCountryName(user.schoolCountry) || user.schoolCountry || undefined,
       };
 
       // Build custom fields for segmentation

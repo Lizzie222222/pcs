@@ -2,6 +2,7 @@ import { db } from './db';
 import { users, schools, schoolUsers, sendgridSyncJobs } from '@shared/schema';
 import { eq, isNull, isNotNull, and, asc, desc, or, lt, inArray, count } from 'drizzle-orm';
 import { Client } from '@sendgrid/client';
+import { normalizeCountryName } from './features/schools/utils/countryMapping';
 
 const sgClient = new Client();
 if (process.env.SENDGRID_API_KEY) {
@@ -238,7 +239,7 @@ function buildSendGridContactWithCustomFields(
     email: contact.email.toLowerCase().trim(),
     first_name: sanitizeForSendGrid(contact.firstName, 50),
     last_name: sanitizeForSendGrid(contact.lastName, 50),
-    country: sanitizeForSendGrid(contact.country, 50),
+    country: sanitizeForSendGrid(normalizeCountryName(contact.country || null) || contact.country, 50),
   };
 
   if (Object.keys(customFieldIds).length > 0) {
