@@ -3040,7 +3040,18 @@ export class DatabaseStorage implements IStorage {
     const conditions: ReturnType<typeof sql>[] = [];
     
     if (filters?.country) {
-      conditions.push(sql`country = ${filters.country}`);
+      // Use getAllCountryCodes to match both country codes and full names consistently
+      // This ensures "Greece" matches schools stored as "GR" and vice versa
+      const allCodes = getAllCountryCodes(filters.country);
+      const searchValues = [...allCodes, filters.country];
+      
+      if (searchValues.length > 1) {
+        // Create an IN clause for multiple possible values
+        const valuesList = searchValues.map(v => sql`${v}`);
+        conditions.push(sql`country IN (${sql.join(valuesList, sql`, `)})`);
+      } else {
+        conditions.push(sql`country = ${searchValues[0]}`);
+      }
     }
     if (filters?.schoolType) {
       conditions.push(sql`type = ${filters.schoolType}`);
@@ -3289,8 +3300,8 @@ export class DatabaseStorage implements IStorage {
       .groupBy(sql`TO_CHAR(created_at, 'YYYY-MM')`)
       .orderBy(sql`TO_CHAR(created_at, 'YYYY-MM')`);
 
-    // Schools by country
-    const schoolsByCountry = await db
+    // Schools by country - fetch raw data then normalize country names to merge duplicates
+    const schoolsByCountryRaw = await db
       .select({
         country: schools.country,
         count: count(),
@@ -3300,6 +3311,35 @@ export class DatabaseStorage implements IStorage {
       .where(combinedFilter)
       .groupBy(schools.country)
       .orderBy(desc(count()));
+
+    // Normalize country codes to full names and merge duplicates (e.g., "GR" and "Greece" become one entry)
+    const countryMap = new Map<string, { country: string; count: number; students: number }>();
+    
+    for (const row of schoolsByCountryRaw) {
+      const rawCountry = row.country || 'Unknown';
+      // Normalize: convert code to full name, or keep as-is if already full name
+      const normalizedCountry = normalizeCountryName(rawCountry) || rawCountry;
+      
+      if (countryMap.has(normalizedCountry)) {
+        // Merge with existing entry
+        const existing = countryMap.get(normalizedCountry)!;
+        countryMap.set(normalizedCountry, {
+          country: normalizedCountry,
+          count: existing.count + row.count,
+          students: existing.students + Number(row.students)
+        });
+      } else {
+        countryMap.set(normalizedCountry, {
+          country: normalizedCountry,
+          count: row.count,
+          students: Number(row.students)
+        });
+      }
+    }
+    
+    // Convert back to array and sort by count descending
+    const schoolsByCountry = Array.from(countryMap.values())
+      .sort((a, b) => b.count - a.count);
 
     return {
       stageDistribution: stageDistribution.map(s => ({ stage: s.stage || '', count: s.count })),
